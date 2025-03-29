@@ -39,6 +39,3 @@ input/
 output/
 .vs/
 .vscode/
-
-# MSVC proj files
-*.vcxproj*
