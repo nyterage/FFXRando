@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Raw .bin files
+*.bin
+
+# directories
+input/
+output/
+.vs/
+.vscode/
+
+# MSVC proj files
+*.vcxproj*
