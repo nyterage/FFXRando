@@ -31,5 +31,7 @@ Currently does not even have an interface, just a simple command line that reads
 # How to Build
 **Currently only supports MSVC compilation**
 1. Setup wxWidgets following the directions on their website.
-2. Open FFXRando.sln in MSVC, or run msbuild on the .sln
-3. Compile the application and enjoy!
+2. Open FFXRando.sln in Visual Studio, or run msbuild on the .sln
+3. If running from the command line, you may need to edit the project settings (vcxproj) to point to your wxWidgets directory.
+4. If running in Visual Studio, make sure you setup your wxwidgets.props file in the property manager.
+5. Compile the application and enjoy!
