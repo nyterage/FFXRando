@@ -26,3 +26,10 @@ Currently does not even have an interface, just a simple command line that reads
 # Maybe Future Additions
 1. Sphere Grid??
 2. Random Encounters??
+
+
+# How to Build
+**Currently only supports MSVC compilation**
+1. Setup wxWidgets following the directions on their website.
+2. Open FFXRando.sln in MSVC, or run msbuild on the .sln
+3. Compile the application and enjoy!
