@@ -1,13 +1,9 @@
 #pragma once
-#include <fstream>
 #include <filesystem>
-#include <iostream>
+#include <thread>
 #include <unordered_map>
-#include <chrono>
 #include <random>
 #include <type_traits>
-#include <limits>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -18,8 +14,6 @@ struct randomizer_t
 {
 private:
   std::mt19937 rng;
-
-public:
   std::unordered_map<int, enemy_data_t*> enemy_data;
   std::unordered_map<int, field_data_t*> field_data;
   std::unordered_map<int, shop_data_t*> item_shop_data;
@@ -27,14 +21,33 @@ public:
   std::unordered_map<int, gear_data_t*> buki_data;
   std::unordered_map<int, gear_data_t*> weapon_data;
   std::unordered_map<int, gear_data_t*> arms_shop_data;
+  std::vector<item_rate_t*> item_rate_data;
   std::unordered_map<int, item_t*> all_items;
   std::unordered_map<int, item_t*> all_non_key_items;
   std::vector<gear_data_t*> all_armor;
   std::vector<gear_data_t*> all_weapons;
-  std::vector<uint16_t> armor_abilities;
-  std::vector<uint16_t> weapon_abilities;
+  std::vector<uint16_t> abilities;
+  std::vector<uint8_t> def_pool;
+  std::vector<uint8_t> mdef_pool;
+  std::vector<uint8_t> eva_pool;
 
-  randomizer_t( int seed,
+  bool randomize_enemy_drops;
+  bool randomize_enemy_steals;
+  bool randomize_enemy_bribes;
+  bool randomize_enemy_gear_drops;
+  bool randomize_enemy_stats_normal;
+  bool randomize_enemy_stats_defensive_normalized;
+  bool randomize_enemy_stats_shuffle;
+  bool randomize_enemy_resists;
+  bool randomize_shops;
+  bool randomize_shop_prices;
+  bool randomize_field_items;
+  bool randomize_gear_abilities;
+  bool randomize_key_items;
+  bool keep_things_sane;
+
+public:
+  randomizer_t( int64_t seed,
                 std::unordered_map<int, enemy_data_t*> enemy_data,
                 std::unordered_map<int, field_data_t*> field_data,
                 std::unordered_map<int, shop_data_t*> item_shop_data,
@@ -42,12 +55,50 @@ public:
                 std::unordered_map<int, gear_data_t*> buki_data,
                 std::unordered_map<int, gear_data_t*> weapon_data,
                 std::unordered_map<int, gear_data_t*> arms_shop_data,
-                std::unordered_map<int, item_t*> all_items,
-                std::unordered_map<int, item_t*> all_non_key_items )
-    : rng( seed ), enemy_data( enemy_data ), field_data( field_data ), item_shop_data( item_shop_data ),
-    gear_shop_data( gear_shop_data ), buki_data( buki_data ), weapon_data( weapon_data ),
-    arms_shop_data( arms_shop_data ), all_items( all_items ), all_non_key_items( all_non_key_items )
+                std::vector<item_rate_t*> item_rate_data,
+                bool randomize_enemy_drops,
+                bool randomize_enemy_steals,
+                bool randomize_enemy_bribes,
+                bool randomize_enemy_gear_drops,
+                bool randomize_enemy_stats,
+                bool randomize_enemy_stats_defensive_normalized,
+                bool randomize_enemy_stats_shuffle,
+                bool randomize_shops,
+                bool randomize_shop_prices,
+                bool randomize_field_items,
+                bool randomize_gear_abilities,
+                bool randomize_key_items,
+                bool keep_things_sane
+  )
+    : rng( seed ),
+    enemy_data( enemy_data ),
+    field_data( field_data ),
+    item_shop_data( item_shop_data ),
+    gear_shop_data( gear_shop_data ),
+    buki_data( buki_data ),
+    weapon_data( weapon_data ),
+    arms_shop_data( arms_shop_data ),
+    item_rate_data( item_rate_data ),
+    randomize_enemy_drops( randomize_enemy_drops ),
+    randomize_enemy_gear_drops( randomize_enemy_gear_drops ),
+    randomize_enemy_steals( randomize_enemy_steals ),
+    randomize_enemy_bribes( randomize_enemy_bribes ),
+    randomize_enemy_stats_normal( randomize_enemy_stats ),
+    randomize_enemy_stats_defensive_normalized( randomize_enemy_stats_defensive_normalized ),
+    randomize_enemy_stats_shuffle( randomize_enemy_stats_shuffle ),
+    randomize_enemy_resists( false ),
+    randomize_shops( randomize_shops ),
+    randomize_shop_prices( randomize_shop_prices ),
+    randomize_field_items( randomize_field_items ),
+    randomize_gear_abilities( randomize_gear_abilities ),
+    randomize_key_items( randomize_key_items ),
+    keep_things_sane( keep_things_sane )
   {
+    getFieldItems();
+    getShopItems();
+    getMonsterItems();
+    poplateGearLists();
+    populateAbilityData();
     randomize();
   }
 
@@ -189,6 +240,88 @@ public:
     bytes_mapper_t::writeBytesToNewFile( reconstructed_arms_shop_data, file );
   }
 
+  void reconstructItemRateData()
+  {
+    std::vector<char> reconstructed_item_rate_data;
+    std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "item_rate.bin";
+    std::vector<char> bytes = bytes_mapper_t::fileToBytes( path );
+    bytes = std::vector<char>( bytes.begin(), bytes.begin() + 20 );
+    reconstructed_item_rate_data.insert( reconstructed_item_rate_data.end(), bytes.begin(), bytes.end() );
+    for (auto& item_rate : item_rate_data)
+    {
+      std::vector<char> item_rate_bytes = item_rate->bytes;
+      reconstructed_item_rate_data.insert( reconstructed_item_rate_data.end(), item_rate_bytes.begin(), item_rate_bytes.end() );
+    }
+    std::string output_path = OUTPUT_FOLDER + BATTLE_KERNEL_FOLDER;
+    std::filesystem::create_directories( output_path );
+    std::string file = output_path + "item_rate.bin";
+    bytes_mapper_t::writeBytesToNewFile( reconstructed_item_rate_data, file );
+  }
+
+  void checkItemList( uint16_t& id, uint8_t& quantity, bool key = false )
+  {
+    bool found = all_items.find( id ) != all_items.end();
+    if (!found)
+    {
+      item_t* item = new item_t( id, quantity, quantity );
+      all_items.insert( { id , item } );
+      if (!key && ( id > 2100 && id < 2000 ) || id == 2064)
+      {
+        all_non_key_items.insert( { id , item } );
+      }
+    }
+    else
+    {
+      item_t& it = *all_items.at( id );
+      if (it.getMinQuantity() > quantity)
+        it.setMinQuantity( quantity );
+      if (it.getMaxQuantity() < quantity)
+        it.setMaxQuantity( quantity );
+    }
+  }
+
+  void getFieldItems()
+  {
+    for (int i = 0; i < field_data.size(); i++)
+    {
+      field_data_t& field = *field_data.at( i );
+      if (field.flag == 10 || field.flag == 2)
+        checkItemList( field.type, field.quantity, field.flag == 10 );
+    }
+  }
+
+  void getMonsterItems()
+  {
+    for (auto& enemy : enemy_data)
+    {
+      enemy_loot_data_t* loot = enemy.second->loot_data;
+      checkItemList( loot->primary_normal_drop, loot->n_primary_normal_drop );
+      checkItemList( loot->primary_normal_drop_rare, loot->n_primary_normal_drop_rare );
+      checkItemList( loot->secondary_normal_drop, loot->n_secondary_normal_drop );
+      checkItemList( loot->secondary_normal_drop_rare, loot->n_secondary_normal_drop_rare );
+      checkItemList( loot->primary_normal_drop_overkill, loot->n_primary_normal_drop_overkill );
+      checkItemList( loot->primary_normal_drop_overkill_rare, loot->n_primary_normal_drop_overkill_rare );
+      checkItemList( loot->secondary_normal_drop_overkill, loot->n_secondary_normal_drop_overkill );
+      checkItemList( loot->secondary_normal_drop_overkill_rare, loot->n_secondary_normal_drop_overkill_rare );
+      checkItemList( loot->steal_item, loot->n_steal_item );
+      checkItemList( loot->steal_item_rare, loot->n_steal_item_rare );
+      checkItemList( loot->bribe_item, loot->n_bribe_item );
+    }
+  }
+
+  void getShopItems()
+  {
+    uint8_t quantity = 1;
+    for (uint16_t i = 0; i < item_shop_data.size(); i++)
+    {
+      shop_data_t& shop = *item_shop_data.at( i );
+      for (uint16_t j = 0; j < shop.item_indexes.size(); j++)
+      {
+        checkItemList( shop.item_indexes[ j ], quantity );
+      }
+    }
+  }
+
   item_t* getRandomItemFromMap( std::unordered_map<int, item_t*>& map )
   {
     std::uniform_int_distribution<size_t> dist( 0, map.size() - 1 );
@@ -200,23 +333,37 @@ public:
 
   int getRandomItemQuantity( item_t* item )
   {
-    if (item->getAverageQuantity() > 2 && item->getMaxQuantity() > item->getMinQuantity() + 1)
-      return normal<int>( item->getAverageQuantity(), item->getStandardDeviation(), item->getMinQuantity(), item->getMaxQuantity() );
-    else if (item->getMaxQuantity() > item->getMinQuantity())
-      return uniform<int>( item->getMinQuantity(), item->getMaxQuantity() );
-    else
-      return item->getMinQuantity();
+    if (keep_things_sane)
+    {
+      if (item->getAverageQuantity() > 2 && item->getMaxQuantity() > item->getMinQuantity() + 1)
+        return normal<int>( item->getAverageQuantity(), item->getStandardDeviation(), item->getMinQuantity(), item->getMaxQuantity() );
+      else if (item->getMaxQuantity() > item->getMinQuantity())
+        return uniform<int>( item->getMinQuantity(), item->getMaxQuantity() );
+      else
+        return item->getMinQuantity();
+    }
+
+    return uniform<int>( 0, 99 );
   }
 
   void randomizeEnemyDrops( enemy_data_t* enemy, std::unordered_map<int, item_t*> map )
   {
     enemy_loot_data_t& loot = *enemy->loot_data;
-    if (loot.gil > 0)
-      loot.gil = normal<uint16_t>( loot.gil, loot.gil, 0, UINT16_MAX );
-    if (loot.ap > 0)
-      loot.ap = normal<uint16_t>( loot.ap, loot.ap, 0, UINT16_MAX );
-    if (loot.ap_overkill > 0)
-      loot.ap_overkill = normal<uint16_t>( loot.ap_overkill, loot.ap_overkill, 0, UINT16_MAX );
+    if (keep_things_sane)
+    {
+      if (loot.gil > 0)
+        loot.gil = normal<uint16_t>( loot.gil, loot.gil, 0, UINT16_MAX );
+      if (loot.ap > 0)
+        loot.ap = normal<uint16_t>( loot.ap, loot.ap, 0, UINT16_MAX );
+      if (loot.ap_overkill > 0)
+        loot.ap_overkill = normal<uint16_t>( loot.ap_overkill, loot.ap_overkill, 0, UINT16_MAX );
+    }
+    else
+    {
+      loot.gil = uniform<uint16_t>( 0, UINT16_MAX );
+      loot.ap = uniform<uint16_t>( 0, UINT16_MAX );
+      loot.ap_overkill = uniform<uint16_t>( 0, UINT16_MAX );
+    }
     item_t* normal_drop = getRandomItemFromMap( map );
     int normal_drop_quantity = getRandomItemQuantity( normal_drop );
     item_t* rare_drop = getRandomItemFromMap( map );
@@ -287,6 +434,95 @@ public:
     enemy->writeLootData( loot );
   }
 
+  void randomizeEnemyStatsNormal( enemy_data_t* enemy )
+  {
+    enemy_stat_data_t& stats = *enemy->stats_data;
+    stats.hp = normal<uint32_t>( stats.hp, stats.hp, 1, UINT32_MAX );
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp, 1, UINT32_MAX );
+    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold, 1, UINT32_MAX );
+    stats.str = normal<uint8_t>( stats.str, stats.str, 0, UINT8_MAX );
+    stats.def = normal<uint8_t>( stats.def, stats.def, 0, UINT8_MAX );
+    stats.mag = normal<uint8_t>( stats.mag, stats.mag, 0, UINT8_MAX );
+    stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef, 0, UINT8_MAX );
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
+    stats.flags.armored = rand() % 4 == 0;
+    stats.writeToBytes();
+    enemy->stats_data = &stats;
+    enemy->writeStatsData( stats );
+  }
+
+  void addEnemyDefenses( enemy_data_t* enemy )
+  {
+    enemy_stat_data_t& stats = *enemy->stats_data;
+    def_pool.push_back( stats.def );
+    mdef_pool.push_back( stats.mdef );
+    eva_pool.push_back( stats.eva );
+  }
+
+  void randomizeEnemyStatsDefensiveNormalization( enemy_data_t* enemy )
+  {
+    enemy_stat_data_t& stats = *enemy->stats_data;
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp, 1, UINT32_MAX );
+    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold, 1, UINT32_MAX );
+    stats.str = normal<uint8_t>( stats.str, stats.str, 0, UINT8_MAX );
+
+    std::uniform_int_distribution<size_t> dist( 0, def_pool.size() - 1 );
+    uint8_t def = def_pool[ dist( rng ) ];
+    stats.def = def;
+    double def_factor = 1;
+    if (def != 0)
+      def_factor = ( 1.0 - ( def / 255.0 ) / 3 );
+
+    std::uniform_int_distribution<size_t> dist2( 0, mdef_pool.size() - 1 );
+    uint8_t mdef = mdef_pool[ dist2( rng ) ];
+    stats.mdef = mdef;
+    double mdef_factor = 1;
+    if (mdef != 0)
+      mdef_factor = ( 1.0 - ( mdef / 255.0 ) / 3 );
+
+    std::uniform_int_distribution<size_t> dist3( 0, eva_pool.size() - 1 );
+    uint8_t eva = eva_pool[ dist3( rng ) ];
+    stats.eva = eva;
+    double evasion_factor = 1;
+    if( eva != 0 )
+      evasion_factor = ( 1.0 - ( eva / 255.0 ) / 3 );
+
+    double defensive_factor = ( def_factor + mdef_factor + evasion_factor );
+    if (defensive_factor < 0.33)
+      stats.flags.armored = 0;
+    else
+      stats.flags.armored = rand() % 4 == 0;
+
+    uint32_t base_hp = std::min( 1, static_cast< int >( std::ceil( stats.hp * defensive_factor ) ) );
+    uint32_t hp = normal<uint32_t>( base_hp, base_hp, 1, UINT32_MAX );
+    stats.mag = normal<uint8_t>( stats.mag, stats.mag, 0, UINT8_MAX );
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
+    stats.writeToBytes();
+    enemy->stats_data = &stats;
+    enemy->writeStatsData( stats );
+  }
+
+  void shuffleStats( enemy_data_t* enemy )
+  {
+    enemy_stat_data_t& stats = *enemy->stats_data;
+    // Pick a random index to pull the stats from
+    std::uniform_int_distribution<size_t> dist( 0, enemy_data.size() - 1 );
+    int index = dist( rng );
+    stats.hp = normal<uint32_t>( stats.hp, stats.hp, 1, UINT32_MAX );
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp, 1, UINT32_MAX );
+    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold, 1, UINT32_MAX );
+    stats.str = normal<uint8_t>( stats.str, stats.str, 0, UINT8_MAX );
+    stats.def = def_pool[ index ];
+    stats.mdef = mdef_pool[ index ];
+    stats.eva = eva_pool[ index ];
+    stats.flags.armored = rand() % 4 == 0;
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
+    stats.luck = normal<uint8_t>( stats.luck, stats.luck, 0, UINT8_MAX );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
+  }
+
   void poplateGearLists()
   {
     for (auto& gear : buki_data)
@@ -315,9 +551,8 @@ public:
     }
   }
 
-  uint16_t getRandomAbility( bool is_armor )
+  uint16_t getRandomAbility()
   {
-    std::vector<uint16_t>& abilities = is_armor ? armor_abilities : weapon_abilities;
     std::uniform_int_distribution<size_t> dist( 0, abilities.size() - 1 );
     return abilities[ dist( rng ) ];
   }
@@ -327,12 +562,12 @@ public:
     for (auto& gear : all_armor)
     {
       gear_data_t* armor = gear;
-      armor->mapAbilities( armor_abilities );
+      armor->mapAbilities( abilities );
     }
     for (auto& gear : all_weapons)
     {
       gear_data_t* weapon = gear;
-      weapon->mapAbilities( weapon_abilities );
+      weapon->mapAbilities( abilities );
     }
     for (auto& enemy : enemy_data)
     {
@@ -342,18 +577,18 @@ public:
       {
         for (int i = 0; i < 8; i++)
         {
-          bool found = std::find( weapon_abilities.begin(), weapon_abilities.end(), loot.weapon_abilities_by_char.at( chr ) ) != weapon_abilities.end();
+          bool found = std::find( abilities.begin(), abilities.end(), loot.weapon_abilities_by_char.at( chr ) ) != abilities.end();
           if (!found && loot.weapon_abilities_by_char.at( chr ) != 255)
-            weapon_abilities.push_back( loot.weapon_abilities_by_char.at( chr ) );
+            abilities.push_back( loot.weapon_abilities_by_char.at( chr ) );
         }
       }
       for (int chr = 0; chr < 7; chr++)
       {
         for (int i = 0; i < 8; i++)
         {
-          bool found = std::find( armor_abilities.begin(), armor_abilities.end(), loot.gear_abilities_by_char.at( chr ) ) != armor_abilities.end();
+          bool found = std::find( abilities.begin(), abilities.end(), loot.gear_abilities_by_char.at( chr ) ) != abilities.end();
           if (!found && loot.gear_abilities_by_char.at( chr ) != 255)
-            armor_abilities.push_back( loot.gear_abilities_by_char.at( chr ) );
+            abilities.push_back( loot.gear_abilities_by_char.at( chr ) );
         }
       }
     }
@@ -368,7 +603,7 @@ public:
     {
       for (int i = 0; i < 8; i++)
       {
-        loot.weapon_abilities_by_char.at( chr ) = getRandomAbility( false );
+        loot.weapon_abilities_by_char.at( chr ) = getRandomAbility();
       }
     }
 
@@ -376,7 +611,7 @@ public:
     {
       for (int i = 0; i < 8; i++)
       {
-        loot.gear_abilities_by_char.at( chr ) = getRandomAbility( true );
+        loot.gear_abilities_by_char.at( chr ) = getRandomAbility();
       }
     }
 
@@ -457,7 +692,7 @@ public:
         abilities.push_back( 255 );
         continue;
       }
-      abilities.push_back( getRandomAbility( gear->is_armor ) );
+      abilities.push_back( getRandomAbility() );
     }
 
     gear->ability_slot1 = abilities.at( 0 );
@@ -511,12 +746,109 @@ public:
     }
   }
 
-  void randomizerTest()
+  void randomizeItemPrices()
   {
-    poplateGearLists();
-    populateAbilityData();
-    printf( "Randomizer Test\n" );
-    printf( "Randomizing Enemy Drops\n" );
+    for (auto& price : item_rate_data)
+    {
+      item_rate_t* item_rate = price;
+      if (item_rate->item_rate > 1 && item_rate->item_rate != 2 && keep_things_sane)
+        item_rate->item_rate = normal<uint32_t>( item_rate->item_rate, item_rate->item_rate, 0, UINT32_MAX );
+      else
+        item_rate->item_rate = uniform<uint32_t>( 1, UINT16_MAX );
+      item_rate->writeToBytes();
+    }
+  }
+
+  void doEnemyRandomization()
+  {
+    if (!randomize_enemy_drops && !randomize_enemy_steals && !randomize_enemy_bribes && !randomize_enemy_gear_drops && 
+         !randomize_enemy_stats_normal && !randomize_enemy_stats_defensive_normalized && !randomize_enemy_stats_shuffle )
+      return;
+
+    if (randomize_enemy_drops)
+    {
+      printf( "Randomizing Enemy Drops\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        std::unordered_map<int, item_t*> map = randomize_key_items ? all_items : all_non_key_items;
+        randomizeEnemyDrops( enemy.second, map );
+      }
+    }
+
+    if (randomize_enemy_steals)
+    {
+      printf( "Randomizing Enemy Steals\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        std::unordered_map<int, item_t*> map = randomize_key_items ? all_items : all_non_key_items;
+        randomizeEnemySteal( enemy.second, map );
+      }
+    }
+
+    if (randomize_enemy_bribes)
+    {
+      printf( "Randomizing Enemy Bribes\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        std::unordered_map<int, item_t*> map = randomize_key_items ? all_items : all_non_key_items;
+        randomizeEnemyBribe( enemy.second, map );
+      }
+    }
+
+    if (randomize_enemy_gear_drops)
+    {
+      printf( "Randomizing Enemy Gear Drops\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        randomizeEnemyGearDrops( enemy.second );
+      }
+    }
+
+    if (randomize_enemy_stats_normal)
+    {
+      printf( "Randomizing Enemy Stats\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        randomizeEnemyStatsNormal( enemy.second );
+      }
+    }
+
+    if (randomize_enemy_stats_defensive_normalized)
+    {
+      printf( "Randomizing Enemy Defensive Stats\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        addEnemyDefenses( enemy.second );
+      }
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        randomizeEnemyStatsDefensiveNormalization( enemy.second );
+      }
+    }
+
+    if (randomize_enemy_stats_shuffle)
+    {
+      printf( "Shuffling Enemy Stats\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        addEnemyDefenses( enemy.second );
+      }
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        shuffleStats( enemy.second );
+      }
+    }
+
+    printf( "Reconstructing Enemy Files" );
     for (auto& enemy : enemy_data)
     {
       enemy_data_t* enemy_data = enemy.second;
@@ -524,40 +856,99 @@ public:
       std::filesystem::path path = pathstr;
       std::filesystem::create_directories( path );
       std::string filepath = pathstr + "/m" + enemy_data->monster_id + ".bin";
-      printf( "Randomizing enemy loot for enemy: %d\n", enemy.first );
-      bool with_key_items = false;
-      std::unordered_map<int, item_t*> map = with_key_items ? all_items : all_non_key_items;
-      randomizeEnemyDrops( enemy.second, map );
-      randomizeEnemySteal( enemy.second, map );
-      randomizeEnemyBribe( enemy.second, map );
-      randomizeEnemyGearDrops( enemy.second );
-      //enemy_data->test();
-      //enemy_data->loot_data->test();
       enemy_data->writeBytesToNewFile( enemy_data->bytes, filepath );
     }
-    printf( "Randomizing shop_arms.bin Abilities\n" );
-    randomizeShopArmsAbilities();
-    printf( "Randomizing buki_get.bin Abilities\n" );
-    randomizeBukiAbilities();
-    printf( "Randomizing weapon.bin Abilities\n" );
-    randomizeWeaponsAbilities();
+  }
+
+  void doShopRandomization()
+  {
+    if (!randomize_shops)
+      return;
+
     printf( "Randomizing Item Shops\n" );
-    randomizeItemShops();
+    std::thread item_thread( &randomizer_t::randomizeItemShops, this );
     printf( "Randomizing Gear Shops\n" );
-    randomizeGearShops();
+    std::thread gear_thread( &randomizer_t::randomizeGearShops, this );
+
+    item_thread.join();
+    gear_thread.join();
+
+    printf( "Reconstructing item_shop.bin\n" );
+    std::thread item_shop_thread( &randomizer_t::reconstructItemShopData, this );
+    printf( "Reconstructing arms_shop.bin\n" );
+    std::thread arms_shop_thread( &randomizer_t::reconstructArmsShopData, this );
+
+    item_shop_thread.join();
+    arms_shop_thread.join();
+  }
+
+  void doPriceRandomization()
+  {
+    if (!randomize_shop_prices)
+      return;
+
+    printf( "Randomizing Item Prices\n" );
+    randomizeItemPrices();
+    printf( "Reconstructing item_rate.bin\n" );
+    reconstructItemRateData();
+  }
+
+  void doFieldRandomization()
+  {
+    if (!randomize_field_items)
+      return;
+
     printf( "Randomizing Field Items\n" );
     randomizeFieldItems();
-    reconstructBukiData();
-    reconstructWeaponData();
-    reconstructShopArmsData();
+    printf( "Reconstructing takara.bin\n" );
     reconstructTakaraData();
-    reconstructArmsShopData();
-    reconstructItemShopData();
+  }
+
+  void doAbilityRandomization()
+  {
+    if (!randomize_gear_abilities)
+      return;
+
+    printf( "Randomizing shop_arms.bin Abilities\n" );
+    std::thread shop_arms_thread( &randomizer_t::randomizeShopArmsAbilities, this );
+    printf( "Randomizing buki_get.bin Abilities\n" );
+    std::thread buki_thread( &randomizer_t::randomizeBukiAbilities, this );
+    printf( "Randomizing weapon.bin Abilities\n" );
+    std::thread weapon_thread( &randomizer_t::randomizeWeaponsAbilities, this );
+
+    shop_arms_thread.join();
+    buki_thread.join();
+    weapon_thread.join();
+
+    printf( "Reconstructing shop_arms.bin\n" );
+    std::thread shop_arms_data_thread( &randomizer_t::reconstructShopArmsData, this );
+    printf( "Reconstructing buki_get.bin\n" );
+    std::thread buki_data_thread( &randomizer_t::reconstructBukiData, this );
+    printf( "Reconstructing weapon.bin\n" );
+    std::thread weapon_data_thread( &randomizer_t::reconstructWeaponData, this );
+
+    shop_arms_data_thread.join();
+    buki_data_thread.join();
+    weapon_data_thread.join();
   }
 
   void randomize()
   {
-    // TODO Implement different modes with actual options for players to toggle
-    randomizerTest();
+    printf( "Starting Randomizer\n" );
+
+    // Clean the output folder to prevent any issues
+    std::filesystem::remove_all( OUTPUT_FOLDER );
+
+    std::thread enemy_thread( &randomizer_t::doEnemyRandomization, this );
+    std::thread shop_thread( &randomizer_t::doShopRandomization, this );
+    std::thread price_thread( &randomizer_t::doPriceRandomization, this );
+    std::thread field_thread( &randomizer_t::doFieldRandomization, this );
+    std::thread ability_thread( &randomizer_t::doAbilityRandomization, this );
+
+    enemy_thread.join();
+    shop_thread.join();
+    price_thread.join();
+    field_thread.join();
+    ability_thread.join();
   }
 };

@@ -1,24 +1,19 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <chrono>
 #include <random>
 #include <thread>
 #include "BytesHelper.hpp"
 #include "Data.hpp"
-#include "Randomizer.hpp"
+#include "GUI.hpp"
 
 struct initializer_t
 {
-  randomizer_t* randomizer;
+  gui_t* gui;
 
-  initializer_t() : randomizer( nullptr )
+  initializer_t() : gui( nullptr )
   {
-    initializeAllData();
-    getFieldItems();
-    getMonsterItems();
-    getShopItems();
-    initializeRandomizer();
+    initializeGUI();
     // TODO - Implement actual debugging tests rather than just commenting this line out :| 
     // runTests( *this );
   }
@@ -30,13 +25,9 @@ struct initializer_t
   void initializeBukiData() const;
   void initializeWeaponData() const;
   void initializeShopArmsData() const;
-  void initializeRandomizer();
+  void initializeItemRateData() const;
+  void initializeGUI();
   void initializeAllData() const;
-
-  void checkItemList( uint16_t& id, int& quantity, bool key ) const;
-  void getFieldItems() const;
-  void getMonsterItems() const;
-  void getShopItems() const;
 
   void runEnemyTests();
   void runFieldTests();
@@ -45,7 +36,7 @@ struct initializer_t
   void runWeaponTests();
   void runShopArmsTests();
   void runEnemyLootTests();
-  void runItemListTests();
+  void runItemRateTests();
 
-  void runTests( initializer_t& init );
+  void runTests();
 };

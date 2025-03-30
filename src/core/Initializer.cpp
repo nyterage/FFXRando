@@ -102,12 +102,30 @@ void initializer_t::initializeShopArmsData() const
   }
 }
 
-void initializer_t::initializeRandomizer()
+void initializer_t::initializeItemRateData() const
 {
-  // TODO - Actual seeds rather than random seeds
-  int seed = static_cast< int >( std::chrono::system_clock::now().time_since_epoch().count() );
-  randomizer = new randomizer_t( seed, enemy_data, field_data, item_shop_data, gear_shop_data,
-                                 buki_data, weapon_data, shop_arms_data, all_items, all_non_key_items );
+  std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "item_rate.bin";
+  std::vector<char> bytes = bytes_mapper_t::fileToBytes( path );
+  bytes = std::vector<char>( bytes.begin() + 20, bytes.end() );
+  // Split the item rate data into 4 byte chunks
+  std::vector<chunk_t> item_rate_chunks = initializer_t::chunkData( bytes, 4 );
+  for (int i = 0; i < item_rate_chunks.size(); i++)
+  {
+    item_rate_t* item_rate = new item_rate_t( item_rate_chunks[ i ].data );
+    item_rate_data.push_back( item_rate );
+  }
+}
+
+void initializer_t::initializeGUI()
+{
+  initializeAllData();
+  gui = new gui_t( enemy_data, field_data, gear_shop_data, item_shop_data, buki_data, weapon_data, shop_arms_data, item_rate_data );
+  wxApp::SetInstance( gui );
+  wxEntryStart( 0, nullptr );
+  wxTheApp->CallOnInit();
+  wxTheApp->OnRun();
+  wxTheApp->OnExit();
+  wxEntryCleanup();
 }
 
 void initializer_t::initializeAllData() const
@@ -119,6 +137,7 @@ void initializer_t::initializeAllData() const
   std::thread buki_thread( &initializer_t::initializeBukiData, this );
   std::thread weapon_thread( &initializer_t::initializeWeaponData, this );
   std::thread shop_arms_thread( &initializer_t::initializeShopArmsData, this );
+  std::thread item_rate_thread( &initializer_t::initializeItemRateData, this );
 
   enemy_thread.join();
   field_thread.join();
@@ -127,73 +146,7 @@ void initializer_t::initializeAllData() const
   buki_thread.join();
   weapon_thread.join();
   shop_arms_thread.join();
-}
-
-void initializer_t::checkItemList( uint16_t& id, int& quantity, bool key = false ) const
-{
-  if (id < 8192)
-    return;
-
-  bool found = all_items.find( id ) != all_items.end();
-  if (!found)
-  {
-    item_t* item = new item_t( id, quantity, quantity );
-    all_items.insert( { id , item } );
-    if (!key)
-    {
-      all_non_key_items.insert( { id , item } );
-    }
-  }
-  else
-  {
-    item_t& it = *all_items.at( id );
-    if (it.getMinQuantity() > quantity)
-      it.setMinQuantity( quantity );
-    if (it.getMaxQuantity() < quantity)
-      it.setMaxQuantity( quantity );
-  }
-}
-
-void initializer_t::getFieldItems() const
-{
-  for (int i = 0; i < field_data.size(); i++)
-  {
-    field_data_t& field = *field_data.at( i );
-    if (field.flag == 10 || field.flag == 2)
-      checkItemList( field.type, field.quantity, field.flag == 10 );
-  }
-}
-
-void initializer_t::getMonsterItems() const
-{
-  for (auto& enemy : enemy_data)
-  {
-    enemy_loot_data_t* loot = enemy.second->loot_data;
-    checkItemList( loot->primary_normal_drop, loot->n_primary_normal_drop );
-    checkItemList( loot->primary_normal_drop_rare, loot->n_primary_normal_drop_rare );
-    checkItemList( loot->secondary_normal_drop, loot->n_secondary_normal_drop );
-    checkItemList( loot->secondary_normal_drop_rare, loot->n_secondary_normal_drop_rare );
-    checkItemList( loot->primary_normal_drop_overkill, loot->n_primary_normal_drop_overkill );
-    checkItemList( loot->primary_normal_drop_overkill_rare, loot->n_primary_normal_drop_overkill_rare );
-    checkItemList( loot->secondary_normal_drop_overkill, loot->n_secondary_normal_drop_overkill );
-    checkItemList( loot->secondary_normal_drop_overkill_rare, loot->n_secondary_normal_drop_overkill_rare );
-    checkItemList( loot->steal_item, loot->n_steal_item );
-    checkItemList( loot->steal_item_rare, loot->n_steal_item_rare );
-    checkItemList( loot->bribe_item, loot->n_bribe_item );
-  }
-}
-
-void initializer_t::getShopItems() const
-{
-  int quantity = 1;
-  for (uint16_t i = 0; i < item_shop_data.size(); i++)
-  {
-    shop_data_t& shop = *item_shop_data.at( i );
-    for (uint16_t j = 0; j < shop.item_indexes.size(); j++)
-    {
-      checkItemList( shop.item_indexes[ j ], quantity );
-    }
-  }
+  item_rate_thread.join();
 }
 
 void initializer_t::runEnemyTests()
@@ -256,24 +209,25 @@ void initializer_t::runEnemyLootTests()
   }
 }
 
-void initializer_t::runItemListTests()
+void initializer_t::runItemRateTests()
 {
-  for (auto& item : all_items)
+  for (auto& item_rate : item_rate_data)
   {
-    item.second->test();
+    item_rate->test();
   }
+  printf( "Item Rate Data Size: %zu\n", item_rate_data.size() );
 }
 
-void initializer_t::runTests( initializer_t& init )
+void initializer_t::runTests()
 {
-  std::thread enemy_thread( &initializer_t::runEnemyTests, &init );
-  std::thread field_thread( &initializer_t::runFieldTests, &init );
-  std::thread shop_thread( &initializer_t::runShopTests, &init );
-  std::thread buki_thread( &initializer_t::runBukiTests, &init );
-  std::thread weapon_thread( &initializer_t::runWeaponTests, &init );
-  std::thread shop_arms_thread( &initializer_t::runShopArmsTests, &init );
-  std::thread enemy_loot_thread( &initializer_t::runEnemyLootTests, &init );
-  std::thread item_list_thread( &initializer_t::runItemListTests, &init );
+  std::thread enemy_thread( &initializer_t::runEnemyTests, this );
+  std::thread field_thread( &initializer_t::runFieldTests, this );
+  std::thread shop_thread( &initializer_t::runShopTests, this );
+  std::thread buki_thread( &initializer_t::runBukiTests, this );
+  std::thread weapon_thread( &initializer_t::runWeaponTests, this );
+  std::thread shop_arms_thread( &initializer_t::runShopArmsTests, this );
+  std::thread enemy_loot_thread( &initializer_t::runEnemyLootTests, this );
+  std::thread item_rate_thread( &initializer_t::runItemRateTests, this );
 
   enemy_thread.join();
   field_thread.join();
@@ -282,5 +236,6 @@ void initializer_t::runTests( initializer_t& init )
   weapon_thread.join();
   shop_arms_thread.join();
   enemy_loot_thread.join();
-  item_list_thread.join();
+  item_rate_thread.join();
 }
+

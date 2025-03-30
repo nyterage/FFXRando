@@ -371,8 +371,8 @@ void enemy_stat_data_t::mapBytes()
   luck = read1Byte( bytes, 0x25 );
   eva = read1Byte( bytes, 0x26 );
   acc = read1Byte( bytes, 0x27 );
-  unk1 = read1Byte( bytes, 0x28 );
-  unk2 = read1Byte( bytes, 0x29 );
+  flag_map1 = read1Byte( bytes, 0x28 );
+  flag_map2 = read1Byte( bytes, 0x29 );
   poison_damage = read1Byte( bytes, 0x2A );
   element_absorb = read1Byte( bytes, 0x2B );
   element_immune = read1Byte( bytes, 0x2C );
@@ -446,163 +446,182 @@ void enemy_stat_data_t::mapBytes()
 //  return result;
 //}
 
-void enemy_stat_data_t::writeToBytes( const std::string& localization )
+void enemy_stat_data_t::writeToBytes()
 {
-  std::vector<char> newBytes;
-  write2Bytes( newBytes, 0x00, name_offset );
-  write2Bytes( newBytes, 0x02, name_key );
-  write2Bytes( newBytes, 0x04, sensor_text_offset );
-  write2Bytes( newBytes, 0x06, sensor_text_key );
-  write2Bytes( newBytes, 0x08, unused_str_offset );
-  write2Bytes( newBytes, 0x0A, unused_str_key );
-  write2Bytes( newBytes, 0x0C, scan_text_offset );
-  write2Bytes( newBytes, 0x0E, scan_text_key );
-  write2Bytes( newBytes, 0x10, unused_str2_offset );
-  write2Bytes( newBytes, 0x12, unused_str2_key );
-  write4Bytes( newBytes, 0x14, hp );
-  write4Bytes( newBytes, 0x18, mp );
-  write4Bytes( newBytes, 0x1C, overkill_threshold );
-  write1Byte( newBytes, 0x20, str );
-  write1Byte( newBytes, 0x21, def );
-  write1Byte( newBytes, 0x22, mag );
-  write1Byte( newBytes, 0x23, mdef );
-  write1Byte( newBytes, 0x24, agi );
-  write1Byte( newBytes, 0x25, luck );
-  write1Byte( newBytes, 0x26, eva );
-  write1Byte( newBytes, 0x27, acc );
-  write1Byte( newBytes, 0x28, unk1 );
-  write1Byte( newBytes, 0x29, unk2 );
-  write1Byte( newBytes, 0x2A, poison_damage );
-  write1Byte( newBytes, 0x2B, element_absorb );
-  write1Byte( newBytes, 0x2C, element_immune );
-  write1Byte( newBytes, 0x2D, element_resist );
-  write1Byte( newBytes, 0x2E, element_weakness );
-  write1Byte( newBytes, 0x2F, death_resist );
-  write1Byte( newBytes, 0x30, zombie_resist );
-  write1Byte( newBytes, 0x31, petrify_resist );
-  write1Byte( newBytes, 0x32, poison_resist );
-  write1Byte( newBytes, 0x33, pwr_break_resist );
-  write1Byte( newBytes, 0x34, mag_break_resist );
-  write1Byte( newBytes, 0x35, armor_break_resist );
-  write1Byte( newBytes, 0x36, mental_break_resist );
-  write1Byte( newBytes, 0x37, confuse_resist );
-  write1Byte( newBytes, 0x38, berserk_resist );
-  write1Byte( newBytes, 0x39, provoke_resist );
-  write1Byte( newBytes, 0x3A, threaten_chance );
-  write1Byte( newBytes, 0x3B, sleep_resist );
-  write1Byte( newBytes, 0x3C, silence_resist );
-  write1Byte( newBytes, 0x3D, darkness_resist );
-  write1Byte( newBytes, 0x3E, shell_resist );
-  write1Byte( newBytes, 0x3F, protect_resist );
-  write1Byte( newBytes, 0x40, reflect_resist );
-  write1Byte( newBytes, 0x41, nul_tide_resist );
-  write1Byte( newBytes, 0x42, nul_blaze_resist );
-  write1Byte( newBytes, 0x43, nul_shock_resist );
-  write1Byte( newBytes, 0x44, nul_frost_resist );
-  write1Byte( newBytes, 0x45, regen_resist );
-  write1Byte( newBytes, 0x46, haste_resist );
-  write1Byte( newBytes, 0x47, slow_resist );
-  write2Bytes( newBytes, 0x48, auto_statuses );
-  write2Bytes( newBytes, 0x4A, auto_statuses_temporal );
-  write2Bytes( newBytes, 0x4C, auto_statuses_extra );
-  write2Bytes( newBytes, 0x4E, extra_status_immunities );
+  write2Bytes( bytes, 0x00, name_offset );
+  write2Bytes( bytes, 0x02, name_key );
+  write2Bytes( bytes, 0x04, sensor_text_offset );
+  write2Bytes( bytes, 0x06, sensor_text_key );
+  write2Bytes( bytes, 0x08, unused_str_offset );
+  write2Bytes( bytes, 0x0A, unused_str_key );
+  write2Bytes( bytes, 0x0C, scan_text_offset );
+  write2Bytes( bytes, 0x0E, scan_text_key );
+  write2Bytes( bytes, 0x10, unused_str2_offset );
+  write2Bytes( bytes, 0x12, unused_str2_key );
+  write4Bytes( bytes, 0x14, hp );
+  write4Bytes( bytes, 0x18, mp );
+  write4Bytes( bytes, 0x1C, overkill_threshold );
+  write1Byte( bytes, 0x20, str );
+  write1Byte( bytes, 0x21, def );
+  write1Byte( bytes, 0x22, mag );
+  write1Byte( bytes, 0x23, mdef );
+  write1Byte( bytes, 0x24, agi );
+  write1Byte( bytes, 0x25, luck );
+  write1Byte( bytes, 0x26, eva );
+  write1Byte( bytes, 0x27, acc );
+  write1Byte( bytes, 0x28, flag_map1 );
+  write1Byte( bytes, 0x29, flag_map2 );
+  write1Byte( bytes, 0x2A, poison_damage );
+  write1Byte( bytes, 0x2B, element_absorb );
+  write1Byte( bytes, 0x2C, element_immune );
+  write1Byte( bytes, 0x2D, element_resist );
+  write1Byte( bytes, 0x2E, element_weakness );
+  write1Byte( bytes, 0x2F, death_resist );
+  write1Byte( bytes, 0x30, zombie_resist );
+  write1Byte( bytes, 0x31, petrify_resist );
+  write1Byte( bytes, 0x32, poison_resist );
+  write1Byte( bytes, 0x33, pwr_break_resist );
+  write1Byte( bytes, 0x34, mag_break_resist );
+  write1Byte( bytes, 0x35, armor_break_resist );
+  write1Byte( bytes, 0x36, mental_break_resist );
+  write1Byte( bytes, 0x37, confuse_resist );
+  write1Byte( bytes, 0x38, berserk_resist );
+  write1Byte( bytes, 0x39, provoke_resist );
+  write1Byte( bytes, 0x3A, threaten_chance );
+  write1Byte( bytes, 0x3B, sleep_resist );
+  write1Byte( bytes, 0x3C, silence_resist );
+  write1Byte( bytes, 0x3D, darkness_resist );
+  write1Byte( bytes, 0x3E, shell_resist );
+  write1Byte( bytes, 0x3F, protect_resist );
+  write1Byte( bytes, 0x40, reflect_resist );
+  write1Byte( bytes, 0x41, nul_tide_resist );
+  write1Byte( bytes, 0x42, nul_blaze_resist );
+  write1Byte( bytes, 0x43, nul_shock_resist );
+  write1Byte( bytes, 0x44, nul_frost_resist );
+  write1Byte( bytes, 0x45, regen_resist );
+  write1Byte( bytes, 0x46, haste_resist );
+  write1Byte( bytes, 0x47, slow_resist );
+  write2Bytes( bytes, 0x48, auto_statuses );
+  write2Bytes( bytes, 0x4A, auto_statuses_temporal );
+  write2Bytes( bytes, 0x4C, auto_statuses_extra );
+  write2Bytes( bytes, 0x4E, extra_status_immunities );
 
   for (int i = 0; i < 0x10; i++)
   {
-    write2Bytes( newBytes, 0x50 + i * 2, abilities.at( i ) );
+    write2Bytes( bytes, 0x50 + i * 2, abilities.at( i ) );
   }
 
-  write2Bytes( newBytes, 0x70, forced_action );
-  write2Bytes( newBytes, 0x72, index );
-  write2Bytes( newBytes, 0x74, model_id );
-  write1Byte( newBytes, 0x76, icon_type );
-  write1Byte( newBytes, 0x77, doom_count );
-  write2Bytes( newBytes, 0x78, arena_id );
-  write2Bytes( newBytes, 0x7A, model_id_other );
-  write1Byte( newBytes, 0x7C, always_zero1 );
-  write1Byte( newBytes, 0x7D, always_zero2 );
-  write1Byte( newBytes, 0x7E, always_zero3 );
-  write1Byte( newBytes, 0x7F, always_zero4 );
-  printf( "New bytes size: %zu\n", newBytes.size() );
+  write2Bytes( bytes, 0x70, forced_action );
+  write2Bytes( bytes, 0x72, index );
+  write2Bytes( bytes, 0x74, model_id );
+  write1Byte( bytes, 0x76, icon_type );
+  write1Byte( bytes, 0x77, doom_count );
+  write2Bytes( bytes, 0x78, arena_id );
+  write2Bytes( bytes, 0x7A, model_id_other );
+  write1Byte( bytes, 0x7C, always_zero1 );
+  write1Byte( bytes, 0x7D, always_zero2 );
+  write1Byte( bytes, 0x7E, always_zero3 );
+  write1Byte( bytes, 0x7F, always_zero4 );
+
+  flag_byte.flags = { flags.armored, flags.immune_fractional_damage, flags.immune_life, flags.immune_sensor, flags.unknown_flag, flags.immune_physical_damage, flags.immune_magic_damage, flags.immune_all_damage };
+  flag_map1 = flag_byte.byte;
+
+  // flag_map1 = flags.armored << 0 | flags.immune_fractional_damage << 1 | flags.immune_life << 2 | flags.immune_sensor << 3 | flags.unknown_flag << 4 | flags.immune_physical_damage << 5 | flags.immune_magic_damage << 6 | flags.immune_all_damage << 7;
 }
 
 void enemy_stat_data_t::test() const
 {
   bytes_mapper_t::test();
-  std::cout << "Name Offset: " << name_offset << std::endl;
-  std::cout << "Name Key: " << name_key << std::endl;
-  std::cout << "Sensor Text Offset: " << sensor_text_offset << std::endl;
-  std::cout << "Sensor Text Key: " << sensor_text_key << std::endl;
-  std::cout << "Unused Str Offset: " << unused_str_offset << std::endl;
-  std::cout << "Unused Str Key: " << unused_str_key << std::endl;
-  std::cout << "Scan Text Offset: " << scan_text_offset << std::endl;
-  std::cout << "Scan Text Key: " << scan_text_key << std::endl;
-  std::cout << "Unused Str2 Offset: " << unused_str2_offset << std::endl;
-  std::cout << "Unused Str2 Key: " << unused_str2_key << std::endl;
-  std::cout << "HP: " << hp << std::endl;
-  std::cout << "MP: " << mp << std::endl;
-  std::cout << "Overkill Threshold: " << overkill_threshold << std::endl;
-  std::cout << "STR: " << str << std::endl;
-  std::cout << "DEF: " << def << std::endl;
-  std::cout << "MAG: " << mag << std::endl;
-  std::cout << "MDEF: " << mdef << std::endl;
-  std::cout << "AGI: " << agi << std::endl;
-  std::cout << "LUCK: " << luck << std::endl;
-  std::cout << "EVA: " << eva << std::endl;
-  std::cout << "ACC: " << acc << std::endl;
-  std::cout << "Unk1: " << unk1 << std::endl;
-  std::cout << "Unk2: " << unk2 << std::endl;
-  std::cout << "Poison Damage: " << poison_damage << std::endl;
-  std::cout << "Element Absorb: " << element_absorb << std::endl;
-  std::cout << "Element Immune: " << element_immune << std::endl;
-  std::cout << "Element Resist: " << element_resist << std::endl;
-  std::cout << "Element Weakness: " << element_weakness << std::endl;
-  std::cout << "Death Resist: " << death_resist << std::endl;
-  std::cout << "Zombie Resist: " << zombie_resist << std::endl;
-  std::cout << "Petrify Resist: " << petrify_resist << std::endl;
-  std::cout << "Poison Resist: " << poison_resist << std::endl;
-  std::cout << "Pwr Break Resist: " << pwr_break_resist << std::endl;
-  std::cout << "Mag Break Resist: " << mag_break_resist << std::endl;
-  std::cout << "Armor Break Resist: " << armor_break_resist << std::endl;
-  std::cout << "Mental Break Resist: " << mental_break_resist << std::endl;
-  std::cout << "Confuse Resist: " << confuse_resist << std::endl;
-  std::cout << "Berserk Resist: " << berserk_resist << std::endl;
-  std::cout << "Provoke Resist: " << provoke_resist << std::endl;
-  std::cout << "Threaten Chance: " << threaten_chance << std::endl;
-  std::cout << "Sleep Resist: " << sleep_resist << std::endl;
-  std::cout << "Silence Resist: " << silence_resist << std::endl;
-  std::cout << "Darkness Resist: " << darkness_resist << std::endl;
-  std::cout << "Shell Resist: " << shell_resist << std::endl;
-  std::cout << "Protect Resist: " << protect_resist << std::endl;
-  std::cout << "Reflect Resist: " << reflect_resist << std::endl;
-  std::cout << "Nul Tide Resist: " << nul_tide_resist << std::endl;
-  std::cout << "Nul Blaze Resist: " << nul_blaze_resist << std::endl;
-  std::cout << "Nul Shock Resist: " << nul_shock_resist << std::endl;
-  std::cout << "Nul Frost Resist: " << nul_frost_resist << std::endl;
-  std::cout << "Regen Resist: " << regen_resist << std::endl;
-  std::cout << "Haste Resist: " << haste_resist << std::endl;
-  std::cout << "Slow Resist: " << slow_resist << std::endl;
-  std::cout << "Auto Statuses: " << auto_statuses << std::endl;
-  std::cout << "Auto Statuses Temporal: " << auto_statuses_temporal << std::endl;
-  std::cout << "Auto Statuses Extra: " << auto_statuses_extra << std::endl;
-  std::cout << "Extra Status Immunities: " << extra_status_immunities << std::endl;
-  std::cout << "Abilities: " << std::endl;
+  printf( "Name Offset: %d\n", name_offset );
+  printf( "Name Key: %d\n", name_key );
+  printf( "Sensor Text Offset: %d\n", sensor_text_offset );
+  printf( "Sensor Text Key: %d\n", sensor_text_key );
+  printf( "Unused Str Offset: %d\n", unused_str_offset );
+  printf( "Unused Str Key: %d\n", unused_str_key );
+  printf( "Scan Text Offset: %d\n", scan_text_offset );
+  printf( "Scan Text Key: %d\n", scan_text_key );
+  printf( "Unused Str2 Offset: %d\n", unused_str2_offset );
+  printf( "Unused Str2 Key: %d\n", unused_str2_key );
+  printf( "HP: %d\n", hp );
+  printf( "MP: %d\n", mp );
+  printf( "Overkill Threshold: %d\n", overkill_threshold );
+  printf( "STR: %d\n", str );
+  printf( "DEF: %d\n", def );
+  printf( "MAG: %d\n", mag );
+  printf( "MDEF: %d\n", mdef );
+  printf( "AGI: %d\n", agi );
+  printf( "LUCK: %d\n", luck );
+  printf( "EVA: %d\n", eva );
+  printf( "ACC: %d\n", acc );
+  printf( "UNK1: %d\n", flag_map1 );
+  printf( "UNK2: %d\n", flag_map2 );
+  printf( "Poison Damage: %d\n", poison_damage );
+  printf( "Element Absorb: %d\n", element_absorb );
+  printf( "Element Immune: %d\n", element_immune );
+  printf( "Element Resist: %d\n", element_resist );
+  printf( "Element Weakness: %d\n", element_weakness );
+  printf( "Death Resist: %d\n", death_resist );
+  printf( "Zombie Resist: %d\n", zombie_resist );
+  printf( "Petrify Resist: %d\n", petrify_resist );
+  printf( "Poison Resist: %d\n", poison_resist );
+  printf( "Pwr Break Resist: %d\n", pwr_break_resist );
+  printf( "Mag Break Resist: %d\n", mag_break_resist );
+  printf( "Armor Break Resist: %d\n", armor_break_resist );
+  printf( "Mental Break Resist: %d\n", mental_break_resist );
+  printf( "Confuse Resist: %d\n", confuse_resist );
+  printf( "Berserk Resist: %d\n", berserk_resist );
+  printf( "Provoke Resist: %d\n", provoke_resist );
+  printf( "Threaten Chance: %d\n", threaten_chance );
+  printf( "Sleep Resist: %d\n", sleep_resist );
+  printf( "Silence Resist: %d\n", silence_resist );
+  printf( "Darkness Resist: %d\n", darkness_resist );
+  printf( "Shell Resist: %d\n", shell_resist );
+  printf( "Protect Resist: %d\n", protect_resist );
+  printf( "Reflect Resist: %d\n", reflect_resist );
+  printf( "Nul Tide Resist: %d\n", nul_tide_resist );
+  printf( "Nul Blaze Resist: %d\n", nul_blaze_resist );
+  printf( "Nul Shock Resist: %d\n", nul_shock_resist );
+  printf( "Nul Frost Resist: %d\n", nul_frost_resist );
+  printf( "Regen Resist: %d\n", regen_resist );
+  printf( "Haste Resist: %d\n", haste_resist );
+  printf( "Slow Resist: %d\n", slow_resist );
+  printf( "Auto Statuses: %d\n", auto_statuses );
+  printf( "Auto Statuses Temporal: %d\n", auto_statuses_temporal );
+  printf( "Auto Statuses Extra: %d\n", auto_statuses_extra );
+  printf( "Extra Status Immunities: %d\n", extra_status_immunities );
+  printf( "Abilities: \n" );
   for (int i = 0; i < 0x10; i++)
   {
-    std::cout << abilities.at( i ) << " ";
+    printf( "%d ", abilities.at( i ) );
   }
-  std::cout << std::endl;
-  std::cout << "Forced Action: " << forced_action << std::endl;
-  std::cout << "Index: " << index << std::endl;
-  std::cout << "Model ID: " << model_id << std::endl;
-  std::cout << "Icon Type: " << icon_type << std::endl;
-  std::cout << "Doom Count: " << doom_count << std::endl;
-  std::cout << "Arena ID: " << arena_id << std::endl;
-  std::cout << "Model ID Other: " << model_id_other << std::endl;
-  std::cout << "Always Zero 1: " << always_zero1 << std::endl;
-  std::cout << "Always Zero 2: " << always_zero2 << std::endl;
-  std::cout << "Always Zero 3: " << always_zero3 << std::endl;
-  std::cout << "Always Zero 4: " << always_zero4 << std::endl;
+  printf( "\n" );
+  printf( "Forced Action: %d\n", forced_action );
+  printf( "Index: %d\n", index );
+  printf( "Model ID: %d\n", model_id );
+  printf( "Icon Type: %d\n", icon_type );
+  printf( "Doom Count: %d\n", doom_count );
+  printf( "Arena ID: %d\n", arena_id );
+  printf( "Model ID Other: %d\n", model_id_other );
+  printf( "Always Zero 1: %d\n", always_zero1 );
+  printf( "Always Zero 2: %d\n", always_zero2 );
+  printf( "Always Zero 3: %d\n", always_zero3 );
+  printf( "Always Zero 4: %d\n", always_zero4 );
+  printf( "Flags: %d %d %d %d %d %d %d %d\n", flags.armored, flags.immune_fractional_damage, flags.immune_life, flags.immune_sensor, flags.unknown_flag, flags.immune_physical_damage, flags.immune_magic_damage, flags.immune_all_damage );
+}
+
+void enemy_stat_data_t::mapFlags()
+{
+  flags.armored = ( flag_map1 & 0x01 ) > 0;
+  flags.immune_fractional_damage = ( flag_map1 & 0x02 ) > 0;
+  flags.immune_life = ( flag_map1 & 0x04 ) > 0;
+  flags.immune_sensor = ( flag_map1 & 0x08 ) > 0;
+  flags.unknown_flag = ( flag_map1 & 0x10 ) > 0;
+  flags.immune_physical_damage = ( flag_map1 & 0x20 ) > 0;
+  flags.immune_magic_damage = ( flag_map1 & 0x40 ) > 0;
+  flags.immune_all_damage = ( flag_map1 & 0x80 ) > 0;
+  flags.immune_delay = ( flag_map2 & 0x01 ) > 0;
+  flags.immune_slice = ( flag_map2 & 0x02 ) > 0;
+  flags.immune_bribe = ( flag_map2 & 0x04 ) > 0;
 }
 
 void enemy_data_t::mapChunks() {
@@ -614,7 +633,7 @@ void enemy_data_t::mapChunks() {
   audio_bytes = chunks.at( 5 ).data;
   text_bytes = chunks.at( 6 ).data;
 
-  stats_data = new enemy_stat_data_t( stats_bytes, "en", chunks.at( 2 ).initial_offset, monster_id );
+  stats_data = new enemy_stat_data_t( stats_bytes, chunks.at( 2 ).initial_offset, monster_id );
   loot_data = new enemy_loot_data_t( loot_bytes, chunks.at( 4 ).initial_offset, monster_id );
 }
 
@@ -624,6 +643,15 @@ void enemy_data_t::writeLootData( const enemy_loot_data_t& lootData )
   for (int i = 0; i < lootData.BYTE_LENGTH; i++)
   {
     bytes[ loot_data->initial_offset + i ] = loot_bytes[ i ];
+  }
+}
+
+void enemy_data_t::writeStatsData( const enemy_stat_data_t& statsData )
+{
+  stats_bytes = statsData.bytes;
+  for (int i = 0; i < statsData.BYTE_LENGTH; i++)
+  {
+    bytes[ stats_data->initial_offset + i ] = stats_bytes[ i ];
   }
 }
 
@@ -685,4 +713,15 @@ void shop_data_t::test() const
     std::cout << item << " ";
   }
   std::cout << std::endl;
+}
+
+void item_rate_t::writeToBytes()
+{
+  write4Bytes( bytes, 0x00, item_rate );
+}
+
+void item_rate_t::test() const
+{
+  bytes_mapper_t::test();
+  std::cout << "Item Rate: " << item_rate << std::endl;
 }

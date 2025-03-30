@@ -1,9 +1,6 @@
 #pragma once
-#include <fstream>
 #include <iostream>
 #include <unordered_map>
-#include <chrono>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -12,17 +9,17 @@
 struct item_t
 {
   uint16_t id;
-  int min_quantity = 0;
-  int max_quantity = 0;
+  uint8_t min_quantity = 0;
+  uint8_t max_quantity = 0;
 
-  item_t( uint16_t& id, int& min_quantity, int& max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ) {}
+  item_t( uint16_t& id, uint8_t& min_quantity, uint8_t& max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ) {}
 
-  int getMinQuantity() const { return this->min_quantity; }
-  int getMaxQuantity() const { return this->max_quantity; }
-  int getAverageQuantity() const { return ( this->min_quantity + this->max_quantity ) / 2; }
-  int getStandardDeviation() const { return ( this->max_quantity - this->min_quantity ) / 2; }
-  void setMinQuantity( int min_quantity ) { this->min_quantity = min_quantity; };
-  void setMaxQuantity( int max_quantity ) { this->max_quantity = max_quantity; };
+  uint8_t getMinQuantity() const { return this->min_quantity; }
+  uint8_t getMaxQuantity() const { return this->max_quantity; }
+  uint8_t getAverageQuantity() const { return ( this->min_quantity + this->max_quantity ) / 2; }
+  uint8_t getStandardDeviation() const { return ( this->max_quantity - this->min_quantity ) / 2; }
+  void setMinQuantity( uint8_t min_quantity ) { this->min_quantity = min_quantity; };
+  void setMaxQuantity( uint8_t max_quantity ) { this->max_quantity = max_quantity; };
   void test()
   {
     std::cout << "Item ID: " << id << std::endl;
@@ -91,41 +88,41 @@ struct enemy_loot_data_t final : public bytes_mapper_t
   uint16_t ap;
   uint16_t ap_overkill;
   uint16_t ronso_rage;
-  int primary_drop_chance;
-  int secondary_drop_chance;
-  int steal_chance;
-  int gear_drop_chance;
+  uint8_t primary_drop_chance;
+  uint8_t secondary_drop_chance;
+  uint8_t steal_chance;
+  uint8_t gear_drop_chance;
   uint16_t primary_normal_drop;
   uint16_t primary_normal_drop_rare;
   uint16_t secondary_normal_drop;
   uint16_t secondary_normal_drop_rare;
-  int n_primary_normal_drop;
-  int n_primary_normal_drop_rare;
-  int n_secondary_normal_drop;
-  int n_secondary_normal_drop_rare;
+  uint8_t n_primary_normal_drop;
+  uint8_t n_primary_normal_drop_rare;
+  uint8_t n_secondary_normal_drop;
+  uint8_t n_secondary_normal_drop_rare;
   uint16_t primary_normal_drop_overkill;
   uint16_t primary_normal_drop_overkill_rare;
   uint16_t secondary_normal_drop_overkill;
   uint16_t secondary_normal_drop_overkill_rare;
-  int n_primary_normal_drop_overkill;
-  int n_primary_normal_drop_overkill_rare;
-  int n_secondary_normal_drop_overkill;
-  int n_secondary_normal_drop_overkill_rare;
+  uint8_t n_primary_normal_drop_overkill;
+  uint8_t n_primary_normal_drop_overkill_rare;
+  uint8_t n_secondary_normal_drop_overkill;
+  uint8_t n_secondary_normal_drop_overkill_rare;
   uint16_t steal_item;
   uint16_t steal_item_rare;
-  int n_steal_item;
-  int n_steal_item_rare;
+  uint8_t n_steal_item;
+  uint8_t n_steal_item_rare;
   uint16_t bribe_item;
-  int n_bribe_item;
-  int gear_slot_count_byte;
-  int gear_damage_calc;
-  int gear_crit_bonus;
-  int gear_attack_power;
-  int gear_ability_count_byte;
+  uint8_t n_bribe_item;
+  uint8_t gear_slot_count_byte;
+  uint8_t gear_damage_calc;
+  uint8_t gear_crit_bonus;
+  uint8_t gear_attack_power;
+  uint8_t gear_ability_count_byte;
   std::unordered_map<int, uint16_t> weapon_abilities_by_char;
   std::unordered_map<int, uint16_t> gear_abilities_by_char;
-  int zanmato_level_byte;
-  int n_gil_steal;
+  uint8_t zanmato_level_byte;
+  uint8_t n_gil_steal;
   uint32_t arena_price;
 
   enemy_loot_data_t( const std::vector<char> bytes, size_t initial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( initial_offset ), end_offset( initial_offset + BYTE_LENGTH ), monster_id( monster_id )
@@ -140,94 +137,111 @@ struct enemy_loot_data_t final : public bytes_mapper_t
 
 struct enemy_stat_data_t final : public bytes_mapper_t
 {
+  static int const BYTE_LENGTH = 0x80;
   std::string monster_id;
   size_t initial_offset;
-  int name_offset;
-  int name_key;
-  int sensor_text_offset;
-  int sensor_text_key;
-  int unused_str_offset;
-  int unused_str_key;
-  int scan_text_offset;
-  int scan_text_key;
-  int unused_str2_offset;
-  int unused_str2_key;
-  //int name;
-  //int sensor_text;
-  //int unused_str;
-  //int scan_text;
-  //int unused_str2;
-  uint16_t hp;
-  uint16_t mp;
-  uint16_t overkill_threshold;
-  int str;
-  int def;
-  int mag;
-  int mdef;
-  int agi;
-  int luck;
-  int eva;
-  int acc;
-  int unk1;
-  int unk2;
-  int poison_damage;
-  int element_absorb;
-  int element_immune;
-  int element_resist;
-  int element_weakness;
-  int death_resist;
-  int zombie_resist;
-  int petrify_resist;
-  int poison_resist;
-  int pwr_break_resist;
-  int mag_break_resist;
-  int armor_break_resist;
-  int mental_break_resist;
-  int confuse_resist;
-  int berserk_resist;
-  int provoke_resist;
-  int threaten_chance;
-  int sleep_resist;
-  int silence_resist;
-  int darkness_resist;
-  int shell_resist;
-  int protect_resist;
-  int reflect_resist;
-  int nul_tide_resist;
-  int nul_blaze_resist;
-  int nul_shock_resist;
-  int nul_frost_resist;
-  int regen_resist;
-  int haste_resist;
-  int slow_resist;
-  int auto_statuses;
-  int auto_statuses_temporal;
-  int auto_statuses_extra;
-  int extra_status_immunities;
+  uint8_t name_offset;
+  uint8_t name_key;
+  uint8_t sensor_text_offset;
+  uint8_t sensor_text_key;
+  uint8_t unused_str_offset;
+  uint8_t unused_str_key;
+  uint8_t scan_text_offset;
+  uint8_t scan_text_key;
+  uint8_t unused_str2_offset;
+  uint8_t unused_str2_key;
+  uint32_t hp;
+  uint32_t mp;
+  uint32_t overkill_threshold;
+  uint8_t str;
+  uint8_t def;
+  uint8_t mag;
+  uint8_t mdef;
+  uint8_t agi;
+  uint8_t luck;
+  uint8_t eva;
+  uint8_t acc;
+  uint8_t flag_map1;
+  uint8_t flag_map2;
+  uint8_t poison_damage;
+  uint8_t element_absorb;
+  uint8_t element_immune;
+  uint8_t element_resist;
+  uint8_t element_weakness;
+  uint8_t death_resist;
+  uint8_t zombie_resist;
+  uint8_t petrify_resist;
+  uint8_t poison_resist;
+  uint8_t pwr_break_resist;
+  uint8_t mag_break_resist;
+  uint8_t armor_break_resist;
+  uint8_t mental_break_resist;
+  uint8_t confuse_resist;
+  uint8_t berserk_resist;
+  uint8_t provoke_resist;
+  uint8_t threaten_chance;
+  uint8_t sleep_resist;
+  uint8_t silence_resist;
+  uint8_t darkness_resist;
+  uint8_t shell_resist;
+  uint8_t protect_resist;
+  uint8_t reflect_resist;
+  uint8_t nul_tide_resist;
+  uint8_t nul_blaze_resist;
+  uint8_t nul_shock_resist;
+  uint8_t nul_frost_resist;
+  uint8_t regen_resist;
+  uint8_t haste_resist;
+  uint8_t slow_resist;
+  uint16_t auto_statuses;
+  uint16_t auto_statuses_temporal;
+  uint16_t auto_statuses_extra;
+  uint16_t extra_status_immunities;
   std::unordered_map<int, uint16_t> abilities;
-  int forced_action;
-  int index;
-  int model_id;
-  int icon_type;
-  int doom_count;
-  int arena_id;
-  int model_id_other;
-  int always_zero1;
-  int always_zero2;
-  int always_zero3;
-  int always_zero4;
+  uint16_t forced_action;
+  uint16_t index;
+  uint16_t model_id;
+  uint8_t icon_type;
+  uint8_t doom_count;
+  uint16_t arena_id;
+  uint16_t model_id_other;
+  uint8_t always_zero1;
+  uint8_t always_zero2;
+  uint8_t always_zero3;
+  uint8_t always_zero4;
 
-  enemy_stat_data_t( const std::vector<char>& bytes, std::string locialization, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( intial_offset ), monster_id( monster_id )
+  struct flags_t
+  {
+    unsigned int armored : 1;
+    unsigned int immune_fractional_damage : 1;
+    unsigned int immune_life : 1;
+    unsigned int immune_sensor : 1;
+    unsigned int unknown_flag : 1;
+    unsigned int immune_physical_damage : 1;
+    unsigned int immune_magic_damage : 1;
+    unsigned int immune_all_damage : 1;
+    unsigned int immune_delay : 1;
+    unsigned int immune_slice : 1;
+    unsigned int immune_bribe : 1;
+  } flags;
+
+  union flag_byte_t
+  {
+    uint8_t byte;
+    struct flags_t flags;
+  } flag_byte;
+
+  enemy_stat_data_t( const std::vector<char>& bytes, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( intial_offset ), monster_id( monster_id )
   {
     mapBytes();
+    mapFlags();
     // writeToBytes( locialization );
     // test();
   }
 
   void mapBytes();
-  // void mapStrings( const std::string& localization );
-  // std::vector<KeyedString> streamKeyedStrings( const std::string& localization ) const override;
-  void writeToBytes( const std::string& localization );
+  void mapFlags();
+  void writeToBytes();
   void test() const override;
 };
 
@@ -254,13 +268,14 @@ struct enemy_data_t final : public bytes_mapper_t
 
   void mapChunks();
   void writeLootData( const enemy_loot_data_t& lootData );
+  void writeStatsData( const enemy_stat_data_t& statsData );
   void test() const override;
 };
 
 struct field_data_t final : public bytes_mapper_t
 {
   uint8_t flag;
-  int quantity;
+  uint8_t quantity;
   uint16_t type;
 
   field_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes )
@@ -286,6 +301,19 @@ struct shop_data_t final : public bytes_mapper_t
     // test();
   }
   void mapBytes();
+  void writeToBytes();
+  void test() const override;
+};
+
+struct item_rate_t : public bytes_mapper_t
+{
+  uint32_t item_rate;
+
+  item_rate_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), item_rate( read4Bytes( bytes, 0x00 ) )
+  {
+    // test();
+  }
+
   void writeToBytes();
   void test() const override;
 };
@@ -320,8 +348,4 @@ static std::unordered_map<int, shop_data_t*> gear_shop_data;
 static std::unordered_map<int, gear_data_t*> buki_data;
 static std::unordered_map<int, gear_data_t*> weapon_data;
 static std::unordered_map<int, gear_data_t*> shop_arms_data;
-
-// All Items Data, key is the item id, minimum and maximum quanities able to be obtained stored in the vector.
-// This includes Key items obtained from chests! For non key items, use all_non_key_items.
-static std::unordered_map<int, item_t*> all_items;
-static std::unordered_map<int, item_t*> all_non_key_items;
+static std::vector<item_rate_t*> item_rate_data;

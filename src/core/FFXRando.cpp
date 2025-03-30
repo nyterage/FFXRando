@@ -3,6 +3,5 @@
 int main()
 {
   initializer_t init;
-  system( "pause" );
-  return 666;
+  return 0;
 }
