@@ -117,6 +117,10 @@ public:
   template <typename T>
   T normal( T mean, T stddev, T min, T max ) {
     static_assert( std::is_integral<T>::value, "Only integral types are supported" );
+    if (mean == 0 && stddev == 0)
+    {
+      return 0;
+    }
     std::normal_distribution<double> dist( static_cast< double >( mean ), static_cast< double >( stddev ) );
     T number;
     do
