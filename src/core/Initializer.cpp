@@ -116,10 +116,37 @@ void initializer_t::initializeItemRateData() const
   }
 }
 
+void initializer_t::initializePlayerStatData() const
+{
+  std::string path = INPUT_FOLDER + USPC_BTL_KERN_FOLDER + "ply_save.bin";
+  std::vector<char> bytes = bytes_mapper_t::fileToBytes( path );
+  bytes = std::vector<char>( bytes.begin() + 20, bytes.end() );
+  // Split the player stats data into 148 byte chunks
+  std::vector<chunk_t> player_stats_chunks = initializer_t::chunkData( bytes, 148 );
+  for (int i = 0; i < 18; i++)
+  {
+    character_stats_t* player_stats = new character_stats_t( i, player_stats_chunks[ i ].data );
+    player_stats_data.push_back( player_stats );
+  }
+}
+
+void initializer_t::initializeAeonScalingData() const
+{
+  std::string path = INPUT_FOLDER + USPC_BTL_KERN_FOLDER + "ply_rom.bin";
+  std::vector<char> bytes = bytes_mapper_t::fileToBytes( path );
+  bytes = std::vector<char>( bytes.begin() + 20, bytes.end() );
+  // Split the aeon scaling data into 44 byte chunks
+  std::vector<chunk_t> aeon_scaling_chunks = initializer_t::chunkData( bytes, 44 );
+  for (int i = 0; i < aeon_scaling_chunks.size(); i++)
+  {
+    new aeon_scaling_data_t( aeon_scaling_chunks[ i ].data, aeon_scaling_chunks[ i ].initial_offset );
+  }
+}
+
 void initializer_t::initializeGUI()
 {
   initializeAllData();
-  gui = new gui_t( enemy_data, field_data, item_shop_data, gear_shop_data, buki_data, weapon_data, shop_arms_data, item_rate_data );
+  gui = new gui_t( enemy_data, field_data, item_shop_data, gear_shop_data, buki_data, weapon_data, shop_arms_data, item_rate_data, player_stats_data, aeon_scaling_data );
   wxApp::SetInstance( gui );
   wxEntryStart( 0, nullptr );
   wxTheApp->CallOnInit();
@@ -138,6 +165,8 @@ void initializer_t::initializeAllData() const
   std::thread weapon_thread( &initializer_t::initializeWeaponData, this );
   std::thread shop_arms_thread( &initializer_t::initializeShopArmsData, this );
   std::thread item_rate_thread( &initializer_t::initializeItemRateData, this );
+  std::thread player_stats_thread( &initializer_t::initializePlayerStatData, this );
+  std::thread aeon_scaling_thread( &initializer_t::initializeAeonScalingData, this );
 
   enemy_thread.join();
   field_thread.join();
@@ -147,6 +176,8 @@ void initializer_t::initializeAllData() const
   weapon_thread.join();
   shop_arms_thread.join();
   item_rate_thread.join();
+  player_stats_thread.join();
+  aeon_scaling_thread.join();
 }
 
 void initializer_t::runEnemyTests()

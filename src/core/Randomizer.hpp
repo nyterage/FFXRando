@@ -22,6 +22,9 @@ private:
   std::unordered_map<int, gear_data_t*> weapon_data;
   std::unordered_map<int, gear_data_t*> arms_shop_data;
   std::vector<item_rate_t*> item_rate_data;
+  std::vector<character_stats_t*> character_stats_data;
+  std::vector<aeon_scaling_data_t*> aeon_scaling_data;
+
   std::unordered_map<int, item_t*> all_items;
   std::unordered_map<int, item_t*> all_non_key_items;
   std::vector<gear_data_t*> all_armor;
@@ -43,11 +46,21 @@ private:
   bool randomize_shop_prices;
   bool randomize_field_items;
   bool randomize_gear_abilities;
+  bool randomize_player_stats;
+  bool randomize_aeon_stats;
+  bool shuffle_player_stats;
+  bool shuffle_aeon_stats;
+
+  bool poison_is_deadly;
+
   bool randomize_key_items;
   bool keep_things_sane;
 
+  std::vector<int> shuffled_player_indexes = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  std::vector<aeon_scaling_data_t*> shuffled_aeon_data;
+
 public:
-  randomizer_t( int64_t seed,
+  randomizer_t( int32_t seed,
                 std::unordered_map<int, enemy_data_t*> enemy_data,
                 std::unordered_map<int, field_data_t*> field_data,
                 std::unordered_map<int, shop_data_t*> item_shop_data,
@@ -56,6 +69,8 @@ public:
                 std::unordered_map<int, gear_data_t*> weapon_data,
                 std::unordered_map<int, gear_data_t*> arms_shop_data,
                 std::vector<item_rate_t*> item_rate_data,
+                std::vector<character_stats_t*> player_stats_data,
+                std::vector<aeon_scaling_data_t*> aeon_scaling_data,
                 bool randomize_enemy_drops,
                 bool randomize_enemy_steals,
                 bool randomize_enemy_bribes,
@@ -67,6 +82,11 @@ public:
                 bool randomize_shop_prices,
                 bool randomize_field_items,
                 bool randomize_gear_abilities,
+                bool randomize_player_stats,
+                bool randomize_aeon_stats,
+                bool shuffle_player_stats,
+                bool shuffle_aeon_stats,
+                bool poison_is_deadly,
                 bool randomize_key_items,
                 bool keep_things_sane
   )
@@ -79,6 +99,8 @@ public:
     weapon_data( weapon_data ),
     arms_shop_data( arms_shop_data ),
     item_rate_data( item_rate_data ),
+    character_stats_data( player_stats_data ),
+    aeon_scaling_data( aeon_scaling_data ),
     randomize_enemy_drops( randomize_enemy_drops ),
     randomize_enemy_gear_drops( randomize_enemy_gear_drops ),
     randomize_enemy_steals( randomize_enemy_steals ),
@@ -91,6 +113,11 @@ public:
     randomize_shop_prices( randomize_shop_prices ),
     randomize_field_items( randomize_field_items ),
     randomize_gear_abilities( randomize_gear_abilities ),
+    randomize_player_stats( randomize_player_stats ),
+    randomize_aeon_stats( randomize_aeon_stats ),
+    shuffle_player_stats( shuffle_player_stats ),
+    shuffle_aeon_stats( shuffle_aeon_stats ),
+    poison_is_deadly( poison_is_deadly ),
     randomize_key_items( randomize_key_items ),
     keep_things_sane( keep_things_sane )
   {
@@ -260,6 +287,51 @@ public:
     std::filesystem::create_directories( output_path );
     std::string file = output_path + "item_rate.bin";
     bytes_mapper_t::writeBytesToNewFile( reconstructed_item_rate_data, file );
+  }
+
+  void reconstructPlayerStatsData()
+  {
+    for (auto& locale : LOCALIZATIONS)
+    {
+      std::string path = INPUT_FOLDER + locale.second + "ply_save.bin";
+      std::vector<char> original_bytes = bytes_mapper_t::fileToBytes( path );
+      for (int j = 0; j < character_stats_data.size(); j++)
+      {
+        character_stats_t* player_stats = character_stats_data[ j ];
+        std::vector<char> player_stats_bytes = player_stats->bytes;
+        for (int i = 0; i < player_stats_bytes.size(); i++)
+        {
+          original_bytes[ 20 + player_stats->index * 148 + i ] = player_stats_bytes[ i ];
+        }
+      }
+      std::string output_path = OUTPUT_FOLDER + locale.second;
+      std::filesystem::create_directories( output_path );
+      std::string file = output_path + "ply_save.bin";
+      bytes_mapper_t::writeBytesToNewFile( original_bytes, file );
+    }
+  }
+
+  void reconstructAeonScalingData()
+  {
+    for (auto& locale : LOCALIZATIONS)
+    {
+      std::string path = INPUT_FOLDER + locale.second + "ply_rom.bin";
+      std::vector<char> original_bytes = bytes_mapper_t::fileToBytes( path );
+      int initial_offset = 20 + 44 * 8;
+      for (int j = 0; j < aeon_scaling_data.size(); j++)
+      {
+        aeon_scaling_data_t* aeon_scaling = aeon_scaling_data[ j ];
+        std::vector<char> aeon_scaling_bytes = aeon_scaling->bytes;
+        for (int i = 0; i < aeon_scaling_bytes.size(); i++)
+        {
+          original_bytes[ initial_offset + j * 44 + i ] = aeon_scaling_bytes[ i ];
+        }
+      }
+      std::string output_path = OUTPUT_FOLDER + locale.second;
+      std::filesystem::create_directories( output_path );
+      std::string file = output_path + "ply_rom.bin";
+      bytes_mapper_t::writeBytesToNewFile( original_bytes, file );
+    }
   }
 
   void checkItemList( uint16_t& id, uint8_t& quantity, bool key = false )
@@ -449,15 +521,15 @@ public:
   void randomizeEnemyStatsNormal( enemy_data_t* enemy )
   {
     enemy_stat_data_t& stats = *enemy->stats_data;
-    stats.hp = normal<uint32_t>( stats.hp, stats.hp, 1, UINT32_MAX );
-    stats.mp = normal<uint32_t>( stats.mp, stats.mp, 1, UINT32_MAX );
-    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold, 1, UINT32_MAX );
-    stats.str = normal<uint8_t>( stats.str, stats.str, 0, UINT8_MAX );
-    stats.def = normal<uint8_t>( stats.def, stats.def, 0, UINT8_MAX );
-    stats.mag = normal<uint8_t>( stats.mag, stats.mag, 0, UINT8_MAX );
-    stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef, 0, UINT8_MAX );
-    stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
-    stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
+    stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 1, UINT32_MAX );
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, UINT32_MAX );
+    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, UINT32_MAX );
+    stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
+    stats.def = normal<uint8_t>( stats.def, stats.def / 2, 0, UINT8_MAX );
+    stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
+    stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 2, 0, UINT8_MAX );
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
     stats.flags.armored = rand() % 4 == 0;
     stats.writeToBytes();
     enemy->stats_data = &stats;
@@ -475,9 +547,9 @@ public:
   void randomizeEnemyStatsDefensiveNormalization( enemy_data_t* enemy )
   {
     enemy_stat_data_t& stats = *enemy->stats_data;
-    stats.mp = normal<uint32_t>( stats.mp, stats.mp, 1, UINT32_MAX );
-    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold, 1, UINT32_MAX );
-    stats.str = normal<uint8_t>( stats.str, stats.str, 0, UINT8_MAX );
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, UINT32_MAX );
+    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold / 2, 1, UINT32_MAX );
+    stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
 
     std::uniform_int_distribution<size_t> dist( 0, def_pool.size() - 1 );
     uint8_t def = def_pool[ dist( rng ) ];
@@ -507,33 +579,35 @@ public:
       stats.flags.armored = rand() % 4 == 0;
 
     uint32_t base_hp = stats.hp * defensive_factor;
-    uint32_t hp = normal<uint32_t>( base_hp, base_hp, 1, UINT32_MAX );
+    if (base_hp == 0)
+      base_hp = 1;
+    uint32_t hp = normal<uint32_t>( base_hp, base_hp / 2, 1, UINT32_MAX );
     stats.hp = hp;
-    stats.mag = normal<uint8_t>( stats.mag, stats.mag, 0, UINT8_MAX );
-    stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
-    stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
+    stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
     stats.writeToBytes();
     enemy->stats_data = &stats;
     enemy->writeStatsData( stats );
   }
 
-  void shuffleStats( enemy_data_t* enemy )
+  void shuffleEnemyStats( enemy_data_t* enemy )
   {
     enemy_stat_data_t& stats = *enemy->stats_data;
     // Pick a random index to pull the stats from
     std::uniform_int_distribution<size_t> dist( 0, enemy_data.size() - 1 );
     int index = dist( rng );
-    stats.hp = normal<uint32_t>( stats.hp, stats.hp, 1, UINT32_MAX );
-    stats.mp = normal<uint32_t>( stats.mp, stats.mp, 1, UINT32_MAX );
-    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold, 1, UINT32_MAX );
-    stats.str = normal<uint8_t>( stats.str, stats.str, 0, UINT8_MAX );
+    stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 1, UINT32_MAX );
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, UINT32_MAX );
+    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, UINT32_MAX );
+    stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
     stats.def = def_pool[ index ];
     stats.mdef = mdef_pool[ index ];
     stats.eva = eva_pool[ index ];
     stats.flags.armored = rand() % 4 == 0;
-    stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
-    stats.luck = normal<uint8_t>( stats.luck, stats.luck, 0, UINT8_MAX );
-    stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
+    stats.luck = normal<uint8_t>( stats.luck, stats.luck / 2, 0, UINT8_MAX );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
     stats.writeToBytes();
     enemy->stats_data = &stats;
     enemy->writeStatsData( stats );
@@ -775,6 +849,111 @@ public:
     }
   }
 
+  void randomizePlayerStats()
+  {
+    for (int i = 0; i < 7; i++)
+    {
+      character_stats_t& stats = *character_stats_data.at( i );
+      stats.base_hp = normal<uint32_t>( stats.base_hp, stats.base_hp / 2, 1, UINT32_MAX );
+      stats.base_mp = normal<uint32_t>( stats.base_mp, stats.base_mp / 2, 1, UINT32_MAX );
+      stats.base_str = normal<uint8_t>( stats.base_str, stats.base_str / 2, i == 0 ? stats.base_str : 0, UINT8_MAX );
+      stats.base_def = normal<uint8_t>( stats.base_def, stats.base_def / 2, 0, UINT8_MAX );
+      stats.base_mag = normal<uint8_t>( stats.base_mag, stats.base_mag / 2, 0, UINT8_MAX );
+      stats.base_mdef = normal<uint8_t>( stats.base_mdef, stats.base_mdef / 2, 0, UINT8_MAX );
+      stats.base_agi = normal<uint8_t>( stats.base_agi, stats.base_agi / 2, 0, UINT8_MAX );
+      stats.base_acc = normal<uint8_t>( stats.base_acc, stats.base_acc / 2, 0, UINT8_MAX );
+      stats.base_luck = normal<uint8_t>( stats.base_luck, stats.base_luck / 2, 0, UINT8_MAX );
+      stats.current_ap = normal<uint16_t>( stats.current_ap, stats.current_ap / 2, 0, UINT16_MAX );
+      stats.current_hp = normal<uint32_t>( stats.current_hp, stats.current_hp / 2, 1, UINT32_MAX );
+      stats.current_mp = normal<uint32_t>( stats.current_mp, stats.current_mp / 2, 1, UINT32_MAX );
+      stats.max_hp = normal<uint32_t>( stats.max_hp, stats.max_hp / 2, 1, UINT32_MAX );
+      stats.max_mp = normal<uint32_t>( stats.max_mp, stats.max_mp / 2, 1, UINT32_MAX );
+      stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
+      stats.def = normal<uint8_t>( stats.def, stats.def / 2, 0, UINT8_MAX );
+      stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
+      stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 2, 0, UINT8_MAX );
+      stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
+      stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
+      stats.luck = normal<uint8_t>( stats.luck, stats.luck / 2, 0, UINT8_MAX );
+      stats.writeToBytes();
+    }
+  }
+
+  void randomizeAeonStats()
+  {
+    for (auto& aeon : aeon_scaling_data)
+    {
+      aeon->ap_req_coef1 = normal<uint16_t>( aeon->ap_req_coef1, aeon->ap_req_coef1 / 2, 0, UINT16_MAX );
+      aeon->ap_req_coef2 = normal<uint16_t>( aeon->ap_req_coef2, aeon->ap_req_coef2 / 2, 0, UINT16_MAX );
+      aeon->ap_req_coef3 = normal<uint16_t>( aeon->ap_req_coef3, aeon->ap_req_coef3 / 2, 0, UINT16_MAX );
+      aeon->ap_req_max = normal<uint16_t>( aeon->ap_req_max, aeon->ap_req_max / 2, 0, UINT16_MAX );
+      aeon->hp_coef1 = normal<uint16_t>( aeon->hp_coef1, aeon->hp_coef1 / 2, 0, UINT16_MAX );
+      aeon->hp_coef2 = normal<uint16_t>( aeon->hp_coef2, aeon->hp_coef2 / 2, 0, UINT16_MAX );
+      aeon->mp_coef1 = normal<uint16_t>( aeon->mp_coef1, aeon->mp_coef1 / 2, 0, UINT16_MAX );
+      aeon->mp_coef2 = normal<uint16_t>( aeon->mp_coef2, aeon->mp_coef2 / 2, 0, UINT16_MAX );
+      aeon->str_coef1 = normal<uint16_t>( aeon->str_coef1, aeon->str_coef1 / 2, 0, UINT16_MAX );
+      aeon->str_coef2 = normal<uint16_t>( aeon->str_coef2, aeon->str_coef2 / 2, 0, UINT16_MAX );
+      aeon->def_coef1 = normal<uint16_t>( aeon->def_coef1, aeon->def_coef1 / 2, 0, UINT16_MAX );
+      aeon->def_coef2 = normal<uint16_t>( aeon->def_coef2, aeon->def_coef2 / 2, 0, UINT16_MAX );
+      aeon->mag_coef1 = normal<uint16_t>( aeon->mag_coef1, aeon->mag_coef1 / 2, 0, UINT16_MAX );
+      aeon->mag_coef2 = normal<uint16_t>( aeon->mag_coef2, aeon->mag_coef2 / 2, 0, UINT16_MAX );
+      aeon->mdef_coef1 = normal<uint16_t>( aeon->mdef_coef1, aeon->mdef_coef1 / 2, 0, UINT16_MAX );
+      aeon->mdef_coef2 = normal<uint16_t>( aeon->mdef_coef2, aeon->mdef_coef2 / 2, 0, UINT16_MAX );
+      aeon->agi_coef1 = normal<uint16_t>( aeon->agi_coef1, aeon->agi_coef1 / 2, 0, UINT16_MAX );
+      aeon->agi_coef2 = normal<uint16_t>( aeon->agi_coef2, aeon->agi_coef2 / 2, 0, UINT16_MAX );
+      aeon->acc_coef1 = normal<uint16_t>( aeon->acc_coef1, aeon->acc_coef1 / 2, 0, UINT16_MAX );
+      aeon->acc_coef2 = normal<uint16_t>( aeon->acc_coef2, aeon->acc_coef2 / 2, 0, UINT16_MAX );
+      aeon->writeToBytes();
+    }
+  }
+
+  void shuffleCharacterStats()
+  {
+    for (int i = 0; i < 7; i++)
+    {
+      character_stats_t& stats = *character_stats_data.at( i );
+      std::uniform_int_distribution<size_t> dist( 0, shuffled_player_indexes.size() - 1 );
+      int index = dist( rng );
+      character_stats_t& new_stats = *character_stats_data.at( shuffled_player_indexes.at( index ) );
+      stats.base_hp = new_stats.base_hp;
+      stats.base_mp = new_stats.base_mp;
+      if (i == 0 && new_stats.base_str < stats.base_str)
+        new_stats.base_str = stats.base_str;
+      stats.base_str = new_stats.base_str;
+      stats.base_def = new_stats.base_def;
+      stats.base_mag = new_stats.base_mag;
+      stats.base_mdef = new_stats.base_mdef;
+      stats.base_agi = new_stats.base_agi;
+      stats.base_acc = new_stats.base_acc;
+      stats.base_luck = new_stats.base_luck;
+      stats.current_ap = new_stats.current_ap;
+      stats.current_hp = new_stats.current_hp;
+      stats.current_mp = new_stats.current_mp;
+      stats.max_hp = new_stats.max_hp;
+      stats.max_mp = new_stats.max_mp;
+      stats.str = new_stats.str;
+      stats.def = new_stats.def;
+      stats.mag = new_stats.mag;
+      stats.mdef = new_stats.mdef;
+      stats.agi = new_stats.agi;
+      stats.acc = new_stats.acc;
+      stats.luck = new_stats.luck;
+      stats.writeToBytes();
+      shuffled_player_indexes.erase( shuffled_player_indexes.begin() + index );
+    }
+  }
+
+  void shuffleAeonStats()
+  {
+    for (int i = 0; i < aeon_scaling_data.size(); i++)
+    {
+      aeon_scaling_data_t& aeon = *aeon_scaling_data.at( i );
+      aeon_scaling_data_t& shuffled_aeon = *aeon_scaling_data.at( i );
+      aeon.bytes = shuffled_aeon.bytes;
+      aeon.writeToBytes();
+    }
+  }
+
   void doEnemyRandomization()
   {
     if (!randomize_enemy_drops && !randomize_enemy_steals && !randomize_enemy_bribes && !randomize_enemy_gear_drops && 
@@ -857,11 +1036,11 @@ public:
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
-        shuffleStats( enemy.second );
+        shuffleEnemyStats( enemy.second );
       }
     }
 
-    printf( "Reconstructing Enemy Files" );
+    printf( "Reconstructing Enemy Files\n" );
     for (auto& enemy : enemy_data)
     {
       enemy_data_t* enemy_data = enemy.second;
@@ -945,6 +1124,60 @@ public:
     weapon_data_thread.join();
   }
 
+  void doPlayerStatRandomization()
+  {
+    if (!randomize_player_stats && !randomize_aeon_stats && !shuffle_player_stats && !shuffle_aeon_stats && !poison_is_deadly)
+      return;
+
+    if (randomize_player_stats)
+    {
+      printf( "Randomizing Player Stats\n" );
+      randomizePlayerStats();
+    }
+
+    if (randomize_aeon_stats)
+    {
+      printf( "Randomizing Aeon Stats\n" );
+      randomizeAeonStats();
+    }
+
+    if (shuffle_player_stats)
+    {
+      printf( "Shuffling Player Stats\n" );
+      shuffleCharacterStats();
+    }
+
+    if (shuffle_aeon_stats)
+    {
+      printf( "Shuffling Aeon Stats\n" );
+      for (auto& aeon_scaling_data : aeon_scaling_data)
+      {
+        shuffled_aeon_data.push_back( aeon_scaling_data );
+        std::shuffle( shuffled_aeon_data.begin(), shuffled_aeon_data.end(), rng );
+      }
+      shuffleAeonStats();
+    }
+
+    if (poison_is_deadly)
+    {
+      printf( "Making Poison Deadly\n" );
+      for (auto& stats : character_stats_data)
+      {
+        stats->poison_damage = 50;
+        stats->writeToBytes();
+      }
+    }
+
+    printf( "Reconstructing ply_save.bin\n" );
+    reconstructPlayerStatsData();
+
+    if (randomize_aeon_stats || shuffle_aeon_stats)
+    {
+      printf( "Reconstructing ply_rom.bin\n" );
+      reconstructAeonScalingData();
+    }
+  }
+
   void randomize()
   {
     printf( "Starting Randomizer\n" );
@@ -957,11 +1190,14 @@ public:
     std::thread price_thread( &randomizer_t::doPriceRandomization, this );
     std::thread field_thread( &randomizer_t::doFieldRandomization, this );
     std::thread ability_thread( &randomizer_t::doAbilityRandomization, this );
+    std::thread player_thread( &randomizer_t::doPlayerStatRandomization, this );
+
 
     enemy_thread.join();
     shop_thread.join();
     price_thread.join();
     field_thread.join();
     ability_thread.join();
+    player_thread.join();
   }
 };

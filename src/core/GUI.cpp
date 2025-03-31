@@ -5,7 +5,7 @@ bool gui_t::OnInit()
 {
   SetAppearance( Appearance::System );
   frame_t* frame = new frame_t( enemy_data, field_data, item_shop_data, gear_shop_data,
-                                buki_data, weapon_data, arms_shop_data, item_rate_data );
+                                buki_data, weapon_data, arms_shop_data, item_rate_data, player_stats_data, aeon_scaling_data );
   frame->Show( true );
   return true;
 }
@@ -27,6 +27,7 @@ void frame_t::initialize()
 
   wxStaticText* main_text = new wxStaticText( this, wxID_ANY, _T( "Main Options:" ), wxDefaultPosition, wxDefaultSize, 0 );
 
+  Bind( wxEVT_CHECKBOX, &frame_t::onPoisonIsDeadly, this, ID_POISON_IS_DEADLY );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyDrops, this, ID_RANDOMIZE_ENEMY_DROPS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemySteals, this, ID_RANDOMIZE_ENEMY_STEALS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyBribes, this, ID_RANDOMIZE_ENEMY_BRIBES );
@@ -38,12 +39,20 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeShopPrices, this, ID_RANDOMIZE_SHOP_PRICES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeFieldItems, this, ID_RANDOMIZE_FIELD_ITEMS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearAbilities, this, ID_RANDOMIZE_GEAR_ABILITIES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonStats, this, ID_RANDOMIZE_AEON_STATS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onShufflePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS_SHUFFLE );
+  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonStats, this, ID_RANDOMIZE_AEON_STATS_SHUFFLE );
+
   Bind( wxEVT_CHECKBOX, &frame_t::onKeepThingsSane, this, ID_KEEP_THINGS_SANE );
 
   main_panel_t* panel = new main_panel_t( this );
 
-  wxStaticText* stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
-  stats_panel_t* stats_panel = new stats_panel_t( this );
+  wxStaticText* player_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
+  player_stats_panel_t* player_stats_panel = new player_stats_panel_t( this );
+
+  wxStaticText* enemy_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
+  enemy_stats_panel_t* stats_panel = new enemy_stats_panel_t( this );
 
   randomize_button = new wxButton( this, ID_RANDOMIZE, _T( "Randomize" ), wxDefaultPosition, wxDefaultSize, 0 );
   Bind( wxEVT_BUTTON, &frame_t::onRandomize, this, ID_RANDOMIZE );
@@ -55,7 +64,9 @@ void frame_t::initialize()
   sizer->Add( header_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   sizer->Add( main_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 15 ) );
   sizer->Add( panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-  sizer->Add( stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+  sizer->Add( player_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+  sizer->Add( player_stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+  sizer->Add( enemy_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
   sizer->Add( stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
   sizer->Add( randomize_button, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   SetSizer( sizer );
@@ -70,12 +81,41 @@ void frame_t::onRandomize( wxCommandEvent& event )
   }
 
   wxLogMessage( "Finished Randomizing" );
-  randomizer = new randomizer_t( seed, enemy_data, field_data, item_shop_data, gear_shop_data,
-                                 buki_data, weapon_data, shop_arms_data, item_rate_data, randomize_enemy_drops,
-                                 randomize_enemy_steals, randomize_enemy_bribes, randomize_enemy_gear_drops, randomize_enemy_stats,
-                                 randomize_enemy_stats_defensive, randomize_enemy_stats_shuffle,
-                                 randomize_shops, randomize_shop_prices, randomize_field_items, randomize_gear_abilities,
-                                 randomize_key_items, keep_things_sane );
+  randomizer = new randomizer_t( seed, 
+                                 enemy_data, 
+                                 field_data, 
+                                 item_shop_data, 
+                                 gear_shop_data,
+                                 buki_data, 
+                                 weapon_data,
+                                 shop_arms_data, 
+                                 item_rate_data,
+                                 player_stats_data, 
+                                 aeon_scaling_data,
+                                 randomize_enemy_drops,
+                                 randomize_enemy_steals, 
+                                 randomize_enemy_bribes, 
+                                 randomize_enemy_gear_drops, 
+                                 randomize_enemy_stats,
+                                 randomize_enemy_stats_defensive, 
+                                 randomize_enemy_stats_shuffle,
+                                 randomize_shops,
+                                 randomize_shop_prices,
+                                 randomize_field_items, 
+                                 randomize_gear_abilities,
+                                 randomize_player_stats,
+                                 randomize_aeon_stats, 
+                                 shuffle_player_stats, 
+                                 shuffle_aeon_stats,
+                                 poison_is_deadly,
+                                 randomize_key_items, 
+                                 keep_things_sane );
+}
+
+void frame_t::onPoisonIsDeadly( wxCommandEvent& event )
+{
+  poison_is_deadly = !poison_is_deadly;
+  printf( "Poison is Deadly: %d\n", poison_is_deadly );
 }
 
 void frame_t::onRandomizeEnemyDrops( wxCommandEvent& event )
@@ -144,6 +184,30 @@ void frame_t::onRandomizeGearAbilities( wxCommandEvent& event )
   printf( "Randomize Gear Abilities: %d\n", randomize_gear_abilities );
 }
 
+void frame_t::onRandomizePlayerStats( wxCommandEvent& event )
+{
+  randomize_player_stats = !randomize_player_stats;
+  printf( "Randomize Player Stats: %d\n", randomize_player_stats );
+}
+
+void frame_t::onRandomizeAeonStats( wxCommandEvent& event )
+{
+  randomize_aeon_stats = !randomize_aeon_stats;
+  printf( "Randomize Aeon Stats: %d\n", randomize_aeon_stats );
+}
+
+void frame_t::onShufflePlayerStats( wxCommandEvent& event )
+{
+  shuffle_player_stats = !shuffle_player_stats;
+  printf( "Shuffle Player Stats: %d\n", shuffle_player_stats );
+}
+
+void frame_t::onShuffleAeonStats( wxCommandEvent& event )
+{
+  shuffle_aeon_stats = !shuffle_aeon_stats;
+  printf( "Shuffle Aeon Stats: %d\n", shuffle_aeon_stats );
+}
+
 void frame_t::onRandomizeKeyItems( wxCommandEvent& event )
 {
   randomize_key_items = !randomize_key_items;
@@ -156,13 +220,30 @@ void frame_t::onKeepThingsSane( wxCommandEvent& event )
   printf( "Keep Things Sane: %d\n", keep_things_sane );
 }
 
+int32_t frame_t::hash( char* str )
+{
+  unsigned int h;
+  unsigned char* p;
+
+  h = 0;
+  for (p = ( unsigned char* ) str; *p != '\0'; p++)
+    h = 37 * h + *p;
+  return h; // or, h % ARRAY_SIZE;
+}
+
 void frame_t::onSeedChange( wxCommandEvent& event )
 {
   if (seed_text->GetValue().IsEmpty())
     return;
 
-  std::hash<std::string> hasher;
-  int64_t new_seed = hasher( seed_text->GetValue().ToStdString() );
-  seed = new_seed;
-  printf( "Seed: %lld\n", seed );
+  std::string seed_str = seed_text->GetValue().ToStdString();
+  int32_t this_seed = 0;
+  for (char& c : seed_str)
+  {
+    int32_t character = hash( &c );
+    this_seed += character;
+  }
+
+  seed = this_seed;
+  printf( "Seed: %ld\n", seed );
 }

@@ -320,27 +320,140 @@ struct item_rate_t : public bytes_mapper_t
   void test() const override;
 };
 
+struct character_stats_t : public bytes_mapper_t
+{
+  int index;
+  uint16_t name_offset;
+  uint16_t name_key;
+  uint32_t base_hp;
+  uint32_t base_mp;
+  uint8_t base_str;
+  uint8_t base_def;
+  uint8_t base_mag;
+  uint8_t base_mdef;
+  uint8_t base_agi;
+  uint8_t base_luck;
+  uint8_t base_eva;
+  uint8_t base_acc;
+  uint32_t current_ap;
+  uint32_t current_hp;
+  uint32_t current_mp;
+  uint32_t max_hp;
+  uint32_t max_mp;
+  uint16_t unknown1;
+  uint16_t unknown2;
+  uint8_t flags;
+  uint8_t current_weapon_id;
+  uint8_t current_armor_id;
+  uint8_t str;
+  uint8_t def;
+  uint8_t mag;
+  uint8_t mdef;
+  uint8_t agi;
+  uint8_t luck;
+  uint8_t eva;
+  uint8_t acc;
+  uint8_t poison_damage;
+  uint8_t overdrive_mode;
+  uint8_t overdrive_current;
+  uint8_t overdrive_max;
+  uint8_t sphere_level;
+  uint8_t sphere_level_used;
+  uint8_t unknown3;
+  uint32_t ability_field1;
+  uint32_t ability_field2;
+  uint32_t ability_field3;
+  uint32_t encounter_count;
+  uint32_t kill_count;
+
+  character_stats_t( int index, const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), index( index )
+  {
+    mapBytes();
+    // test();
+  }
+
+  void mapBytes();
+  void writeToBytes();
+  void test() const override;
+};
+
+struct aeon_scaling_data_t : public bytes_mapper_t
+{
+  uint8_t initial_offset;
+  uint8_t genre_byte;
+  uint8_t ap_req_coef1;
+  uint8_t ap_req_coef2;
+  uint8_t ap_req_coef3;
+  uint32_t ap_req_max;
+  uint8_t hp_coef1;
+  uint8_t hp_coef2;
+  uint8_t mp_coef1;
+  uint8_t mp_coef2;
+  uint8_t str_coef1;
+  uint8_t str_coef2;
+  uint8_t def_coef1;
+  uint8_t def_coef2;
+  uint8_t mag_coef1;
+  uint8_t mag_coef2;
+  uint8_t mdef_coef1;
+  uint8_t mdef_coef2;
+  uint8_t agi_coef1;
+  uint8_t agi_coef2;
+  uint8_t eva_coef1;
+  uint8_t eva_coef2;
+  uint8_t acc_coef1;
+  uint8_t acc_coef2;
+  uint16_t unknown;
+
+  aeon_scaling_data_t( const std::vector<char>& bytes, uint8_t initial_offset ) : bytes_mapper_t( bytes ), initial_offset( initial_offset )
+  {
+    mapBytes();
+    // test();
+  }
+
+  void mapBytes();
+  void writeToBytes();
+  void test() const override;
+};
+
 // Constant values
 static constexpr int ENEMY_COUNT = 360;
-static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
-  { "ch", "Chinese"},
-  { "de", "German"},
-  { "fr", "French"},
-  { "it", "Italian"},
-  { "jp", "Japanese"},
-  { "kr", "Korean"},
-  { "sp", "Spanish"},
-  { "us", "English"}
-};
 
 // Path data
 static const std::string INPUT_FOLDER = "input/";
 static const std::string OUTPUT_FOLDER = "output/";
 static const std::string FFX_FOLDER = "/ffx_ps2/ffx/";
 static const std::string JPPC_FOLDER = FFX_FOLDER + "/master/jppc/";
+static const std::string USPC_FOLDER = FFX_FOLDER + "/master/new_uspc/";
+static const std::string USPC_BTL_KERN_FOLDER = USPC_FOLDER + "/battle/kernel/";
+static const std::string CHPC_FOLDER = FFX_FOLDER + "/master/new_chpc/";
+static const std::string CHPC_BTL_KERN_FOLDER = CHPC_FOLDER + "/battle/kernel/";
+static const std::string DEPC_FOLDER = FFX_FOLDER + "/master/new_depc/";
+static const std::string DEPC_BTL_KERN_FOLDER = DEPC_FOLDER + "/battle/kernel/";
+static const std::string FRPC_FOLDER = FFX_FOLDER + "/master/new_frpc/";
+static const std::string FRPC_BTL_KERN_FOLDER = FRPC_FOLDER + "/battle/kernel/";
+static const std::string ITPC_FOLDER = FFX_FOLDER + "/master/new_itpc/";
+static const std::string ITPC_BTL_KERN_FOLDER = ITPC_FOLDER + "/battle/kernel/";
+static const std::string NEW_JPPC_FOLDER = FFX_FOLDER + "/master/new_jppc/";
+static const std::string NEW_JPPC_BTL_KERN_FOLDER = NEW_JPPC_FOLDER + "/battle/kernel/";
+static const std::string KRPC_FOLDER = FFX_FOLDER + "/master/new_krpc/";
+static const std::string KRPC_BTL_KERN_FOLDER = KRPC_FOLDER + "/battle/kernel/";
+static const std::string SPPC_FOLDER = FFX_FOLDER + "/master/new_sppc/";
+static const std::string SPPC_BTL_KERN_FOLDER = SPPC_FOLDER + "/battle/kernel/";
 static const std::string BATTLE_FOLDER = JPPC_FOLDER + "/battle/";
 static const std::string BATTLE_KERNEL_FOLDER = BATTLE_FOLDER + "/kernel/";
 static const std::string MONSTER_FOLDER = BATTLE_FOLDER + "/mon/";
+
+static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
+  { "ch", CHPC_BTL_KERN_FOLDER},
+  { "de", DEPC_BTL_KERN_FOLDER},
+  { "fr", FRPC_BTL_KERN_FOLDER},
+  { "it", ITPC_BTL_KERN_FOLDER},
+  { "jp", NEW_JPPC_BTL_KERN_FOLDER},
+  { "kr", KRPC_BTL_KERN_FOLDER},
+  { "sp", SPPC_BTL_KERN_FOLDER},
+  { "us", USPC_BTL_KERN_FOLDER}
+};
 
 // Dynamic data
 static std::unordered_map<int, enemy_data_t*> enemy_data;
@@ -351,3 +464,5 @@ static std::unordered_map<int, gear_data_t*> buki_data;
 static std::unordered_map<int, gear_data_t*> weapon_data;
 static std::unordered_map<int, gear_data_t*> shop_arms_data;
 static std::vector<item_rate_t*> item_rate_data;
+static std::vector<character_stats_t*> player_stats_data;
+static std::vector<aeon_scaling_data_t*> aeon_scaling_data;

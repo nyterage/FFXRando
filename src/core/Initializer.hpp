@@ -26,6 +26,8 @@ struct initializer_t
   void initializeWeaponData() const;
   void initializeShopArmsData() const;
   void initializeItemRateData() const;
+  void initializePlayerStatData() const;
+  void initializeAeonScalingData() const;
   void initializeGUI();
   void initializeAllData() const;
 

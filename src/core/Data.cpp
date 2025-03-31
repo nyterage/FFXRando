@@ -725,3 +725,233 @@ void item_rate_t::test() const
   bytes_mapper_t::test();
   std::cout << "Item Rate: " << item_rate << std::endl;
 }
+
+void character_stats_t::mapBytes()
+{
+  name_offset = read2Bytes( bytes, 0x00 );
+  name_key = read2Bytes( bytes, 0x02 );
+  base_hp = read4Bytes( bytes, 0x04 );
+  base_mp = read4Bytes( bytes, 0x08 );
+  base_str = read1Byte( bytes, 0x0C );
+  base_def = read1Byte( bytes, 0x0D );
+  base_mag = read1Byte( bytes, 0x0E );
+  base_mdef = read1Byte( bytes, 0x0F );
+  base_agi = read1Byte( bytes, 0x10 );
+  base_luck = read1Byte( bytes, 0x11 );
+  base_eva = read1Byte( bytes, 0x12 );
+  base_acc = read1Byte( bytes, 0x13 );
+  unknown1 = read2Bytes( bytes, 0x14 );
+  unknown2 = read2Bytes( bytes, 0x16 );
+  current_ap = read4Bytes( bytes, 0x18 );
+  current_hp = read4Bytes( bytes, 0x1C );
+  current_mp = read4Bytes( bytes, 0x20 );
+  max_hp = read4Bytes( bytes, 0x24 );
+  max_mp = read4Bytes( bytes, 0x28 );
+  flags = read1Byte( bytes, 0x2C );
+  current_weapon_id = read1Byte( bytes, 0x2D );
+  current_armor_id = read1Byte( bytes, 0x2E );
+  str = read1Byte( bytes, 0x2F );
+  def = read1Byte( bytes, 0x30 );
+  mag = read1Byte( bytes, 0x31 );
+  mdef = read1Byte( bytes, 0x32 );
+  agi = read1Byte( bytes, 0x33 );
+  luck = read1Byte( bytes, 0x34 );
+  eva = read1Byte( bytes, 0x35 );
+  acc = read1Byte( bytes, 0x36 );
+  poison_damage = read1Byte( bytes, 0x37 );
+  overdrive_mode = read1Byte( bytes, 0x38 );
+  overdrive_current = read1Byte( bytes, 0x39 );
+  overdrive_max = read1Byte( bytes, 0x3A );
+  sphere_level = read1Byte( bytes, 0x3B );
+  sphere_level_used = read1Byte( bytes, 0x3C );
+  unknown3 = read1Byte( bytes, 0x3D );
+  ability_field1 = read4Bytes( bytes, 0x3E );
+  ability_field2 = read4Bytes( bytes, 0x42 );
+  ability_field3 = read4Bytes( bytes, 0x46 );
+  encounter_count = read4Bytes( bytes, 0x50 );
+  kill_count = read4Bytes( bytes, 0x54 );
+}
+
+void character_stats_t::writeToBytes()
+{
+  write2Bytes( bytes, 0x00, name_offset );
+  write2Bytes( bytes, 0x02, name_key );
+  write4Bytes( bytes, 0x04, base_hp );
+  write4Bytes( bytes, 0x08, base_mp );
+  write1Byte( bytes, 0x0C, base_str );
+  write1Byte( bytes, 0x0D, base_def );
+  write1Byte( bytes, 0x0E, base_mag );
+  write1Byte( bytes, 0x0F, base_mdef );
+  write1Byte( bytes, 0x10, base_agi );
+  write1Byte( bytes, 0x11, base_luck );
+  write1Byte( bytes, 0x12, base_eva );
+  write1Byte( bytes, 0x13, base_acc );
+  write2Bytes( bytes, 0x14, unknown1 );
+  write2Bytes( bytes, 0x16, unknown2 );
+  write4Bytes( bytes, 0x18, current_ap );
+  write4Bytes( bytes, 0x1C, current_hp );
+  write4Bytes( bytes, 0x20, current_mp );
+  write4Bytes( bytes, 0x24, max_hp );
+  write4Bytes( bytes, 0x28, max_mp );
+  write1Byte( bytes, 0x2C, flags );
+  write1Byte( bytes, 0x2D, current_weapon_id );
+  write1Byte( bytes, 0x2E, current_armor_id );
+  write1Byte( bytes, 0x2F, str );
+  write1Byte( bytes, 0x30, def );
+  write1Byte( bytes, 0x31, mag );
+  write1Byte( bytes, 0x32, mdef );
+  write1Byte( bytes, 0x33, agi );
+  write1Byte( bytes, 0x34, luck );
+  write1Byte( bytes, 0x35, eva );
+  write1Byte( bytes, 0x36, acc );
+  write1Byte( bytes, 0x37, poison_damage );
+  write1Byte( bytes, 0x38, overdrive_mode );
+  write1Byte( bytes, 0x39, overdrive_current );
+  write1Byte( bytes, 0x3A, overdrive_max );
+  write1Byte( bytes, 0x3B, sphere_level );
+  write1Byte( bytes, 0x3C, sphere_level_used );
+  write1Byte( bytes, 0x3D, unknown3 );
+  write4Bytes( bytes, 0x3E, ability_field1 );
+  write4Bytes( bytes, 0x42, ability_field2 );
+  write4Bytes( bytes, 0x46, ability_field3 );
+  write4Bytes( bytes, 0x50, encounter_count );
+  write4Bytes( bytes, 0x54, kill_count );
+}
+
+void character_stats_t::test() const
+{
+  bytes_mapper_t::test();
+  printf( "Index: %d\n", index );
+  printf( "Name Offset: %d\n", name_offset );
+  printf( "Name Key: %d\n", name_key );
+  printf( "Base HP: %d\n", base_hp );
+  printf( "Base MP: %d\n", base_mp );
+  printf( "Base STR: %d\n", base_str );
+  printf( "Base DEF: %d\n", base_def );
+  printf( "Base MAG: %d\n", base_mag );
+  printf( "Base MDEF: %d\n", base_mdef );
+  printf( "Base AGI: %d\n", base_agi );
+  printf( "Base LUCK: %d\n", base_luck );
+  printf( "Base EVA: %d\n", base_eva );
+  printf( "Base ACC: %d\n", base_acc );
+  printf( "Unknown1: %d\n", unknown1 );
+  printf( "Unknown2: %d\n", unknown2 );
+  printf( "Current AP: %d\n", current_ap );
+  printf( "Current HP: %d\n", current_hp );
+  printf( "Current MP: %d\n", current_mp );
+  printf( "Max HP: %d\n", max_hp );
+  printf( "Max MP: %d\n", max_mp );
+  printf( "Flags: %d\n", flags );
+  printf( "Current Weapon ID: %d\n", current_weapon_id );
+  printf( "Current Armor ID: %d\n", current_armor_id );
+  printf( "STR: %d\n", str );
+  printf( "DEF: %d\n", def );
+  printf( "MAG: %d\n", mag );
+  printf( "MDEF: %d\n", mdef );
+  printf( "AGI: %d\n", agi );
+  printf( "LUCK: %d\n", luck );
+  printf( "EVA: %d\n", eva );
+  printf( "ACC: %d\n", acc );
+  printf( "Poison Damage: %d\n", poison_damage );
+  printf( "Overdrive Mode: %d\n", overdrive_mode );
+  printf( "Overdrive Current: %d\n", overdrive_current );
+  printf( "Overdrive Max: %d\n", overdrive_max );
+  printf( "Sphere Level: %d\n", sphere_level );
+  printf( "Sphere Level Used: %d\n", sphere_level_used );
+  printf( "Unknown3: %d\n", unknown3 );
+  printf( "Ability Field 1: %d\n", ability_field1 );
+  printf( "Ability Field 2: %d\n", ability_field2 );
+  printf( "Ability Field 3: %d\n", ability_field3 );
+  printf( "Encounter Count: %d\n", encounter_count );
+  printf( "Kill Count: %d\n", kill_count );
+}
+
+void aeon_scaling_data_t::mapBytes()
+{
+  genre_byte = read1Byte( bytes, 0x10 );
+  ap_req_coef1 = read1Byte( bytes, 0x11 );
+  ap_req_coef2 = read1Byte( bytes, 0x12 );
+  ap_req_coef3 = read1Byte( bytes, 0x13 );
+  ap_req_max = read4Bytes( bytes, 0x14 );
+  hp_coef1 = read1Byte( bytes, 0x18 );
+  hp_coef2 = read1Byte( bytes, 0x19 );
+  mp_coef1 = read1Byte( bytes, 0x1A );
+  mp_coef2 = read1Byte( bytes, 0x1B );
+  str_coef1 = read1Byte( bytes, 0x1C );
+  str_coef2 = read1Byte( bytes, 0x1D );
+  def_coef1 = read1Byte( bytes, 0x1E );
+  def_coef2 = read1Byte( bytes, 0x1F );
+  mag_coef1 = read1Byte( bytes, 0x20 );
+  mag_coef2 = read1Byte( bytes, 0x21 );
+  mdef_coef1 = read1Byte( bytes, 0x22 );
+  mdef_coef2 = read1Byte( bytes, 0x23 );
+  agi_coef1 = read1Byte( bytes, 0x24 );
+  agi_coef2 = read1Byte( bytes, 0x25 );
+  eva_coef1 = read1Byte( bytes, 0x26 );
+  eva_coef2 = read1Byte( bytes, 0x27 );
+  acc_coef1 = read1Byte( bytes, 0x28 );
+  acc_coef2 = read1Byte( bytes, 0x29 );
+  unknown = read2Bytes( bytes, 0x2A );
+
+  if (ap_req_coef1 == 0 && ap_req_coef2 == 0 && ap_req_coef3 == 0 && hp_coef1 > 0)
+    aeon_scaling_data.push_back( this );
+}
+
+void aeon_scaling_data_t::writeToBytes()
+{
+  write1Byte( bytes, 0x10, genre_byte );
+  write1Byte( bytes, 0x11, ap_req_coef1 );
+  write1Byte( bytes, 0x12, ap_req_coef2 );
+  write1Byte( bytes, 0x13, ap_req_coef3 );
+  write4Bytes( bytes, 0x14, ap_req_max );
+  write1Byte( bytes, 0x18, hp_coef1 );
+  write1Byte( bytes, 0x19, hp_coef2 );
+  write1Byte( bytes, 0x1A, mp_coef1 );
+  write1Byte( bytes, 0x1B, mp_coef2 );
+  write1Byte( bytes, 0x1C, str_coef1 );
+  write1Byte( bytes, 0x1D, str_coef2 );
+  write1Byte( bytes, 0x1E, def_coef1 );
+  write1Byte( bytes, 0x1F, def_coef2 );
+  write1Byte( bytes, 0x20, mag_coef1 );
+  write1Byte( bytes, 0x21, mag_coef2 );
+  write1Byte( bytes, 0x22, mdef_coef1 );
+  write1Byte( bytes, 0x23, mdef_coef2 );
+  write1Byte( bytes, 0x24, agi_coef1 );
+  write1Byte( bytes, 0x25, agi_coef2 );
+  write1Byte( bytes, 0x26, eva_coef1 );
+  write1Byte( bytes, 0x27, eva_coef2 );
+  write1Byte( bytes, 0x28, acc_coef1 );
+  write1Byte( bytes, 0x29, acc_coef2 );
+  write2Bytes( bytes, 0x2A, unknown );
+}
+
+void aeon_scaling_data_t::test() const
+{
+  bytes_mapper_t::test();
+  printf( "______________________\n" );
+  printf( "Genre Byte: %d\n", genre_byte );
+  printf( "AP Req Coef 1: %d\n", ap_req_coef1 );
+  printf( "AP Req Coef 2: %d\n", ap_req_coef2 );
+  printf( "AP Req Coef 3: %d\n", ap_req_coef3 );
+  printf( "AP Req Max: %I32ud\n", ap_req_max );
+  printf( "HP Coef 1: %d\n", hp_coef1 );
+  printf( "HP Coef 2: %d\n", hp_coef2 );
+  printf( "MP Coef 1: %d\n", mp_coef1 );
+  printf( "MP Coef 2: %d\n", mp_coef2 );
+  printf( "STR Coef 1: %d\n", str_coef1 );
+  printf( "STR Coef 2: %d\n", str_coef2 );
+  printf( "DEF Coef 1: %d\n", def_coef1 );
+  printf( "DEF Coef 2: %d\n", def_coef2 );
+  printf( "MAG Coef 1: %d\n", mag_coef1 );
+  printf( "MAG Coef 2: %d\n", mag_coef2 );
+  printf( "MDEF Coef 1: %d\n", mdef_coef1 );
+  printf( "MDEF Coef 2: %d\n", mdef_coef2 );
+  printf( "AGI Coef 1: %d\n", agi_coef1 );
+  printf( "AGI Coef 2: %d\n", agi_coef2 );
+  printf( "EVA Coef 1: %d\n", eva_coef1 );
+  printf( "EVA Coef 2: %d\n", eva_coef2 );
+  printf( "ACC Coef 1: %d\n", acc_coef1 );
+  printf( "ACC Coef 2: %d\n", acc_coef2 );
+  printf( "Unknown: %ld\n", unknown );
+  printf( "______________________\n" );
+}
