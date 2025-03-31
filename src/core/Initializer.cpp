@@ -119,7 +119,7 @@ void initializer_t::initializeItemRateData() const
 void initializer_t::initializeGUI()
 {
   initializeAllData();
-  gui = new gui_t( enemy_data, field_data, gear_shop_data, item_shop_data, buki_data, weapon_data, shop_arms_data, item_rate_data );
+  gui = new gui_t( enemy_data, field_data, item_shop_data, gear_shop_data, buki_data, weapon_data, shop_arms_data, item_rate_data );
   wxApp::SetInstance( gui );
   wxEntryStart( 0, nullptr );
   wxTheApp->CallOnInit();

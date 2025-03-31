@@ -264,33 +264,38 @@ public:
 
   void checkItemList( uint16_t& id, uint8_t& quantity, bool key = false )
   {
-    bool found = all_items.find( id ) != all_items.end();
+    if (id == 0)
+      return;
+    if (quantity == 0)
+      quantity = 1;
+
+    std::unordered_map<int, item_t*>::iterator it = all_items.find( id );
+
+    bool found = it != all_items.end();
     if (!found)
     {
       item_t* item = new item_t( id, quantity, quantity );
       all_items.insert( { id , item } );
-      if (!key && ( id > 2100 && id < 2000 ) || id == 2064)
-      {
+      if (!key)
         all_non_key_items.insert( { id , item } );
-      }
     }
     else
     {
-      item_t& it = *all_items.at( id );
-      if (it.getMinQuantity() > quantity)
-        it.setMinQuantity( quantity );
-      if (it.getMaxQuantity() < quantity)
-        it.setMaxQuantity( quantity );
+      item_t& item = *all_items.at( id );
+      if (item.getMinQuantity() > quantity)
+        item.setMinQuantity( quantity );
+      if (item.getMaxQuantity() < quantity)
+        item.setMaxQuantity( quantity );
     }
   }
 
   void getFieldItems()
   {
-    for (int i = 0; i < field_data.size(); i++)
+    for (auto& item : field_data)
     {
-      field_data_t& field = *field_data.at( i );
-      if (field.flag == 10 || field.flag == 2)
-        checkItemList( field.type, field.quantity, field.flag == 10 );
+      field_data_t& field = *item.second;
+      if (field.flag == 2 || field.flag == 10)
+        checkItemList( field.type, field.quantity );
     }
   }
 
@@ -298,41 +303,44 @@ public:
   {
     for (auto& enemy : enemy_data)
     {
-      enemy_loot_data_t* loot = enemy.second->loot_data;
-      checkItemList( loot->primary_normal_drop, loot->n_primary_normal_drop );
-      checkItemList( loot->primary_normal_drop_rare, loot->n_primary_normal_drop_rare );
-      checkItemList( loot->secondary_normal_drop, loot->n_secondary_normal_drop );
-      checkItemList( loot->secondary_normal_drop_rare, loot->n_secondary_normal_drop_rare );
-      checkItemList( loot->primary_normal_drop_overkill, loot->n_primary_normal_drop_overkill );
-      checkItemList( loot->primary_normal_drop_overkill_rare, loot->n_primary_normal_drop_overkill_rare );
-      checkItemList( loot->secondary_normal_drop_overkill, loot->n_secondary_normal_drop_overkill );
-      checkItemList( loot->secondary_normal_drop_overkill_rare, loot->n_secondary_normal_drop_overkill_rare );
-      checkItemList( loot->steal_item, loot->n_steal_item );
-      checkItemList( loot->steal_item_rare, loot->n_steal_item_rare );
-      checkItemList( loot->bribe_item, loot->n_bribe_item );
+      enemy_loot_data_t& loot = *enemy.second->loot_data;
+      checkItemList( loot.primary_normal_drop, loot.n_primary_normal_drop );
+      checkItemList( loot.primary_normal_drop_rare, loot.n_primary_normal_drop_rare );
+      checkItemList( loot.secondary_normal_drop, loot.n_secondary_normal_drop );
+      checkItemList( loot.secondary_normal_drop_rare, loot.n_secondary_normal_drop_rare );
+      checkItemList( loot.primary_normal_drop_overkill, loot.n_primary_normal_drop_overkill );
+      checkItemList( loot.primary_normal_drop_overkill_rare, loot.n_primary_normal_drop_overkill_rare );
+      checkItemList( loot.secondary_normal_drop_overkill, loot.n_secondary_normal_drop_overkill );
+      checkItemList( loot.secondary_normal_drop_overkill_rare, loot.n_secondary_normal_drop_overkill_rare );
+      checkItemList( loot.steal_item, loot.n_steal_item );
+      checkItemList( loot.steal_item_rare, loot.n_steal_item_rare );
+      checkItemList( loot.bribe_item, loot.n_bribe_item );
     }
   }
 
   void getShopItems()
   {
     uint8_t quantity = 1;
-    for (uint16_t i = 0; i < item_shop_data.size(); i++)
+    for (auto& shop : item_shop_data)
     {
-      shop_data_t& shop = *item_shop_data.at( i );
-      for (uint16_t j = 0; j < shop.item_indexes.size(); j++)
+      shop_data_t& item_shop = *shop.second;
+      for (auto& item : item_shop.item_indexes)
       {
-        checkItemList( shop.item_indexes[ j ], quantity );
+        checkItemList( item, quantity );
       }
     }
   }
 
-  item_t* getRandomItemFromMap( std::unordered_map<int, item_t*>& map )
+  item_t* getRandomItemFromMap()
   {
-    std::uniform_int_distribution<size_t> dist( 0, map.size() - 1 );
+    std::vector<item_t*> items;
+    std::unordered_map<int, item_t*>& map = randomize_key_items ? all_items : all_non_key_items;
+    for (auto& item : map)
+      items.push_back( item.second );
+
+    std::uniform_int_distribution<size_t> dist( 0, items.size() - 1 );
     int index = dist( rng );
-    auto it = map.begin();
-    std::advance( it, index );
-    return it->second;
+    return items[ index ];
   }
 
   int getRandomItemQuantity( item_t* item )
@@ -350,7 +358,7 @@ public:
     return uniform<int>( 0, 99 );
   }
 
-  void randomizeEnemyDrops( enemy_data_t* enemy, std::unordered_map<int, item_t*> map )
+  void randomizeEnemyDrops( enemy_data_t* enemy )
   {
     enemy_loot_data_t& loot = *enemy->loot_data;
     if (keep_things_sane)
@@ -368,21 +376,21 @@ public:
       loot.ap = uniform<uint16_t>( 0, UINT16_MAX );
       loot.ap_overkill = uniform<uint16_t>( 0, UINT16_MAX );
     }
-    item_t* normal_drop = getRandomItemFromMap( map );
+    item_t* normal_drop = getRandomItemFromMap();
     int normal_drop_quantity = getRandomItemQuantity( normal_drop );
-    item_t* rare_drop = getRandomItemFromMap( map );
+    item_t* rare_drop = getRandomItemFromMap();
     int rare_drop_quantity = getRandomItemQuantity( rare_drop );
-    item_t* secondary_normal_drop = getRandomItemFromMap( map );
+    item_t* secondary_normal_drop = getRandomItemFromMap();
     int secondary_normal_drop_quantity = getRandomItemQuantity( secondary_normal_drop );
-    item_t* secondary_rare_drop = getRandomItemFromMap( map );
+    item_t* secondary_rare_drop = getRandomItemFromMap();
     int secondary_rare_drop_quantity = getRandomItemQuantity( secondary_rare_drop );
-    item_t* normal_overkill_drop = getRandomItemFromMap( map );
+    item_t* normal_overkill_drop = getRandomItemFromMap();
     int normal_overkill_drop_quantity = getRandomItemQuantity( normal_overkill_drop );
-    item_t* rare_overkill_drop = getRandomItemFromMap( map );
+    item_t* rare_overkill_drop = getRandomItemFromMap();
     int rare_overkill_drop_quantity = getRandomItemQuantity( rare_overkill_drop );
-    item_t* secondary_overkill_drop = getRandomItemFromMap( map );
+    item_t* secondary_overkill_drop = getRandomItemFromMap();
     int secondary_overkill_drop_quantity = getRandomItemQuantity( secondary_overkill_drop );
-    item_t* secondary_rare_overkill_drop = getRandomItemFromMap( map );
+    item_t* secondary_rare_overkill_drop = getRandomItemFromMap();
     int secondary_rare_overkill_drop_quantity = getRandomItemQuantity( secondary_rare_overkill_drop );
     loot.primary_normal_drop = normal_drop->id;
     loot.primary_normal_drop_rare = rare_drop->id;
@@ -407,12 +415,12 @@ public:
     enemy->writeLootData( loot );
   };
 
-  void randomizeEnemySteal( enemy_data_t* enemy, std::unordered_map<int, item_t*> map )
+  void randomizeEnemySteal( enemy_data_t* enemy  )
   {
     enemy_loot_data_t& loot = *enemy->loot_data;
-    item_t* steal_item = getRandomItemFromMap( map );
+    item_t* steal_item = getRandomItemFromMap();
     int steal_item_quantity = getRandomItemQuantity( steal_item );
-    item_t* rare_steal_item = getRandomItemFromMap( map );
+    item_t* rare_steal_item = getRandomItemFromMap();
     int rare_steal_item_quantity = getRandomItemQuantity( rare_steal_item );
     loot.steal_chance = uniform<int>( -1, 254 );
     loot.steal_item = steal_item->id;
@@ -426,10 +434,10 @@ public:
     enemy->writeLootData( loot );
   }
 
-  void randomizeEnemyBribe( enemy_data_t* enemy, std::unordered_map<int, item_t*> map )
+  void randomizeEnemyBribe( enemy_data_t* enemy )
   {
     enemy_loot_data_t& loot = *enemy->loot_data;
-    item_t* bribe_item = getRandomItemFromMap( map );
+    item_t* bribe_item = getRandomItemFromMap();
     int bribe_item_quantity = getRandomItemQuantity( bribe_item );
     loot.bribe_item = bribe_item->id;
     loot.n_bribe_item = bribe_item_quantity;
@@ -498,8 +506,9 @@ public:
     else
       stats.flags.armored = rand() % 4 == 0;
 
-    uint32_t base_hp = std::min( 1, static_cast< int >( std::ceil( stats.hp * defensive_factor ) ) );
+    uint32_t base_hp = stats.hp * defensive_factor;
     uint32_t hp = normal<uint32_t>( base_hp, base_hp, 1, UINT32_MAX );
+    stats.hp = hp;
     stats.mag = normal<uint8_t>( stats.mag, stats.mag, 0, UINT8_MAX );
     stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
     stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
@@ -525,6 +534,9 @@ public:
     stats.agi = normal<uint8_t>( stats.agi, stats.agi, 0, UINT8_MAX );
     stats.luck = normal<uint8_t>( stats.luck, stats.luck, 0, UINT8_MAX );
     stats.acc = normal<uint8_t>( stats.acc, stats.acc, 0, UINT8_MAX );
+    stats.writeToBytes();
+    enemy->stats_data = &stats;
+    enemy->writeStatsData( stats );
   }
 
   void poplateGearLists()
@@ -641,8 +653,8 @@ public:
         bool found = true;
         item_t* potential_item;
         do
-          potential_item = getRandomItemFromMap( all_non_key_items );
-        while (found = std::find( item_shop->item_indexes.begin(), item_shop->item_indexes.end(), potential_item->id ) != item_shop->item_indexes.end());
+          potential_item = getRandomItemFromMap();
+        while (found = std::find( item_shop->item_indexes.begin(), item_shop->item_indexes.end(), potential_item->id ) != item_shop->item_indexes.end() && potential_item->id < 10000);
 
         item_shop->item_indexes.at( i ) = potential_item->id;
       }
@@ -740,9 +752,9 @@ public:
     {
       field_data_t* field_data = field.second;
       // Dont randomize key items for now
-      if (field_data->flag == 2)
+      if (field_data->flag == 2 || field_data->flag == 10)
       {
-        item_t* item = getRandomItemFromMap( all_non_key_items );
+        item_t* item = getRandomItemFromMap();
         field_data->type = item->id;
         field_data->quantity = getRandomItemQuantity( item );
         field_data->writeToBytes();
@@ -775,8 +787,7 @@ public:
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
-        std::unordered_map<int, item_t*> map = randomize_key_items ? all_items : all_non_key_items;
-        randomizeEnemyDrops( enemy.second, map );
+        randomizeEnemyDrops( enemy.second );
       }
     }
 
@@ -786,8 +797,7 @@ public:
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
-        std::unordered_map<int, item_t*> map = randomize_key_items ? all_items : all_non_key_items;
-        randomizeEnemySteal( enemy.second, map );
+        randomizeEnemySteal( enemy.second );
       }
     }
 
@@ -797,8 +807,7 @@ public:
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
-        std::unordered_map<int, item_t*> map = randomize_key_items ? all_items : all_non_key_items;
-        randomizeEnemyBribe( enemy.second, map );
+        randomizeEnemyBribe( enemy.second );
       }
     }
 

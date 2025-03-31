@@ -164,5 +164,5 @@ void frame_t::onSeedChange( wxCommandEvent& event )
   std::hash<std::string> hasher;
   int64_t new_seed = hasher( seed_text->GetValue().ToStdString() );
   seed = new_seed;
-  printf( "Seed: %ll\n", seed );
+  printf( "Seed: %lld\n", seed );
 }

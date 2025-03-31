@@ -12,19 +12,21 @@ struct item_t
   uint8_t min_quantity = 0;
   uint8_t max_quantity = 0;
 
-  item_t( uint16_t& id, uint8_t& min_quantity, uint8_t& max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ) {}
+  item_t( uint16_t id, uint8_t min_quantity, uint8_t max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ) {
+    //test();
+  }
 
-  uint8_t getMinQuantity() const { return this->min_quantity; }
-  uint8_t getMaxQuantity() const { return this->max_quantity; }
-  uint8_t getAverageQuantity() const { return ( this->min_quantity + this->max_quantity ) / 2; }
-  uint8_t getStandardDeviation() const { return ( this->max_quantity - this->min_quantity ) / 2; }
-  void setMinQuantity( uint8_t min_quantity ) { this->min_quantity = min_quantity; };
-  void setMaxQuantity( uint8_t max_quantity ) { this->max_quantity = max_quantity; };
+  uint8_t getMinQuantity() const { return min_quantity; }
+  uint8_t getMaxQuantity() const { return max_quantity; }
+  uint8_t getAverageQuantity() const { return ( min_quantity + max_quantity ) / 2; }
+  uint8_t getStandardDeviation() const { return ( max_quantity - min_quantity ) / 2; }
+  void setMinQuantity( uint8_t min ) { min_quantity = min; };
+  void setMaxQuantity( uint8_t max ) { max_quantity = max; };
   void test()
   {
-    std::cout << "Item ID: " << id << std::endl;
-    std::cout << "Min Quantity: " << min_quantity << std::endl;
-    std::cout << "Max Quantity: " << max_quantity << std::endl;
+    printf( "Item ID: %d\n", id );
+    printf( "Min Quantity: %d\n", min_quantity );
+    printf( "Max Quantity: %d\n", max_quantity );
   }
 };
 
@@ -140,16 +142,16 @@ struct enemy_stat_data_t final : public bytes_mapper_t
   static int const BYTE_LENGTH = 0x80;
   std::string monster_id;
   size_t initial_offset;
-  uint8_t name_offset;
-  uint8_t name_key;
-  uint8_t sensor_text_offset;
-  uint8_t sensor_text_key;
-  uint8_t unused_str_offset;
-  uint8_t unused_str_key;
-  uint8_t scan_text_offset;
-  uint8_t scan_text_key;
-  uint8_t unused_str2_offset;
-  uint8_t unused_str2_key;
+  uint16_t name_offset;
+  uint16_t name_key;
+  uint16_t sensor_text_offset;
+  uint16_t sensor_text_key;
+  uint16_t unused_str_offset;
+  uint16_t unused_str_key;
+  uint16_t scan_text_offset;
+  uint16_t scan_text_key;
+  uint16_t unused_str2_offset;
+  uint16_t unused_str2_key;
   uint32_t hp;
   uint32_t mp;
   uint32_t overkill_threshold;
