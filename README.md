@@ -18,10 +18,12 @@ Currently does not even have an interface, just a simple command line that reads
 2. Enemy Reward randomization, including Gil, AP, Steal, Drop, Bribe, and Equipment.
 3. Shop Randomization. Randomizes both the number of items in every shop, but also what items they are.
 4. Equipment Randomization. Every piece of equipment in the game, except Celestial Weapons, and Brotherhood will have random abilities.
+5. Player Stat randomization
+6. Aeon Stat randomization
+7. Starting overdrive mode randomization
 
 # Planned Future Additons
-1. Stat Randomization (Player, Enemy, Aeon)
-2. Enemy Weaknesses/Resists
+1. Enemy Weaknesses/Resists
 
 # Maybe Future Additions
 1. Sphere Grid??
