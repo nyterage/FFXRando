@@ -679,9 +679,11 @@ void field_data_t::writeToBytes()
 void field_data_t::test() const
 {
   bytes_mapper_t::test();
-  std::cout << "Flag: " << flag << std::endl;
-  std::cout << "Quantity: " << quantity << std::endl;
-  std::cout << "Type: " << type << std::endl;
+  printf( "____________________\n" );
+  printf( "Index: %d\n", index );
+  printf( "Flag: %d\n", flag );
+  printf( "Quantity: %d\n", quantity );
+  printf( "Type: %d\n", type );
 }
 
 
@@ -954,4 +956,46 @@ void aeon_scaling_data_t::test() const
   printf( "ACC Coef 2: %d\n", acc_coef2 );
   printf( "Unknown: %ld\n", unknown );
   printf( "______________________\n" );
+}
+
+void aeon_stat_data_t::mapBytes()
+{
+  hp = read2Bytes( bytes, 0x0C );
+  mp = read2Bytes( bytes, 0x0E );
+  str = read1Byte( bytes, 0x10 );
+  def = read1Byte( bytes, 0x11 );
+  mag = read1Byte( bytes, 0x12 );
+  mdef = read1Byte( bytes, 0x13 );
+  agi = read1Byte( bytes, 0x14 );
+  eva = read1Byte( bytes, 0x15 );
+  acc = read1Byte( bytes, 0x16 );
+}
+
+void aeon_stat_data_t::writeToBytes()
+{
+  write2Bytes( bytes, 0x0C, hp );
+  write2Bytes( bytes, 0x0E, mp );
+  write1Byte( bytes, 0x10, str );
+  write1Byte( bytes, 0x11, def );
+  write1Byte( bytes, 0x12, mag );
+  write1Byte( bytes, 0x13, mdef );
+  write1Byte( bytes, 0x14, agi );
+  write1Byte( bytes, 0x15, eva );
+  write1Byte( bytes, 0x16, acc );
+}
+
+void aeon_stat_data_t::test() const
+{
+  bytes_mapper_t::test();
+  printf( "______________________\n" );
+  printf( "Index: %d\n", index );
+  printf( "HP: %d\n", hp );
+  printf( "MP: %d\n", mp );
+  printf( "STR: %d\n", str );
+  printf( "DEF: %d\n", def );
+  printf( "MAG: %d\n", mag );
+  printf( "MDEF: %d\n", mdef );
+  printf( "AGI: %d\n", agi );
+  printf( "EVA: %d\n", eva );
+  printf( "ACC: %d\n", acc );
 }

@@ -37,8 +37,8 @@ void initializer_t::initializeFieldData() const
   std::vector<chunk_t> field_chunks = initializer_t::chunkData( bytes, 4 );
   for (int i = 0; i < field_chunks.size(); i++)
   {
-    field_data_t* field = new field_data_t( field_chunks[ i ].data );
-    field_data.insert( { i , field } );
+    field_data_t* field = new field_data_t( i, field_chunks[ i ].data );
+    field_data.push_back( field );
   }
 }
 
@@ -54,9 +54,9 @@ void initializer_t::initializeShopData( bool gear ) const
   {
     shop_data_t* shop = new shop_data_t( shop_chunks[ i ].data, gear );
     if (gear)
-      gear_shop_data.insert( { i , shop } );
+      gear_shop_data.push_back( shop );
     else
-      item_shop_data.insert( { i , shop } );
+      item_shop_data.push_back( shop );
   }
 }
 
@@ -70,7 +70,7 @@ void initializer_t::initializeBukiData() const
   for (int i = 0; i < buki_chunks.size(); i++)
   {
     gear_data_t* buki = new gear_data_t( buki_chunks[ i ].data );
-    buki_data.insert( { i , buki } );
+    buki_data.push_back( buki );
   }
 }
 
@@ -84,7 +84,7 @@ void initializer_t::initializeWeaponData() const
   for (int i = 0; i < weapon_chunks.size() - 1; i++)
   {
     gear_data_t* weapon = new gear_data_t( weapon_chunks[ i ].data );
-    weapon_data.insert( { i , weapon } );
+    weapon_data.push_back( weapon );
   }
 }
 
@@ -98,7 +98,7 @@ void initializer_t::initializeShopArmsData() const
   for (int i = 0; i < shop_arms_chunks.size() - 1; i++)
   {
     gear_data_t* shop_arms = new gear_data_t( shop_arms_chunks[ i ].data );
-    shop_arms_data.insert( { i , shop_arms } );
+    shop_arms_data.push_back( shop_arms );
   }
 }
 
@@ -143,10 +143,24 @@ void initializer_t::initializeAeonScalingData() const
   }
 }
 
+void initializer_t::initializeAeonStatData() const
+{
+  std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "sum_assure.bin";
+  std::vector<char> bytes = bytes_mapper_t::fileToBytes( path );
+  bytes = std::vector<char>( bytes.begin() + 20, bytes.end() );
+  // Split the aeon stat data into 120 byte chunks
+  std::vector<chunk_t> aeon_stat_chunks = initializer_t::chunkData( bytes, 120 );
+  for (int i = 0; i < aeon_stat_chunks.size(); i++)
+  {
+    aeon_stat_data_t* aeon = new aeon_stat_data_t( i, aeon_stat_chunks[ i ].data );
+    aeon_stat_data.push_back( aeon );
+  }
+}
+
 void initializer_t::initializeGUI()
 {
   initializeAllData();
-  gui = new gui_t( enemy_data, field_data, item_shop_data, gear_shop_data, buki_data, weapon_data, shop_arms_data, item_rate_data, player_stats_data, aeon_scaling_data );
+  gui = new gui_t( enemy_data, field_data, item_shop_data, gear_shop_data, buki_data, weapon_data, shop_arms_data, item_rate_data, player_stats_data, aeon_scaling_data, aeon_stat_data );
   wxApp::SetInstance( gui );
   wxEntryStart( 0, nullptr );
   wxTheApp->CallOnInit();
@@ -167,6 +181,7 @@ void initializer_t::initializeAllData() const
   std::thread item_rate_thread( &initializer_t::initializeItemRateData, this );
   std::thread player_stats_thread( &initializer_t::initializePlayerStatData, this );
   std::thread aeon_scaling_thread( &initializer_t::initializeAeonScalingData, this );
+  std::thread aeon_stat_thread( &initializer_t::initializeAeonStatData, this );
 
   enemy_thread.join();
   field_thread.join();
@@ -178,6 +193,7 @@ void initializer_t::initializeAllData() const
   item_rate_thread.join();
   player_stats_thread.join();
   aeon_scaling_thread.join();
+  aeon_stat_thread.join();
 }
 
 void initializer_t::runEnemyTests()
@@ -192,7 +208,7 @@ void initializer_t::runFieldTests()
 {
   for (auto& item : field_data)
   {
-    item.second->test();
+    item->test();
   }
 }
 
@@ -200,11 +216,11 @@ void initializer_t::runShopTests()
 {
   for (auto& shop : gear_shop_data)
   {
-    shop.second->test();
+    shop->test();
   }
   for (auto& shop : item_shop_data)
   {
-    shop.second->test();
+    shop->test();
   }
 }
 
@@ -212,7 +228,7 @@ void initializer_t::runBukiTests()
 {
   for (auto& buki : buki_data)
   {
-    buki.second->test();
+    buki->test();
   }
 }
 
@@ -220,7 +236,7 @@ void initializer_t::runWeaponTests()
 {
   for (auto& weapon : weapon_data)
   {
-    weapon.second->test();
+    weapon->test();
   }
 }
 
@@ -228,7 +244,7 @@ void initializer_t::runShopArmsTests()
 {
   for (auto& shop : shop_arms_data)
   {
-    shop.second->test();
+    shop->test();
   }
 }
 

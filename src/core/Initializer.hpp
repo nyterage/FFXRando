@@ -28,6 +28,7 @@ struct initializer_t
   void initializeItemRateData() const;
   void initializePlayerStatData() const;
   void initializeAeonScalingData() const;
+  void initializeAeonStatData() const;
   void initializeGUI();
   void initializeAllData() const;
 

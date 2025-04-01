@@ -276,11 +276,12 @@ struct enemy_data_t final : public bytes_mapper_t
 
 struct field_data_t final : public bytes_mapper_t
 {
+  int index;
   uint8_t flag;
   uint8_t quantity;
   uint16_t type;
 
-  field_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes )
+  field_data_t( int idx, const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), index( idx )
   {
     mapBytes();
     // test();
@@ -416,6 +417,30 @@ struct aeon_scaling_data_t : public bytes_mapper_t
   void test() const override;
 };
 
+struct aeon_stat_data_t : public bytes_mapper_t
+{
+  int index;
+  uint16_t hp;
+  uint16_t mp;
+  uint8_t str;
+  uint8_t def;
+  uint8_t mag;
+  uint8_t mdef;
+  uint8_t agi;
+  uint8_t eva;
+  uint8_t acc;
+
+  aeon_stat_data_t( int index, const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), index( index )
+  {
+    mapBytes();
+    // test();
+  }
+
+  void mapBytes();
+  void writeToBytes();
+  void test() const override;
+};
+
 // Constant values
 static constexpr int ENEMY_COUNT = 360;
 
@@ -457,12 +482,13 @@ static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
 
 // Dynamic data
 static std::unordered_map<int, enemy_data_t*> enemy_data;
-static std::unordered_map<int, field_data_t*> field_data;
-static std::unordered_map<int, shop_data_t*> item_shop_data;
-static std::unordered_map<int, shop_data_t*> gear_shop_data;
-static std::unordered_map<int, gear_data_t*> buki_data;
-static std::unordered_map<int, gear_data_t*> weapon_data;
-static std::unordered_map<int, gear_data_t*> shop_arms_data;
+static std::vector<field_data_t*> field_data;
+static std::vector<shop_data_t*> item_shop_data;
+static std::vector<shop_data_t*> gear_shop_data;
+static std::vector<gear_data_t*> buki_data;
+static std::vector<gear_data_t*> weapon_data;
+static std::vector<gear_data_t*> shop_arms_data;
 static std::vector<item_rate_t*> item_rate_data;
 static std::vector<character_stats_t*> player_stats_data;
 static std::vector<aeon_scaling_data_t*> aeon_scaling_data;
+static std::vector<aeon_stat_data_t*> aeon_stat_data;

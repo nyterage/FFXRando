@@ -5,7 +5,8 @@ bool gui_t::OnInit()
 {
   SetAppearance( Appearance::System );
   frame_t* frame = new frame_t( enemy_data, field_data, item_shop_data, gear_shop_data,
-                                buki_data, weapon_data, arms_shop_data, item_rate_data, player_stats_data, aeon_scaling_data );
+                                buki_data, weapon_data, arms_shop_data, item_rate_data, 
+                                player_stats_data, aeon_scaling_data, aeon_stat_data );
   frame->Show( true );
   return true;
 }
@@ -40,9 +41,12 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeFieldItems, this, ID_RANDOMIZE_FIELD_ITEMS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearAbilities, this, ID_RANDOMIZE_GEAR_ABILITIES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonStats, this, ID_RANDOMIZE_AEON_STATS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonStatScaling, this, ID_RANDOMIZE_AEON_STAT_SCALING );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonBaseStats, this, ID_RANDOMIZE_AEON_BASE_STATS );
   Bind( wxEVT_CHECKBOX, &frame_t::onShufflePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS_SHUFFLE );
-  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonStats, this, ID_RANDOMIZE_AEON_STATS_SHUFFLE );
+  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonStatScaling, this, ID_RANDOMIZE_AEON_STAT_SCALING_SHUFFLE );
+  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeStartingOverdriveMode, this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onKeepThingsSane, this, ID_KEEP_THINGS_SANE );
 
@@ -80,6 +84,12 @@ void frame_t::onRandomize( wxCommandEvent& event )
     return;
   }
 
+  if (randomize_player_stats && shuffle_player_stats || randomize_aeon_base_stats && shuffle_aeon_base_stats || randomize_aeon_stat_scaling && shuffle_aeon_stat_scaling)
+  {
+    wxLogMessage( "You can only pick one of the player or aeon stat randomization options at a time!\nFor Aeons, base and scaling can both be picked though!" );
+    return;
+  }
+
   wxLogMessage( "Finished Randomizing" );
   randomizer = new randomizer_t( seed, 
                                  enemy_data, 
@@ -92,6 +102,7 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                  item_rate_data,
                                  player_stats_data, 
                                  aeon_scaling_data,
+                                 aeon_stat_data,
                                  randomize_enemy_drops,
                                  randomize_enemy_steals, 
                                  randomize_enemy_bribes, 
@@ -104,10 +115,13 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                  randomize_field_items, 
                                  randomize_gear_abilities,
                                  randomize_player_stats,
-                                 randomize_aeon_stats, 
+                                 randomize_aeon_stat_scaling, 
+                                 randomize_aeon_base_stats,
                                  shuffle_player_stats, 
-                                 shuffle_aeon_stats,
+                                 shuffle_aeon_stat_scaling,
+                                 shuffle_aeon_base_stats,
                                  poison_is_deadly,
+                                 randomize_starting_overdrive_mode,
                                  randomize_key_items, 
                                  keep_things_sane );
 }
@@ -190,10 +204,16 @@ void frame_t::onRandomizePlayerStats( wxCommandEvent& event )
   printf( "Randomize Player Stats: %d\n", randomize_player_stats );
 }
 
-void frame_t::onRandomizeAeonStats( wxCommandEvent& event )
+void frame_t::onRandomizeAeonStatScaling( wxCommandEvent& event )
 {
-  randomize_aeon_stats = !randomize_aeon_stats;
-  printf( "Randomize Aeon Stats: %d\n", randomize_aeon_stats );
+  randomize_aeon_stat_scaling = !randomize_aeon_stat_scaling;
+  printf( "Randomize Aeon Stats: %d\n", randomize_aeon_stat_scaling );
+}
+
+void frame_t::onRandomizeAeonBaseStats( wxCommandEvent& event )
+{
+  randomize_aeon_base_stats = !randomize_aeon_base_stats;
+  printf( "Randomize Aeon Base Stats: %d\n", randomize_aeon_base_stats );
 }
 
 void frame_t::onShufflePlayerStats( wxCommandEvent& event )
@@ -202,10 +222,22 @@ void frame_t::onShufflePlayerStats( wxCommandEvent& event )
   printf( "Shuffle Player Stats: %d\n", shuffle_player_stats );
 }
 
-void frame_t::onShuffleAeonStats( wxCommandEvent& event )
+void frame_t::onShuffleAeonStatScaling( wxCommandEvent& event )
 {
-  shuffle_aeon_stats = !shuffle_aeon_stats;
-  printf( "Shuffle Aeon Stats: %d\n", shuffle_aeon_stats );
+  shuffle_aeon_stat_scaling = !shuffle_aeon_stat_scaling;
+  printf( "Shuffle Aeon Stats: %d\n", shuffle_aeon_stat_scaling );
+}
+
+void frame_t::onShuffleAeonBaseStats( wxCommandEvent& event )
+{
+  shuffle_aeon_base_stats = !shuffle_aeon_base_stats;
+  printf( "Shuffle Aeon Base Stats: %d\n", shuffle_aeon_base_stats );
+}
+
+void frame_t::onRandomizeStartingOverdriveMode( wxCommandEvent& event )
+{
+  randomize_starting_overdrive_mode = !randomize_starting_overdrive_mode;
+  printf( "Randomize Starting Overdrive Mode: %d\n", randomize_starting_overdrive_mode );
 }
 
 void frame_t::onRandomizeKeyItems( wxCommandEvent& event )

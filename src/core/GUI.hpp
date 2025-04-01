@@ -26,42 +26,47 @@ enum
   ID_RANDOMIZE_KEY_ITEMS = 14,
   ID_KEEP_THINGS_SANE = 15,
   ID_RANDOMIZE_PLAYER_STATS = 16,
-  ID_RANDOMIZE_AEON_STATS = 17,
+  ID_RANDOMIZE_AEON_STAT_SCALING = 17,
   ID_RANDOMIZE_PLAYER_STATS_SHUFFLE = 18,
-  ID_RANDOMIZE_AEON_STATS_SHUFFLE = 19,
+  ID_RANDOMIZE_AEON_STAT_SCALING_SHUFFLE = 19,
   ID_POISON_IS_DEADLY = 20,
+  ID_RANDOMIZE_AEON_BASE_STATS = 21,
+  ID_SHUFFLE_AEON_BASE_STATS = 22,
+  ID_RANDOMIZE_STARTING_OVERDRIVE_MODE = 23
 };
 
 struct gui_t : public wxApp
 {
 private:
   std::unordered_map<int, enemy_data_t*> enemy_data;
-  std::unordered_map<int, field_data_t*> field_data;
-  std::unordered_map<int, shop_data_t*> item_shop_data;
-  std::unordered_map<int, shop_data_t*> gear_shop_data;
-  std::unordered_map<int, gear_data_t*> buki_data;
-  std::unordered_map<int, gear_data_t*> weapon_data;
-  std::unordered_map<int, gear_data_t*> arms_shop_data;
+  std::vector<field_data_t*> field_data;
+  std::vector<shop_data_t*> item_shop_data;
+  std::vector<shop_data_t*> gear_shop_data;
+  std::vector< gear_data_t*> buki_data;
+  std::vector< gear_data_t*> weapon_data;
+  std::vector< gear_data_t*> arms_shop_data;
   std::vector<item_rate_t*> item_rate_data;
   std::vector<character_stats_t*> player_stats_data;
   std::vector<aeon_scaling_data_t*> aeon_scaling_data;
+  std::vector<aeon_stat_data_t*> aeon_stat_data;
 
 public:
   gui_t( std::unordered_map<int, enemy_data_t*> ed,
-         std::unordered_map<int, field_data_t*> fd,
-         std::unordered_map<int, shop_data_t*> isd,
-         std::unordered_map<int, shop_data_t*> gsd,
-         std::unordered_map<int, gear_data_t*> bd,
-         std::unordered_map<int, gear_data_t*> wd,
-         std::unordered_map<int, gear_data_t*> asd,
+         std::vector<field_data_t*> fd,
+         std::vector< shop_data_t*> isd,
+         std::vector< shop_data_t*> gsd,
+         std::vector< gear_data_t*> bd,
+         std::vector< gear_data_t*> wd,
+         std::vector< gear_data_t*> asd,
          std::vector < item_rate_t*> ird,
          std::vector < character_stats_t*> psd,
-         std::vector < aeon_scaling_data_t*> aesd
+         std::vector < aeon_scaling_data_t*> aesd,
+         std::vector<aeon_stat_data_t*> absd
   ) :
     enemy_data( ed ), field_data( fd ), item_shop_data( isd ),
     gear_shop_data( gsd ), buki_data( bd ), weapon_data( wd ),
     arms_shop_data( asd ), item_rate_data( ird ), player_stats_data( psd ),
-    aeon_scaling_data( aesd )
+    aeon_scaling_data( aesd ), aeon_stat_data( absd )
   {}
 
   virtual bool OnInit();
@@ -71,15 +76,16 @@ class frame_t : public wxFrame
 {
 private:
   std::unordered_map<int, enemy_data_t*> enemy_data;
-  std::unordered_map<int, field_data_t*> field_data;
-  std::unordered_map<int, shop_data_t*> item_shop_data;
-  std::unordered_map<int, shop_data_t*> gear_shop_data;
-  std::unordered_map<int, gear_data_t*> buki_data;
-  std::unordered_map<int, gear_data_t*> weapon_data;
-  std::unordered_map<int, gear_data_t*> shop_arms_data;
+  std::vector<field_data_t*> field_data;
+  std::vector< shop_data_t*> item_shop_data;
+  std::vector< shop_data_t*> gear_shop_data;
+  std::vector< gear_data_t*> buki_data;
+  std::vector< gear_data_t*> weapon_data;
+  std::vector< gear_data_t*> shop_arms_data;
   std::vector<item_rate_t*> item_rate_data;
   std::vector<character_stats_t*> player_stats_data;
   std::vector<aeon_scaling_data_t*> aeon_scaling_data;
+  std::vector<aeon_stat_data_t*> aeon_stat_data;
 
   randomizer_t* randomizer;
 
@@ -95,10 +101,13 @@ private:
   bool randomize_field_items;
   bool randomize_gear_abilities;
   bool randomize_player_stats;
-  bool randomize_aeon_stats;
+  bool randomize_aeon_stat_scaling;
+  bool randomize_aeon_base_stats;
   bool shuffle_player_stats;
-  bool shuffle_aeon_stats;
+  bool shuffle_aeon_stat_scaling;
+  bool shuffle_aeon_base_stats;
   bool poison_is_deadly;
+  bool randomize_starting_overdrive_mode;
 
   bool randomize_key_items;
   bool keep_things_sane;
@@ -108,16 +117,17 @@ private:
 
 public:
   frame_t( std::unordered_map<int, enemy_data_t*> ed,
-           std::unordered_map<int, field_data_t*> fd,
-           std::unordered_map<int, shop_data_t*> isd,
-           std::unordered_map<int, shop_data_t*> gsd,
-           std::unordered_map<int, gear_data_t*> bd,
-           std::unordered_map<int, gear_data_t*> wd,
-           std::unordered_map<int, gear_data_t*> asd,
+           std::vector<field_data_t*> fd,
+           std::vector< shop_data_t*> isd,
+           std::vector< shop_data_t*> gsd,
+           std::vector< gear_data_t*> bd,
+           std::vector< gear_data_t*> wd,
+           std::vector< gear_data_t*> asd,
            std::vector <item_rate_t*> ird,
            std::vector<character_stats_t*> psd,
-           std::vector<aeon_scaling_data_t*> aesd
-  ) : wxFrame( NULL, wxID_ANY, "FFX Randomizer", wxDefaultPosition, wxSize( 350, 700 ) ),
+           std::vector<aeon_scaling_data_t*> aesd,
+           std::vector<aeon_stat_data_t*> absd
+  ) : wxFrame( NULL, wxID_ANY, "FFX Randomizer", wxDefaultPosition, wxSize( 350, 730 ) ),
     randomize_enemy_drops( false ),
     randomize_enemy_steals( false ),
     randomize_enemy_bribes( false ),
@@ -130,10 +140,13 @@ public:
     randomize_field_items( false ),
     randomize_gear_abilities( false ),
     randomize_player_stats( false ),
-    randomize_aeon_stats( false ),
+    randomize_aeon_stat_scaling( false ),
+    randomize_aeon_base_stats( false ),
     shuffle_player_stats( false ),
-    shuffle_aeon_stats( false ),
+    shuffle_aeon_stat_scaling( false ),
+    shuffle_aeon_base_stats( false ),
     poison_is_deadly( false ),
+    randomize_starting_overdrive_mode( false ),
     randomize_key_items( false ),
     keep_things_sane( true ),
     randomizer( nullptr ),
@@ -148,6 +161,7 @@ public:
     item_rate_data( ird ),
     player_stats_data( psd ),
     aeon_scaling_data( aesd ),
+    aeon_stat_data( absd ),
     seed( std::chrono::system_clock::now().time_since_epoch().count() ),
     seed_text( nullptr )
   {
@@ -171,10 +185,13 @@ private:
   void onRandomizeFieldItems( wxCommandEvent& event );
   void onRandomizeGearAbilities( wxCommandEvent& event );
   void onRandomizePlayerStats( wxCommandEvent& event );
-  void onRandomizeAeonStats( wxCommandEvent& event );
+  void onRandomizeAeonStatScaling( wxCommandEvent& event );
+  void onRandomizeAeonBaseStats( wxCommandEvent& event );
   void onShufflePlayerStats( wxCommandEvent& event );
-  void onShuffleAeonStats( wxCommandEvent& event );
+  void onShuffleAeonStatScaling( wxCommandEvent& event );
+  void onShuffleAeonBaseStats( wxCommandEvent& event );
   void onPoisonIsDeadly( wxCommandEvent& event );
+  void onRandomizeStartingOverdriveMode( wxCommandEvent& event );
 
   void onRandomizeKeyItems( wxCommandEvent& event );
   void onKeepThingsSane( wxCommandEvent& event );
@@ -262,30 +279,45 @@ struct header_panel_t : public wxPanel
 struct player_stats_panel_t : public wxPanel
 {
   wxCheckBox* randomizePlayerStatsCheckbox;
-  wxCheckBox* randomizeAeonStatsCheckbox;
+  wxCheckBox* randomizeAeonStatScalingCheckbox;
+  wxCheckBox* randomiseAeonBaseStatsCheckbox;
   wxCheckBox* shufflePlayerStatsCheckbox;
-  wxCheckBox* shuffleAeonStatsCheckbox;
+  wxCheckBox* shuffleAeonStatScalingCheckbox;
+  wxCheckBox* shuffleAeonBaseStatsCheckbox;
+  wxCheckBox* randomizeStartingOverdriveModeCheckbox;
 
   player_stats_panel_t( frame_t* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME ),
     randomizePlayerStatsCheckbox( nullptr ),
-    randomizeAeonStatsCheckbox( nullptr ),
+    randomizeAeonStatScalingCheckbox( nullptr ),
+    randomiseAeonBaseStatsCheckbox( nullptr ),
     shufflePlayerStatsCheckbox( nullptr ),
-    shuffleAeonStatsCheckbox( nullptr )
+    shuffleAeonStatScalingCheckbox( nullptr ),
+    shuffleAeonBaseStatsCheckbox( nullptr ),
+    randomizeStartingOverdriveModeCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
     randomizePlayerStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_PLAYER_STATS, _T( "Randomize Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
-    randomizeAeonStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STATS, _T( "Randomize Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeAeonStatsCheckbox->SetToolTip( "If checked, aeon stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    randomizeAeonStatScalingCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_SCALING, _T( "Randomize Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    randomiseAeonBaseStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_BASE_STATS, _T( "Randomize Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomiseAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
     shufflePlayerStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_PLAYER_STATS_SHUFFLE, _T( "Shuffle Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
     shufflePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be shuffled to another party members stats at random." );
-    shuffleAeonStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STATS_SHUFFLE, _T( "Shuffle Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shuffleAeonStatsCheckbox->SetToolTip( "If checked, aeon stats will be shuffled to another aeons stats at random." );
+    shuffleAeonStatScalingCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_SCALING_SHUFFLE, _T( "Shuffle Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shuffleAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be shuffled to another aeons stats at random." );
+    shuffleAeonBaseStatsCheckbox = new wxCheckBox( this, ID_SHUFFLE_AEON_BASE_STATS, _T( "Shuffle Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shuffleAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be shuffled to another aeons stats at random." );
+    randomizeStartingOverdriveModeCheckbox = new wxCheckBox( this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE, _T( "Randomize Starting Overdrive Mode" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeStartingOverdriveModeCheckbox->SetToolTip( "If checked, the starting overdrive mode for playable characters will be random." );
 
     sizer->Add( randomizePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeAeonStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomiseAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( shufflePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shuffleAeonStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( shuffleAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( shuffleAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeStartingOverdriveModeCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
     SetSizer( sizer );
     SetMinSize( GetBestVirtualSize() );
