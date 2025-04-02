@@ -16,11 +16,11 @@ private:
   std::mt19937 rng;
   std::unordered_map<int, enemy_data_t*> enemy_data;
   std::vector<field_data_t*> field_data;
-  std::vector< shop_data_t*> item_shop_data;
-  std::vector< shop_data_t*> gear_shop_data;
-  std::vector< gear_data_t*> buki_data;
-  std::vector< gear_data_t*> weapon_data;
-  std::vector< gear_data_t*> arms_shop_data;
+  std::vector<shop_data_t*> item_shop_data;
+  std::vector<shop_data_t*> gear_shop_data;
+  std::vector<gear_data_t*> buki_data;
+  std::vector<gear_data_t*> weapon_data;
+  std::vector<gear_data_t*> arms_shop_data;
   std::vector<item_rate_t*> item_rate_data;
   std::vector<character_stats_t*> character_stats_data;
   std::vector<aeon_scaling_data_t*> aeon_scaling_data;
@@ -43,7 +43,7 @@ private:
   bool randomize_enemy_stats_normal;
   bool randomize_enemy_stats_defensive_normalized;
   bool randomize_enemy_stats_shuffle;
-  bool randomize_enemy_resists;
+  bool randomize_enemy_elemental_affinities;
   bool randomize_shops;
   bool randomize_shop_prices;
   bool randomize_field_items;
@@ -85,6 +85,7 @@ public:
                 bool randomize_enemy_stats,
                 bool randomize_enemy_stats_defensive_normalized,
                 bool randomize_enemy_stats_shuffle,
+                bool randomize_enemy_elemental_affinities,
                 bool randomize_shops,
                 bool randomize_shop_prices,
                 bool randomize_field_items,
@@ -119,7 +120,7 @@ public:
     randomize_enemy_stats_normal( randomize_enemy_stats ),
     randomize_enemy_stats_defensive_normalized( randomize_enemy_stats_defensive_normalized ),
     randomize_enemy_stats_shuffle( randomize_enemy_stats_shuffle ),
-    randomize_enemy_resists( false ),
+    randomize_enemy_elemental_affinities( randomize_enemy_elemental_affinities ),
     randomize_shops( randomize_shops ),
     randomize_shop_prices( randomize_shop_prices ),
     randomize_field_items( randomize_field_items ),
@@ -571,7 +572,7 @@ public:
     stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 2, 0, UINT8_MAX );
     stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
     stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
-    stats.flags.armored = rand() % 4 == 0;
+    stats.flags1.armored = rand() % 4 == 0;
     stats.writeToBytes();
     enemy->stats_data = &stats;
     enemy->writeStatsData( stats );
@@ -617,9 +618,9 @@ public:
 
     double defensive_factor = ( def_factor + mdef_factor + evasion_factor );
     if (defensive_factor < 0.33)
-      stats.flags.armored = 0;
+      stats.flags1.armored = 0;
     else
-      stats.flags.armored = rand() % 4 == 0;
+      stats.flags1.armored = rand() % 4 == 0;
 
     uint32_t base_hp = stats.hp * defensive_factor;
     if (base_hp == 0)
@@ -647,10 +648,49 @@ public:
     stats.def = def_pool[ index ];
     stats.mdef = mdef_pool[ index ];
     stats.eva = eva_pool[ index ];
-    stats.flags.armored = rand() % 4 == 0;
+    stats.flags1.armored = rand() % 4 == 0;
     stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
     stats.luck = normal<uint8_t>( stats.luck, stats.luck / 2, 0, UINT8_MAX );
     stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
+    stats.writeToBytes();
+    enemy->stats_data = &stats;
+    enemy->writeStatsData( stats );
+  }
+
+  void randomizeEnemyElementalAffinities( enemy_data_t* enemy )
+  {
+    enemy_stat_data_t& stats = *enemy->stats_data;
+
+    int fire_roll = uniform<int>( 0, 69 );
+    int ice_roll = uniform<int>( 0, 69 );
+    int lightning_roll = uniform<int>( 0, 69 );
+    int water_roll = uniform<int>( 0, 69 );
+    int holy_roll = uniform<int>( 0, 69 );
+
+    stats.element_weakness_flags.fire = fire_roll < 20;
+    stats.element_weakness_flags.ice = ice_roll < 20;
+    stats.element_weakness_flags.lightning = lightning_roll < 20;
+    stats.element_weakness_flags.water = water_roll < 20;
+    stats.element_weakness_flags.holy = holy_roll < 20;
+
+    stats.element_resist_flags.fire = fire_roll < 25 && fire_roll >= 20;
+    stats.element_resist_flags.ice = ice_roll < 25 && ice_roll >= 20;
+    stats.element_resist_flags.lightning = lightning_roll < 25 && lightning_roll >= 20;
+    stats.element_resist_flags.water = water_roll < 25 && water_roll >= 20;
+    stats.element_resist_flags.holy = holy_roll < 25 && holy_roll >= 20;
+
+    stats.element_immune_flags.fire = fire_roll < 30 && fire_roll >= 25;
+    stats.element_immune_flags.ice = ice_roll < 30 && ice_roll >= 25;
+    stats.element_immune_flags.lightning = lightning_roll < 30 && lightning_roll >= 25;
+    stats.element_immune_flags.water = water_roll < 30 && water_roll >= 25;
+    stats.element_immune_flags.holy = holy_roll < 30 && holy_roll >= 25;
+
+    stats.element_absorb_flags.fire = fire_roll < 35 && fire_roll >= 30;
+    stats.element_absorb_flags.ice = ice_roll < 35 && ice_roll >= 30;
+    stats.element_absorb_flags.lightning = lightning_roll < 35 && lightning_roll >= 30;
+    stats.element_absorb_flags.water = water_roll < 35 && water_roll >= 30;
+    stats.element_absorb_flags.holy = holy_roll < 35 && holy_roll >= 30;
+
     stats.writeToBytes();
     enemy->stats_data = &stats;
     enemy->writeStatsData( stats );
@@ -865,12 +905,9 @@ public:
     {
       field_data_t* field_data = field;
       if (std::find( blacklist.begin(), blacklist.end(), field_data->index ) != blacklist.end())
-      {
-        printf( "Skipping index: %d\n", field_data->index );
         continue;
-      }
 
-      if ( field_data->flag != 10 || randomize_key_items )
+      if (field_data->flag != 10 || randomize_key_items)
       {
         int max = randomize_key_items ? 3 : 2;
         int rolled_type = uniform<int>( 0, max );
@@ -1052,12 +1089,13 @@ public:
   void doEnemyRandomization()
   {
     if (!randomize_enemy_drops && !randomize_enemy_steals && !randomize_enemy_bribes && !randomize_enemy_gear_drops &&
-         !randomize_enemy_stats_normal && !randomize_enemy_stats_defensive_normalized && !randomize_enemy_stats_shuffle)
+         !randomize_enemy_stats_normal && !randomize_enemy_stats_defensive_normalized && !randomize_enemy_stats_shuffle &&
+         !randomize_enemy_elemental_affinities )
       return;
 
     if (randomize_enemy_drops)
     {
-      printf( "Randomizing Enemy Drops\n" );
+      printf( "Randomizing Enemy Drops...\n" );
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
@@ -1067,7 +1105,7 @@ public:
 
     if (randomize_enemy_steals)
     {
-      printf( "Randomizing Enemy Steals\n" );
+      printf( "Randomizing Enemy Steals...\n" );
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
@@ -1077,7 +1115,7 @@ public:
 
     if (randomize_enemy_bribes)
     {
-      printf( "Randomizing Enemy Bribes\n" );
+      printf( "Randomizing Enemy Bribes...\n" );
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
@@ -1087,7 +1125,7 @@ public:
 
     if (randomize_enemy_gear_drops)
     {
-      printf( "Randomizing Enemy Gear Drops\n" );
+      printf( "Randomizing Enemy Gear Drops...\n" );
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
@@ -1097,7 +1135,7 @@ public:
 
     if (randomize_enemy_stats_normal)
     {
-      printf( "Randomizing Enemy Stats\n" );
+      printf( "Randomizing Enemy Stats...\n" );
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
@@ -1107,7 +1145,7 @@ public:
 
     if (randomize_enemy_stats_defensive_normalized)
     {
-      printf( "Randomizing Enemy Defensive Stats\n" );
+      printf( "Randomizing Enemy Defensive Stats...\n" );
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
@@ -1122,7 +1160,7 @@ public:
 
     if (randomize_enemy_stats_shuffle)
     {
-      printf( "Shuffling Enemy Stats\n" );
+      printf( "Shuffling Enemy Stats...\n" );
       for (auto& enemy : enemy_data)
       {
         enemy_data_t* enemy_data = enemy.second;
@@ -1135,7 +1173,17 @@ public:
       }
     }
 
-    printf( "Reconstructing Enemy Files\n" );
+    if (randomize_enemy_elemental_affinities)
+    {
+      printf( "Randomizing Enemy Elemental Affinities...\n" );
+      for (auto& enemy : enemy_data)
+      {
+        enemy_data_t* enemy_data = enemy.second;
+        randomizeEnemyElementalAffinities( enemy.second );
+      }
+    }
+
+    printf( "Reconstructing Enemy Files...\n" );
     for (auto& enemy : enemy_data)
     {
       enemy_data_t* enemy_data = enemy.second;
@@ -1152,17 +1200,17 @@ public:
     if (!randomize_shops)
       return;
 
-    printf( "Randomizing Item Shops\n" );
+    printf( "Randomizing Item Shops...\n" );
     std::thread item_thread( &randomizer_t::randomizeItemShops, this );
-    printf( "Randomizing Gear Shops\n" );
+    printf( "Randomizing Gear Shops...\n" );
     std::thread gear_thread( &randomizer_t::randomizeGearShops, this );
 
     item_thread.join();
     gear_thread.join();
 
-    printf( "Reconstructing item_shop.bin\n" );
+    printf( "Reconstructing item_shop.bin...\n" );
     std::thread item_shop_thread( &randomizer_t::reconstructItemShopData, this );
-    printf( "Reconstructing arms_shop.bin\n" );
+    printf( "Reconstructing arms_shop.bin...\n" );
     std::thread arms_shop_thread( &randomizer_t::reconstructArmsShopData, this );
 
     item_shop_thread.join();
@@ -1174,9 +1222,9 @@ public:
     if (!randomize_shop_prices)
       return;
 
-    printf( "Randomizing Item Prices\n" );
+    printf( "Randomizing Item Prices...\n" );
     randomizeItemPrices();
-    printf( "Reconstructing item_rate.bin\n" );
+    printf( "Reconstructing item_rate.bin...\n" );
     reconstructItemRateData();
   }
 
@@ -1185,9 +1233,9 @@ public:
     if (!randomize_field_items)
       return;
 
-    printf( "Randomizing Field Items\n" );
+    printf( "Randomizing Field Items...\n" );
     randomizeFieldItems();
-    printf( "Reconstructing takara.bin\n" );
+    printf( "Reconstructing takara.bin...\n" );
     reconstructTakaraData();
   }
 
@@ -1196,22 +1244,22 @@ public:
     if (!randomize_gear_abilities)
       return;
 
-    printf( "Randomizing shop_arms.bin Abilities\n" );
+    printf( "Randomizing shop_arms.bin Abilities...\n" );
     std::thread shop_arms_thread( &randomizer_t::randomizeShopArmsAbilities, this );
-    printf( "Randomizing buki_get.bin Abilities\n" );
+    printf( "Randomizing buki_get.bin Abilities...\n" );
     std::thread buki_thread( &randomizer_t::randomizeBukiAbilities, this );
-    printf( "Randomizing weapon.bin Abilities\n" );
+    printf( "Randomizing weapon.bin Abilities...\n" );
     std::thread weapon_thread( &randomizer_t::randomizeWeaponsAbilities, this );
 
     shop_arms_thread.join();
     buki_thread.join();
     weapon_thread.join();
 
-    printf( "Reconstructing shop_arms.bin\n" );
+    printf( "Reconstructing shop_arms.bin...\n" );
     std::thread shop_arms_data_thread( &randomizer_t::reconstructShopArmsData, this );
-    printf( "Reconstructing buki_get.bin\n" );
+    printf( "Reconstructing buki_get.bin...\n" );
     std::thread buki_data_thread( &randomizer_t::reconstructBukiData, this );
-    printf( "Reconstructing weapon.bin\n" );
+    printf( "Reconstructing weapon.bin...\n" );
     std::thread weapon_data_thread( &randomizer_t::reconstructWeaponData, this );
 
     shop_arms_data_thread.join();
@@ -1226,19 +1274,19 @@ public:
 
     if (randomize_player_stats)
     {
-      printf( "Randomizing Party Stats\n" );
+      printf( "Randomizing Party Stats...\n" );
       randomizePlayerStats();
     }
 
     if (randomize_aeon_stat_scaling)
     {
-      printf( "Randomizing Aeon Stat Scaling\n" );
+      printf( "Randomizing Aeon Stat Scaling...\n" );
       randomizeAeonStatScaling();
     }
 
     if (randomize_aeon_base_stats)
     {
-      printf( "Randomizing Aeon Base Stats\n" );
+      printf( "Randomizing Aeon Base Stats...\n" );
       randomizeAeonBaseStats();
     }
 
@@ -1250,13 +1298,13 @@ public:
         shuffled_player_stats_data.push_back( stats );
       }
       std::shuffle( shuffled_player_stats_data.begin(), shuffled_player_stats_data.end(), rng );
-      printf( "Shuffling Party Stats\n" );
+      printf( "Shuffling Party Stats...\n" );
       shuffleCharacterStats();
     }
 
     if (shuffle_aeon_stat_scaling)
     {
-      printf( "Shuffling Aeon Stat Scaling\n" );
+      printf( "Shuffling Aeon Stat Scaling...\n" );
       for (auto& aeon_scaling_data : aeon_scaling_data)
       {
         shuffled_aeon_data.push_back( aeon_scaling_data );
@@ -1267,13 +1315,13 @@ public:
 
     if (shuffle_aeon_base_stats)
     {
-      printf( "Shuffling Aeon Base Stats\n" );
+      printf( "Shuffling Aeon Base Stats...\n" );
       shuffleAeonBaseStats();
     }
 
     if (poison_is_deadly)
     {
-      printf( "Making Poison Deadly\n" );
+      printf( "Making Poison Deadly...\n" );
       for (auto& stats : character_stats_data)
       {
         stats->poison_damage = 50;
@@ -1281,9 +1329,9 @@ public:
       }
     }
 
-    if( randomize_starting_overdrive_mode )
+    if (randomize_starting_overdrive_mode)
     {
-      printf( "Randomizing Starting Overdrive Mode\n" );
+      printf( "Randomizing Starting Overdrive Mode...\n" );
       for (int i = 0; i < 7; i++)
       {
         character_stats_t& stats = *character_stats_data.at( i );
@@ -1294,25 +1342,25 @@ public:
       }
     }
 
-    printf( "Reconstructing ply_save.bin\n" );
+    printf( "Reconstructing ply_save.bin...\n" );
     reconstructPlayerStatsData();
 
     if (randomize_aeon_stat_scaling || shuffle_aeon_stat_scaling)
     {
-      printf( "Reconstructing ply_rom.bin\n" );
+      printf( "Reconstructing ply_rom.bin...\n" );
       reconstructAeonScalingData();
     }
 
     if (randomize_aeon_base_stats || shuffle_aeon_base_stats)
     {
-      printf( "Reconstructing sum_assure.bin\n" );
+      printf( "Reconstructing sum_assure.bin...\n" );
       reconstructAeonStatData();
     }
   }
 
   void randomize()
   {
-    printf( "Starting Randomizer\n" );
+    printf( "Starting Randomizer...\n" );
 
     // Clean the output folder to prevent any issues
     std::filesystem::remove_all( OUTPUT_FOLDER );

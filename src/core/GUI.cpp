@@ -13,7 +13,8 @@ bool gui_t::OnInit()
 
 void frame_t::initialize()
 {
-  wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
+  wxBoxSizer* main_vertical_sizer = new wxBoxSizer( wxVERTICAL );
+  wxBoxSizer* horizontal_sizer = new wxBoxSizer( wxHORIZONTAL );
 
   wxStaticText* header_text = new wxStaticText( this, wxID_ANY, _T( "FFX Randomizer" ), wxDefaultPosition, wxDefaultSize, 0 );
   header_text->SetFont( wxFont( 18, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
@@ -25,8 +26,6 @@ void frame_t::initialize()
   wxStaticText* extra_text = new wxStaticText( this, wxID_ANY, _T( "Options that affect other aspects of the randomizer:" ), wxDefaultPosition, wxDefaultSize, 0 );
   header_panel_t* header_panel = new header_panel_t( this );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeKeyItems, this, ID_RANDOMIZE_KEY_ITEMS );
-
-  wxStaticText* main_text = new wxStaticText( this, wxID_ANY, _T( "Main Options:" ), wxDefaultPosition, wxDefaultSize, 0 );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onPoisonIsDeadly, this, ID_POISON_IS_DEADLY );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyDrops, this, ID_RANDOMIZE_ENEMY_DROPS );
@@ -47,9 +46,11 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonStatScaling, this, ID_RANDOMIZE_AEON_STAT_SCALING_SHUFFLE );
   Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeStartingOverdriveMode, this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyElementalAffinities, this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onKeepThingsSane, this, ID_KEEP_THINGS_SANE );
 
+  wxStaticText* main_text = new wxStaticText( this, wxID_ANY, _T( "Main Options:" ), wxDefaultPosition, wxDefaultSize, 0 );
   main_panel_t* panel = new main_panel_t( this );
 
   wxStaticText* player_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
@@ -61,19 +62,28 @@ void frame_t::initialize()
   randomize_button = new wxButton( this, ID_RANDOMIZE, _T( "Randomize" ), wxDefaultPosition, wxDefaultSize, 0 );
   Bind( wxEVT_BUTTON, &frame_t::onRandomize, this, ID_RANDOMIZE );
 
-  sizer->Add( header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  sizer->Add( seed_header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  sizer->Add( seed_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  sizer->Add( extra_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  sizer->Add( header_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  sizer->Add( main_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 15 ) );
-  sizer->Add( panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-  sizer->Add( player_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-  sizer->Add( player_stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-  sizer->Add( enemy_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-  sizer->Add( stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-  sizer->Add( randomize_button, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  SetSizer( sizer );
+  wxBoxSizer* vertical_main_sizer = new wxBoxSizer( wxVERTICAL );
+  vertical_main_sizer->Add( main_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  vertical_main_sizer->Add( panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+
+  wxBoxSizer* vertical_stats_sizer = new wxBoxSizer( wxVERTICAL );
+  vertical_stats_sizer->Add( player_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  vertical_stats_sizer->Add( player_stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  vertical_stats_sizer->Add( enemy_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  vertical_stats_sizer->Add( stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+
+  horizontal_sizer->Add( vertical_main_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  horizontal_sizer->Add( vertical_stats_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+
+  main_vertical_sizer->Add( header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  main_vertical_sizer->Add( seed_header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  main_vertical_sizer->Add( seed_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  main_vertical_sizer->Add( extra_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  main_vertical_sizer->Add( header_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  main_vertical_sizer->Add( horizontal_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+  main_vertical_sizer->Add( randomize_button, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  SetSizer( main_vertical_sizer );
+  SetAutoLayout( true );
 }
 
 void frame_t::onRandomize( wxCommandEvent& event )
@@ -110,6 +120,7 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                  randomize_enemy_stats,
                                  randomize_enemy_stats_defensive, 
                                  randomize_enemy_stats_shuffle,
+                                 randomize_enemy_elemental_affinities,
                                  randomize_shops,
                                  randomize_shop_prices,
                                  randomize_field_items, 
@@ -238,6 +249,12 @@ void frame_t::onRandomizeStartingOverdriveMode( wxCommandEvent& event )
 {
   randomize_starting_overdrive_mode = !randomize_starting_overdrive_mode;
   printf( "Randomize Starting Overdrive Mode: %d\n", randomize_starting_overdrive_mode );
+}
+
+void frame_t::onRandomizeEnemyElementalAffinities( wxCommandEvent& event )
+{
+  randomize_enemy_elemental_affinities = !randomize_enemy_elemental_affinities;
+  printf( "Randomize Enemy Elemental Affinities: %d\n", randomize_enemy_elemental_affinities );
 }
 
 void frame_t::onRandomizeKeyItems( wxCommandEvent& event )

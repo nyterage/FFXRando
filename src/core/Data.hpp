@@ -212,7 +212,7 @@ struct enemy_stat_data_t final : public bytes_mapper_t
   uint8_t always_zero3;
   uint8_t always_zero4;
 
-  struct flags_t
+  struct flags1_t
   {
     unsigned int armored : 1;
     unsigned int immune_fractional_damage : 1;
@@ -222,16 +222,86 @@ struct enemy_stat_data_t final : public bytes_mapper_t
     unsigned int immune_physical_damage : 1;
     unsigned int immune_magic_damage : 1;
     unsigned int immune_all_damage : 1;
+  } flags1;
+
+  struct flags2_t
+  {
     unsigned int immune_delay : 1;
     unsigned int immune_slice : 1;
     unsigned int immune_bribe : 1;
-  } flags;
+  } flags2;
 
-  union flag_byte_t
+  struct elemement_absorb_flags_t
+  {
+    unsigned int fire : 1;
+    unsigned int ice : 1;
+    unsigned int lightning : 1;
+    unsigned int water : 1;
+    unsigned int holy : 1;
+  } element_absorb_flags;
+
+  struct element_immune_flags_t
+  {
+    unsigned int fire : 1;
+    unsigned int ice : 1;
+    unsigned int lightning : 1;
+    unsigned int water : 1;
+    unsigned int holy : 1;
+  } element_immune_flags;
+
+  struct element_resist_flags_t
+  {
+    unsigned int fire : 1;
+    unsigned int ice : 1;
+    unsigned int lightning : 1;
+    unsigned int water : 1;
+    unsigned int holy : 1;
+  } element_resist_flags;
+
+  struct element_weakness_flags_t
+  {
+    unsigned int fire : 1;
+    unsigned int ice : 1;
+    unsigned int lightning : 1;
+    unsigned int water : 1;
+    unsigned int holy : 1;
+  } element_weakness_flags;
+  
+  union flag1_byte_t
   {
     uint8_t byte;
-    struct flags_t flags;
-  } flag_byte;
+    struct flags1_t bits;
+  } flag1_byte;
+
+  union flag2_byte_t
+  {
+    uint8_t byte;
+    struct flags2_t bits;
+  } flag2_byte;
+
+  union element_absorb_byte_t
+  {
+    uint8_t byte;
+    struct elemement_absorb_flags_t bits;
+  } element_absorb_byte;
+
+  union element_immune_byte_t
+  {
+    uint8_t byte;
+    struct element_immune_flags_t bits;
+  } element_immune_byte;
+
+  union element_resist_byte_t
+  {
+    uint8_t byte;
+    struct element_resist_flags_t bits;
+  } element_resist_byte;
+
+  union element_weakness_byte_t
+  {
+    uint8_t byte;
+    struct element_weakness_flags_t bits;
+  } element_weakness_byte;
 
   enemy_stat_data_t( const std::vector<char>& bytes, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( intial_offset ), monster_id( monster_id )
   {
@@ -409,7 +479,7 @@ struct aeon_scaling_data_t : public bytes_mapper_t
   aeon_scaling_data_t( const std::vector<char>& bytes, uint8_t initial_offset ) : bytes_mapper_t( bytes ), initial_offset( initial_offset )
   {
     mapBytes();
-    // test();
+    //test();
   }
 
   void mapBytes();
@@ -429,6 +499,7 @@ struct aeon_stat_data_t : public bytes_mapper_t
   uint8_t agi;
   uint8_t eva;
   uint8_t acc;
+  uint8_t luck;
 
   aeon_stat_data_t( int index, const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), index( index )
   {

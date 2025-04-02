@@ -523,10 +523,23 @@ void enemy_stat_data_t::writeToBytes()
   write1Byte( bytes, 0x7E, always_zero3 );
   write1Byte( bytes, 0x7F, always_zero4 );
 
-  flag_byte.flags = { flags.armored, flags.immune_fractional_damage, flags.immune_life, flags.immune_sensor, flags.unknown_flag, flags.immune_physical_damage, flags.immune_magic_damage, flags.immune_all_damage };
-  flag_map1 = flag_byte.byte;
+  flag1_byte.bits = { flags1.armored, flags1.immune_fractional_damage, flags1.immune_life, flags1.immune_sensor, flags1.unknown_flag, flags1.immune_physical_damage, flags1.immune_magic_damage, flags1.immune_all_damage };
+  flag_map1 = flag1_byte.byte;
 
-  // flag_map1 = flags.armored << 0 | flags.immune_fractional_damage << 1 | flags.immune_life << 2 | flags.immune_sensor << 3 | flags.unknown_flag << 4 | flags.immune_physical_damage << 5 | flags.immune_magic_damage << 6 | flags.immune_all_damage << 7;
+  flag2_byte.bits = { flags2.immune_delay, flags2.immune_slice, flags2.immune_bribe };
+  flag_map2 = flag2_byte.byte;
+
+  element_absorb_byte.bits = { element_absorb_flags.fire, element_absorb_flags.ice, element_absorb_flags.lightning, element_absorb_flags.water, element_absorb_flags.holy };
+  element_absorb = element_absorb_byte.byte;
+
+  element_immune_byte.bits = { element_immune_flags.fire, element_immune_flags.ice, element_immune_flags.lightning, element_immune_flags.water, element_immune_flags.holy };
+  element_immune = element_immune_byte.byte;
+
+  element_resist_byte.bits = { element_resist_flags.fire, element_resist_flags.ice, element_resist_flags.lightning, element_resist_flags.water, element_resist_flags.holy };
+  element_resist = element_resist_byte.byte;
+
+  element_weakness_byte.bits = { element_weakness_flags.fire, element_weakness_flags.ice, element_weakness_flags.lightning, element_weakness_flags.water, element_weakness_flags.holy };
+  element_weakness = element_weakness_byte.byte;
 }
 
 void enemy_stat_data_t::test() const
@@ -606,22 +619,71 @@ void enemy_stat_data_t::test() const
   printf( "Always Zero 2: %d\n", always_zero2 );
   printf( "Always Zero 3: %d\n", always_zero3 );
   printf( "Always Zero 4: %d\n", always_zero4 );
-  printf( "Flags: %d %d %d %d %d %d %d %d\n", flags.armored, flags.immune_fractional_damage, flags.immune_life, flags.immune_sensor, flags.unknown_flag, flags.immune_physical_damage, flags.immune_magic_damage, flags.immune_all_damage );
+  printf( "Flags: %d %d %d %d %d %d %d %d\n", flags1.armored, flags1.immune_fractional_damage, flags1.immune_life, flags1.immune_sensor, flags1.unknown_flag, flags1.immune_physical_damage, flags1.immune_magic_damage, flags1.immune_all_damage );
+  printf( "Element Absorb Flags:\n" );
+  printf( "Absorb Fire: %d\n", element_absorb_flags.fire );
+  printf( "Absorb Ice: %d\n", element_absorb_flags.ice );
+  printf( "Absorb Lightning: %d\n", element_absorb_flags.lightning );
+  printf( "Absorb Water: %d\n", element_absorb_flags.water );
+  printf( "Absorb Holy: %d\n", element_absorb_flags.holy );
+  printf( "Element Immune Flags:\n" );
+  printf( "Immune Fire: %d\n", element_immune_flags.fire );
+  printf( "Immune Ice: %d\n", element_immune_flags.ice );
+  printf( "Immune Lightning: %d\n", element_immune_flags.lightning );
+  printf( "Immune Water: %d\n", element_immune_flags.water );
+  printf( "Immune Holy: %d\n", element_immune_flags.holy );
+  printf( "Element Resist Flags:\n" );
+  printf( "Resist Fire: %d\n", element_resist_flags.fire );
+  printf( "Resist Ice: %d\n", element_resist_flags.ice );
+  printf( "Resist Lightning: %d\n", element_resist_flags.lightning );
+  printf( "Resist Water: %d\n", element_resist_flags.water );
+  printf( "Resist Holy: %d\n", element_resist_flags.holy );
+  printf( "Element Weakness Flags:\n" );
+  printf( "Weakness Fire: %d\n", element_weakness_flags.fire );
+  printf( "Weakness Ice: %d\n", element_weakness_flags.ice );
+  printf( "Weakness Lightning: %d\n", element_weakness_flags.lightning );
+  printf( "Weakness Water: %d\n", element_weakness_flags.water );
+  printf( "Weakness Holy: %d\n", element_weakness_flags.holy );
 }
 
 void enemy_stat_data_t::mapFlags()
 {
-  flags.armored = ( flag_map1 & 0x01 ) > 0;
-  flags.immune_fractional_damage = ( flag_map1 & 0x02 ) > 0;
-  flags.immune_life = ( flag_map1 & 0x04 ) > 0;
-  flags.immune_sensor = ( flag_map1 & 0x08 ) > 0;
-  flags.unknown_flag = ( flag_map1 & 0x10 ) > 0;
-  flags.immune_physical_damage = ( flag_map1 & 0x20 ) > 0;
-  flags.immune_magic_damage = ( flag_map1 & 0x40 ) > 0;
-  flags.immune_all_damage = ( flag_map1 & 0x80 ) > 0;
-  flags.immune_delay = ( flag_map2 & 0x01 ) > 0;
-  flags.immune_slice = ( flag_map2 & 0x02 ) > 0;
-  flags.immune_bribe = ( flag_map2 & 0x04 ) > 0;
+  flags1.armored = ( flag_map1 & 0x01 ) > 0;
+  flags1.immune_fractional_damage = ( flag_map1 & 0x02 ) > 0;
+  flags1.immune_life = ( flag_map1 & 0x04 ) > 0;
+  flags1.immune_sensor = ( flag_map1 & 0x08 ) > 0;
+  flags1.unknown_flag = ( flag_map1 & 0x10 ) > 0;
+  flags1.immune_physical_damage = ( flag_map1 & 0x20 ) > 0;
+  flags1.immune_magic_damage = ( flag_map1 & 0x40 ) > 0;
+  flags1.immune_all_damage = ( flag_map1 & 0x80 ) > 0;
+
+  flags2.immune_delay = ( flag_map2 & 0x01 ) > 0;
+  flags2.immune_slice = ( flag_map2 & 0x02 ) > 0;
+  flags2.immune_bribe = ( flag_map2 & 0x04 ) > 0;
+
+  element_absorb_flags.fire = ( element_absorb & 0x01 ) > 0;
+  element_absorb_flags.ice = ( element_absorb & 0x02 ) > 0;
+  element_absorb_flags.lightning = ( element_absorb & 0x04 ) > 0;
+  element_absorb_flags.water = ( element_absorb & 0x08 ) > 0;
+  element_absorb_flags.holy = ( element_absorb & 0x10 ) > 0;
+
+  element_immune_flags.fire = ( element_immune & 0x01 ) > 0;
+  element_immune_flags.ice = ( element_immune & 0x02 ) > 0;
+  element_immune_flags.lightning = ( element_immune & 0x04 ) > 0;
+  element_immune_flags.water = ( element_immune & 0x08 ) > 0;
+  element_immune_flags.holy = ( element_immune & 0x10 ) > 0;
+
+  element_resist_flags.fire = ( element_resist & 0x01 ) > 0;
+  element_resist_flags.ice = ( element_resist & 0x02 ) > 0;
+  element_resist_flags.lightning = ( element_resist & 0x04 ) > 0;
+  element_resist_flags.water = ( element_resist & 0x08 ) > 0;
+  element_resist_flags.holy = ( element_resist & 0x10 ) > 0;
+
+  element_weakness_flags.fire = ( element_weakness & 0x01 ) > 0;
+  element_weakness_flags.ice = ( element_weakness & 0x02 ) > 0;
+  element_weakness_flags.lightning = ( element_weakness & 0x04 ) > 0;
+  element_weakness_flags.water = ( element_weakness & 0x08 ) > 0;
+  element_weakness_flags.holy = ( element_weakness & 0x10 ) > 0;
 }
 
 void enemy_data_t::mapChunks() {
@@ -960,28 +1022,30 @@ void aeon_scaling_data_t::test() const
 
 void aeon_stat_data_t::mapBytes()
 {
-  hp = read2Bytes( bytes, 0x0C );
-  mp = read2Bytes( bytes, 0x0E );
-  str = read1Byte( bytes, 0x10 );
-  def = read1Byte( bytes, 0x11 );
-  mag = read1Byte( bytes, 0x12 );
-  mdef = read1Byte( bytes, 0x13 );
-  agi = read1Byte( bytes, 0x14 );
-  eva = read1Byte( bytes, 0x15 );
-  acc = read1Byte( bytes, 0x16 );
+  hp = read2Bytes( bytes, 0x00 );
+  mp = read2Bytes( bytes, 0x02 );
+  str = read1Byte( bytes, 0x04 );
+  def = read1Byte( bytes, 0x05 );
+  mag = read1Byte( bytes, 0x06 );
+  mdef = read1Byte( bytes, 0x07 );
+  acc = read1Byte( bytes, 0x08 );
+  eva = read1Byte( bytes, 0x09 );
+  agi = read1Byte( bytes, 0x0A );
+  luck = read1Byte( bytes, 0x0B );
 }
 
 void aeon_stat_data_t::writeToBytes()
 {
-  write2Bytes( bytes, 0x0C, hp );
-  write2Bytes( bytes, 0x0E, mp );
-  write1Byte( bytes, 0x10, str );
-  write1Byte( bytes, 0x11, def );
-  write1Byte( bytes, 0x12, mag );
-  write1Byte( bytes, 0x13, mdef );
-  write1Byte( bytes, 0x14, agi );
-  write1Byte( bytes, 0x15, eva );
-  write1Byte( bytes, 0x16, acc );
+  write2Bytes( bytes, 0x00, hp );
+  write2Bytes( bytes, 0x02, mp );
+  write1Byte( bytes, 0x04, str );
+  write1Byte( bytes, 0x05, def );
+  write1Byte( bytes, 0x06, mag );
+  write1Byte( bytes, 0x07, mdef );
+  write1Byte( bytes, 0x08, acc );
+  write1Byte( bytes, 0x09, eva );
+  write1Byte( bytes, 0x0A, agi );
+  write1Byte( bytes, 0x0B, luck );
 }
 
 void aeon_stat_data_t::test() const
@@ -995,7 +1059,8 @@ void aeon_stat_data_t::test() const
   printf( "DEF: %d\n", def );
   printf( "MAG: %d\n", mag );
   printf( "MDEF: %d\n", mdef );
-  printf( "AGI: %d\n", agi );
-  printf( "EVA: %d\n", eva );
   printf( "ACC: %d\n", acc );
+  printf( "EVA: %d\n", eva );
+  printf( "AGI: %d\n", agi );
+  printf( "LUCK: %d\n", luck );
 }

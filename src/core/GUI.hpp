@@ -32,7 +32,8 @@ enum
   ID_POISON_IS_DEADLY = 20,
   ID_RANDOMIZE_AEON_BASE_STATS = 21,
   ID_SHUFFLE_AEON_BASE_STATS = 22,
-  ID_RANDOMIZE_STARTING_OVERDRIVE_MODE = 23
+  ID_RANDOMIZE_STARTING_OVERDRIVE_MODE = 23,
+  ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES = 24,
 };
 
 struct gui_t : public wxApp
@@ -108,6 +109,7 @@ private:
   bool shuffle_aeon_base_stats;
   bool poison_is_deadly;
   bool randomize_starting_overdrive_mode;
+  bool randomize_enemy_elemental_affinities;
 
   bool randomize_key_items;
   bool keep_things_sane;
@@ -127,7 +129,7 @@ public:
            std::vector<character_stats_t*> psd,
            std::vector<aeon_scaling_data_t*> aesd,
            std::vector<aeon_stat_data_t*> absd
-  ) : wxFrame( NULL, wxID_ANY, "FFX Randomizer", wxDefaultPosition, wxSize( 350, 730 ) ),
+  ) : wxFrame( NULL, wxID_ANY, "FFX Randomizer", wxDefaultPosition, wxSize( 700, 600 ) ),
     randomize_enemy_drops( false ),
     randomize_enemy_steals( false ),
     randomize_enemy_bribes( false ),
@@ -147,6 +149,7 @@ public:
     shuffle_aeon_base_stats( false ),
     poison_is_deadly( false ),
     randomize_starting_overdrive_mode( false ),
+    randomize_enemy_elemental_affinities( false ),
     randomize_key_items( false ),
     keep_things_sane( true ),
     randomizer( nullptr ),
@@ -192,6 +195,7 @@ private:
   void onShuffleAeonBaseStats( wxCommandEvent& event );
   void onPoisonIsDeadly( wxCommandEvent& event );
   void onRandomizeStartingOverdriveMode( wxCommandEvent& event );
+  void onRandomizeEnemyElementalAffinities( wxCommandEvent& event );
 
   void onRandomizeKeyItems( wxCommandEvent& event );
   void onKeepThingsSane( wxCommandEvent& event );
@@ -202,10 +206,14 @@ private:
 struct main_panel_t : public wxPanel
 {
   wxCheckBox* poisonIsDeadlyCheckbox;
+
+
   wxCheckBox* randomizeEnemyDropsCheckbox;
   wxCheckBox* randomizeEnemyStealsCheckbox;
   wxCheckBox* randomizeEnemyBribesCheckbox;
   wxCheckBox* randomizeEnemyGearDropsCheckbox;
+  wxCheckBox* randomizeEnemyElementalAffinitiesCheckbox;
+
   wxCheckBox* randomizeShopsCheckbox;
   wxCheckBox* randomizeShopPricesCheckbox;
   wxCheckBox* randomizeFieldItemsCheckbox;
@@ -217,6 +225,7 @@ struct main_panel_t : public wxPanel
     randomizeEnemyStealsCheckbox( nullptr ),
     randomizeEnemyBribesCheckbox( nullptr ),
     randomizeEnemyGearDropsCheckbox( nullptr ),
+    randomizeEnemyElementalAffinitiesCheckbox( nullptr ),
     randomizeShopsCheckbox( nullptr ),
     randomizeShopPricesCheckbox( nullptr ),
     randomizeFieldItemsCheckbox( nullptr ),
@@ -226,20 +235,27 @@ struct main_panel_t : public wxPanel
 
     poisonIsDeadlyCheckbox = new wxCheckBox( this, ID_POISON_IS_DEADLY, _T( "Poison is Deadly" ), wxDefaultPosition, wxDefaultSize, 0 );
     poisonIsDeadlyCheckbox->SetToolTip( "If checked, poison will deal 50% of the players HP per tick instead of the default 25%." );
+
     randomizeEnemyDropsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_DROPS, _T( "Randomize Enemy Drops" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEnemyStealsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_STEALS, _T( "Randomize Enemy Steals" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEnemyBribesCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_BRIBES, _T( "Randomize Enemy Bribes" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEnemyGearDropsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_GEAR_DROPS, _T( "Randomize Enemy Gear Drops" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeEnemyElementalAffinitiesCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES, _T( "Randomize Enemy Elemental Affinities" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeEnemyElementalAffinitiesCheckbox->SetToolTip( "If checked, enemy elemental affinities will be randomized. This includes:\n- Weaknesss \n- Resists \n- Immunities \n- Absorbs\n\nThis is slightly skewed in favor of giving an enemy a weakness if it gets an affinity." );
+
     randomizeShopsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_SHOPS, _T( "Randomize Shops" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeShopPricesCheckbox = new wxCheckBox( this, ID_RANDOMIZE_SHOP_PRICES, _T( "Randomize Shop Prices" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeFieldItemsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_FIELD_ITEMS, _T( "Randomize Field Items" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeGearAbilitiesCheckbox = new wxCheckBox( this, ID_RANDOMIZE_GEAR_ABILITIES, _T( "Randomize Gear Abilities" ), wxDefaultPosition, wxDefaultSize, 0 );
 
     sizer->Add( poisonIsDeadlyCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+
     sizer->Add( randomizeEnemyDropsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEnemyStealsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEnemyBribesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEnemyGearDropsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeEnemyElementalAffinitiesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+
     sizer->Add( randomizeShopsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeShopPricesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeFieldItemsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
