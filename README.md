@@ -36,4 +36,4 @@ Randomizer for many elements of the game Final Fantasy 10
 ____
 **Big shoutout to the wonderful folks in the [Cid's Salvage Ship](https://discord.gg/AGx2grw9nD) discord for answering all my questions and giving suggestions while i was making this.**
 
-**This would not have been possible without the data mapping already done by Karifean and their [Data Parser](https://github.com/Karifean/FFXDataParser) project , as well as the [Ferenheight](https://github.com/peppy-enterprises/fahrenheit) team**
+**This would not have been possible without the data mapping already done by Karifean and their [Data Parser](https://github.com/Karifean/FFXDataParser) project , as well as the [Fahrenheit](https://github.com/peppy-enterprises/fahrenheit) team**
