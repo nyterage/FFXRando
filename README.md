@@ -16,14 +16,14 @@ Randomizer for many elements of the game Final Fantasy 10
 5. Player Stat randomization
 6. Aeon Stat randomization
 7. Starting overdrive mode randomization
+8. Enemy Elemental Affinity randomization
 
 # Planned Future Additons
-1. Enemy Weaknesses/Resists
+1. Random Encounters
+2. Sphere Grid
 
 # Maybe Future Additions
-1. Sphere Grid??
-2. Random Encounters??
-
+1. Enemy Ability randomization??
 
 # How to Build
 **Currently only supports MSVC compilation**
