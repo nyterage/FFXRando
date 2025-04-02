@@ -1,11 +1,6 @@
 # FFXRando
 Randomizer for many elements of the game Final Fantasy 10
 
-# THIS PROJECT IS STILL IN THE VERY EARLY STAGES OF DEVELOPMENT.
-# THERE WILL BE BUGS.
-
-Currently does not even have an interface, just a simple command line that reads, randomizes, then outputs files. 
-
 # How to use
 1. Extract your Final Fantasy X game files from FFX_Data.vbf utilizing the VBF Browser application (can be found on Nexus Mods, under Final Fantasy 12 mods)
 2. Place extracted files into the input folder. Currently the only directory that is needed is ffx_ps2.
