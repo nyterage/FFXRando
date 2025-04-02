@@ -9,10 +9,10 @@ Randomizer for many elements of the game Final Fantasy 10
 5. Play and have fun... hopefully.
 
 # Currently Supports
-1. Field Item randomization, excluding Key Items.
+1. Field Item randomization
 2. Enemy Reward randomization, including Gil, AP, Steal, Drop, Bribe, and Equipment.
-3. Shop Randomization. Randomizes both the number of items in every shop, but also what items they are.
-4. Equipment Randomization. Every piece of equipment in the game, except Celestial Weapons, and Brotherhood will have random abilities.
+3. Shop Randomization
+4. Equipment Randomization.
 5. Player Stat randomization
 6. Aeon Stat randomization
 7. Starting overdrive mode randomization
