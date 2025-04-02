@@ -12,7 +12,7 @@ Randomizer for many elements of the game Final Fantasy 10
 1. Field Item randomization
 2. Enemy Reward randomization, including Gil, AP, Steal, Drop, Bribe, and Equipment.
 3. Shop Randomization
-4. Equipment Randomization.
+4. Equipment Randomization
 5. Player Stat randomization
 6. Aeon Stat randomization
 7. Starting overdrive mode randomization
