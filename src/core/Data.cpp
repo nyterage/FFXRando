@@ -727,7 +727,7 @@ void field_data_t::mapBytes()
 {
   flag = read1Byte( bytes, 0x00 );
   quantity = read1Byte( bytes, 0x01 );
-  type = read1Byte( bytes, 0x02 ) + read1Byte( bytes, 0x03 ) * 0x100;
+  type = read1Byte( bytes, 0x02 ) | ( read1Byte( bytes, 0x03 ) << 8 );
 }
 
 void field_data_t::writeToBytes()
@@ -735,7 +735,7 @@ void field_data_t::writeToBytes()
   write1Byte( bytes, 0x00, flag );
   write1Byte( bytes, 0x01, quantity );
   write1Byte( bytes, 0x02, type & 0xFF );
-  write1Byte( bytes, 0x03, ( type >> 8 ) & 0xFF00 );
+  write1Byte( bytes, 0x03, ( type >> 8 ) & 0xFF );
 }
 
 void field_data_t::test() const

@@ -564,7 +564,7 @@ public:
   {
     enemy_stat_data_t& stats = *enemy->stats_data;
     stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 50, UINT32_MAX );
-    stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, UINT32_MAX );
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, 999 );
     stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, UINT32_MAX );
     stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
     stats.def = normal<uint8_t>( stats.def, stats.def / 2, 0, UINT8_MAX );
@@ -590,7 +590,7 @@ public:
   {
     enemy_stat_data_t& stats = *enemy->stats_data;
     if (stats.mp > 0)
-      stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, UINT32_MAX );
+      stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, 999 );
 
     stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold / 2, 1, UINT32_MAX );
     stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
@@ -630,6 +630,8 @@ public:
     stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
     stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
     stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
+    enemy->loot_data->gil /= defensive_factor;
+    enemy->loot_data->ap /= defensive_factor;
     stats.writeToBytes();
     enemy->stats_data = &stats;
     enemy->writeStatsData( stats );
@@ -903,11 +905,11 @@ public:
     std::vector<int> blacklist = { 177, 203 };
     for (auto& field : field_data)
     {
-      field_data_t* field_data = field;
-      if (std::find( blacklist.begin(), blacklist.end(), field_data->index ) != blacklist.end())
+      field_data_t& field_data = *field;
+      if (std::find( blacklist.begin(), blacklist.end(), field_data.index ) != blacklist.end())
         continue;
 
-      if (field_data->flag != 10 || randomize_key_items)
+      if (field_data.flag != 10 || randomize_key_items)
       {
         int max = randomize_key_items ? 3 : 2;
         int rolled_type = uniform<int>( 0, max );
@@ -916,27 +918,27 @@ public:
         switch (rolled_type)
         {
           case 0:
-            field_data->flag = 0;
-            field_data->quantity = uniform<uint8_t>( 1, UINT8_MAX );
-            field_data->writeToBytes();
+            field_data.flag = 0;
+            field_data.quantity = uniform<uint8_t>( 1, UINT8_MAX );
+            field_data.writeToBytes();
             break;
           case 1:
-            field_data->flag = 2;
-            field_data->type = item->id;
-            field_data->quantity = getRandomItemQuantity( item, false );
-            field_data->writeToBytes();
+            field_data.flag = 0x02;
+            field_data.type = item->id;
+            field_data.quantity = getRandomItemQuantity( item, false );
+            field_data.writeToBytes();
             break;
           case 2:
-            field_data->flag = 5;
-            field_data->quantity = 1;
-            field_data->type = uniform<uint16_t>( 0, buki_data.size() - 1 );
-            field_data->writeToBytes();
+            field_data.flag = 5;
+            field_data.quantity = 1;
+            field_data.type = uniform<uint16_t>( 0, buki_data.size() - 1 );
+            field_data.writeToBytes();
             break;
           case 3:
-            field_data->flag = 10;
-            field_data->type = key_item->id;
-            field_data->quantity = getRandomItemQuantity( key_item, false );
-            field_data->writeToBytes();
+            field_data.flag = 10;
+            field_data.type = key_item->id;
+            field_data.quantity = getRandomItemQuantity( key_item, false );
+            field_data.writeToBytes();
             break;
           default:
             break;
@@ -963,9 +965,10 @@ public:
     for (int i = 0; i < 7; i++)
     {
       character_stats_t& stats = *character_stats_data.at( i );
-      stats.base_hp = normal<uint32_t>( stats.base_hp, stats.base_hp / 2, 50, UINT32_MAX );
-      stats.base_mp = normal<uint32_t>( stats.base_mp, stats.base_mp / 2, 1, UINT32_MAX );
-      stats.base_str = normal<uint8_t>( stats.base_str, stats.base_str / 2, i == 0 ? stats.base_str : 0, UINT8_MAX );
+      stats.base_hp = normal<uint32_t>( stats.base_hp, stats.base_hp / 2, 50, 9999 );
+      stats.base_mp = normal<uint32_t>( stats.base_mp, stats.base_mp / 2, 1, 999 );
+      bool tidus_or_auron = i == 0 || i == 2;
+      stats.base_str = normal<uint8_t>( stats.base_str, stats.base_str / 2, tidus_or_auron ? 14 : 0, UINT8_MAX );
       stats.base_def = normal<uint8_t>( stats.base_def, stats.base_def / 2, 0, UINT8_MAX );
       stats.base_mag = normal<uint8_t>( stats.base_mag, stats.base_mag / 2, 0, UINT8_MAX );
       stats.base_mdef = normal<uint8_t>( stats.base_mdef, stats.base_mdef / 2, 0, UINT8_MAX );
@@ -1040,8 +1043,8 @@ public:
       character_stats_t& new_stats = *shuffled_player_stats_data.at( i );
       stats.base_hp = new_stats.base_hp;
       stats.base_mp = new_stats.base_mp;
-      if (i == 0 && new_stats.base_str < stats.base_str)
-        new_stats.base_str = stats.base_str;
+      if ( (i == 0 || i == 2 ) && new_stats.base_str < 14)
+        new_stats.base_str = 14;
       stats.base_str = new_stats.base_str;
       stats.base_def = new_stats.base_def;
       stats.base_mag = new_stats.base_mag;
