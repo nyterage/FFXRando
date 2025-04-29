@@ -4,23 +4,25 @@ Randomizer for many elements of the game Final Fantasy 10
 # How to use
 1. Extract your Final Fantasy X game files from FFX_Data.vbf utilizing the VBF Browser application (can be found on Nexus Mods, under Final Fantasy 12 mods)
 2. Place extracted files into the input folder. Currently the only directory that is needed is ffx_ps2.
-3. Run the executeable.
-4. After randomizing, you can import the files back into the game using the VBF Browser, or if utilizing the FFX/X2 External File Loader mod, you can place the ffx_ps2 directory into the /data/mods/ folder in your games directory.
-5. Play and have fun... hopefully.
+3. Run the executeable, chose your options and hit Randomize.
+4. import the files back into the game using the VBF Browser **OR**
+5. If utilizing the the FFX/X2 External File Loader mod, you can place the ffx_ps2 directory from the "output" folder into the `/data/mods/` folder in your games directory. **OR**
+6. If utilizing the Fahrenheit Mod Loarder, you can place the FFXRando directory (loacted in the "output" folder) into the `/fahrenheit/modules` folder. Dont forget to edit your loadorder file to include "FFXRando"!
+7. Play and have fun... hopefully.
 
 # Currently Supports
-1. Field Item randomization
-2. Enemy Reward randomization, including Gil, AP, Steal, Drop, Bribe, and Equipment.
+1. Field Item Randomization
+2. Enemy Reward Randomization, including Gil, AP, Steal, Drop, Bribe, and Equipment.
 3. Shop Randomization
 4. Equipment Randomization
-5. Player Stat randomization
-6. Aeon Stat randomization
-7. Starting overdrive mode randomization
-8. Enemy Elemental Affinity randomization
+5. Player Stat Randomization
+6. Aeon Stat Randomization
+7. Starting overdrive mode Randomization
+8. Enemy Elemental Affinity Randomization
+9. Sphere Grid Randomization
 
 # Planned Future Additons
 1. Random Encounters
-2. Sphere Grid
 
 # Maybe Future Additions
 1. Enemy Ability randomization??
