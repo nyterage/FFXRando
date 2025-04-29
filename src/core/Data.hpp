@@ -777,8 +777,8 @@ struct options_pack_t
 static constexpr int ENEMY_COUNT = 360;
 // Versioning
 static constexpr int MAJOR_VERSION = 1;
-static constexpr int MINOR_VERSION = 0;
-static constexpr int PATCH_VERSION = 1;
+static constexpr int MINOR_VERSION = 1;
+static constexpr int PATCH_VERSION = 0;
 // Information
 static const std::string VERSION = "v" + std::to_string( MAJOR_VERSION ) + "." + std::to_string( MINOR_VERSION ) + "." + std::to_string( PATCH_VERSION );
 static const std::string AUTHOR = "Taeznak";
