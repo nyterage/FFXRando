@@ -508,7 +508,7 @@ void enemy_stat_data_t::writeToBytes()
 
   for (int i = 0; i < 0x10; i++)
   {
-    write2Bytes( bytes, 0x50 + i * 2, abilities.at( i ) );
+    write2Bytes( bytes, 0x50 + i * 2, abilities[i] );
   }
 
   write2Bytes( bytes, 0x70, forced_action );
@@ -834,6 +834,36 @@ void character_stats_t::mapBytes()
   ability_field3 = read4Bytes( bytes, 0x46 );
   encounter_count = read4Bytes( bytes, 0x50 );
   kill_count = read4Bytes( bytes, 0x54 );
+  unknown4 = read4Bytes( bytes, 0x58 );
+  unknown5 = read4Bytes( bytes, 0x5C );
+  overdrive_mode_counters = read2Bytes( bytes, 0x60 );
+  overdrive_mode_flags = read4Bytes( bytes, 0x88 );
+  unknown6 = read4Bytes( bytes, 0x8C );
+  unknown7 = read4Bytes( bytes, 0x90 );
+}
+
+void character_stats_t::mapFlags()
+{
+  overdrive_learned.warrior = ( overdrive_mode_flags & 0x01 ) > 0;
+  overdrive_learned.comrade = ( overdrive_mode_flags & 0x02 ) > 0;
+  overdrive_learned.stoic = ( overdrive_mode_flags & 0x04 ) > 0;
+  overdrive_learned.healer = ( overdrive_mode_flags & 0x8 ) > 0;
+  overdrive_learned.tactician = ( overdrive_mode_flags & 0x10 ) > 0;
+  overdrive_learned.victim = ( overdrive_mode_flags & 0x20 ) > 0;
+  overdrive_learned.dancer = ( overdrive_mode_flags & 0x40 ) > 0;
+  overdrive_learned.avenger = ( overdrive_mode_flags & 0x80 ) > 0;
+  overdrive_learned.slayer = ( overdrive_mode_flags & 0x100 ) > 0;
+  overdrive_learned.hero = ( overdrive_mode_flags & 0x200 ) > 0;
+  overdrive_learned.rook = ( overdrive_mode_flags & 0x400 ) > 0;
+  overdrive_learned.victor = ( overdrive_mode_flags & 0x800 ) > 0;
+  overdrive_learned.coward = ( overdrive_mode_flags & 0x1000 ) > 0;
+  overdrive_learned.ally = ( overdrive_mode_flags & 0x2000 ) > 0;
+  overdrive_learned.sufferer = ( overdrive_mode_flags & 0x4000 ) > 0;
+  overdrive_learned.daredevil = ( overdrive_mode_flags & 0x8000 ) > 0;
+  overdrive_learned.loner = ( overdrive_mode_flags & 0x10000 ) > 0;
+  overdrive_learned.unused1 = ( overdrive_mode_flags & 0x20000 ) > 0;
+  overdrive_learned.unused2 = ( overdrive_mode_flags & 0x40000 ) > 0;
+  overdrive_learned.aeon = ( overdrive_mode_flags & 0x80000 ) > 0;
 }
 
 void character_stats_t::writeToBytes()
@@ -880,6 +910,19 @@ void character_stats_t::writeToBytes()
   write4Bytes( bytes, 0x46, ability_field3 );
   write4Bytes( bytes, 0x50, encounter_count );
   write4Bytes( bytes, 0x54, kill_count );
+  write4Bytes( bytes, 0x58, unknown4 );
+  write4Bytes( bytes, 0x5C, unknown5 );
+  write2Bytes( bytes, 0x60, overdrive_mode_counters );
+  write4Bytes( bytes, 0x8C, unknown6 );
+  write4Bytes( bytes, 0x90, unknown7 );
+
+  overdrive_bytes.bits = { overdrive_learned.warrior, overdrive_learned.comrade, overdrive_learned.stoic, 
+    overdrive_learned.healer, overdrive_learned.tactician, overdrive_learned.victim, overdrive_learned.dancer,
+    overdrive_learned.avenger, overdrive_learned.slayer, overdrive_learned.hero, overdrive_learned.rook,
+    overdrive_learned.victor, overdrive_learned.coward, overdrive_learned.ally, overdrive_learned.sufferer,
+    overdrive_learned.daredevil, overdrive_learned.loner, overdrive_learned.unused1, overdrive_learned.unused2,
+    overdrive_learned.aeon };
+  overdrive_mode_flags = overdrive_bytes.bytes;
 }
 
 void character_stats_t::test() const
@@ -928,6 +971,35 @@ void character_stats_t::test() const
   printf( "Ability Field 3: %d\n", ability_field3 );
   printf( "Encounter Count: %d\n", encounter_count );
   printf( "Kill Count: %d\n", kill_count );
+  printf( "Unknown4: %d\n", unknown4 );
+  printf( "Unknown5: %d\n", unknown5 );
+  printf( "Overdrive Mode Counters: %d\n", overdrive_mode_counters );
+  printf( "Overdrive Mode Flags: %d\n", overdrive_mode_flags );
+  printf( "________________\n" );
+  printf( "Overdrive Learned:\n" );
+  printf( "Warrior: %d\n", overdrive_learned.warrior );
+  printf( "Comrade: %d\n", overdrive_learned.comrade );
+  printf( "Stoic: %d\n", overdrive_learned.stoic );
+  printf( "Healer: %d\n", overdrive_learned.healer );
+  printf( "Tactician: %d\n", overdrive_learned.tactician );
+  printf( "Victim: %d\n", overdrive_learned.victim );
+  printf( "Dancer: %d\n", overdrive_learned.dancer );
+  printf( "Avenger: %d\n", overdrive_learned.avenger );
+  printf( "Slayer: %d\n", overdrive_learned.slayer );
+  printf( "Hero: %d\n", overdrive_learned.hero );
+  printf( "Rook: %d\n", overdrive_learned.rook );
+  printf( "Victor: %d\n", overdrive_learned.victor );
+  printf( "Coward: %d\n", overdrive_learned.coward );
+  printf( "Ally: %d\n", overdrive_learned.ally );
+  printf( "Sufferer: %d\n", overdrive_learned.sufferer );
+  printf( "Daredevil: %d\n", overdrive_learned.daredevil );
+  printf( "Loner: %d\n", overdrive_learned.loner );
+  printf( "Unused1: %d\n", overdrive_learned.unused1 );
+  printf( "Unused2: %d\n", overdrive_learned.unused2 );
+  printf( "Aeon: %d\n", overdrive_learned.aeon );
+  printf( "________________\n" );
+  printf( "Unknown6: %d\n", unknown6 );
+  printf( "Unknown7: %d\n", unknown7 );
 }
 
 void aeon_scaling_data_t::mapBytes()
@@ -956,9 +1028,6 @@ void aeon_scaling_data_t::mapBytes()
   acc_coef1 = read1Byte( bytes, 0x28 );
   acc_coef2 = read1Byte( bytes, 0x29 );
   unknown = read2Bytes( bytes, 0x2A );
-
-  if (ap_req_coef1 == 0 && ap_req_coef2 == 0 && ap_req_coef3 == 0 && hp_coef1 > 0)
-    aeon_scaling_data.push_back( this );
 }
 
 void aeon_scaling_data_t::writeToBytes()
@@ -1063,4 +1132,137 @@ void aeon_stat_data_t::test() const
   printf( "EVA: %d\n", eva );
   printf( "AGI: %d\n", agi );
   printf( "LUCK: %d\n", luck );
+}
+
+void sphere_grid_node_data_t::mapBytes()
+{
+  uint16_t x_pos_raw = read2Bytes( bytes, 0x00 );
+  if (( x_pos_raw & 0x8000 ) != 0)
+    x_pos = x_pos_raw - 0x10000;
+  else
+    x_pos = x_pos_raw;
+  uint16_t y_pos_raw = read2Bytes( bytes, 0x02 );
+  if (( y_pos_raw & 0x8000 ) != 0)
+    y_pos = y_pos_raw - 0x10000;
+  else
+    y_pos = y_pos_raw;
+
+  unknown1 = read2Bytes( bytes, 0x04 );
+  original_content = read2Bytes( bytes, 0x06 );
+  cluster = read2Bytes( bytes, 0x08 );
+  unknown2 = read2Bytes( bytes, 0x0A );
+}
+
+void sphere_grid_node_data_t::writeToBytes()
+{
+  //write2Bytes( bytes, 0x00, ( ( x_pos + 0x10000 ) & 0x8000 ) == 0 ? x_pos + 0x10000 : x_pos );
+  //write2Bytes( bytes, 0x02, ( ( y_pos + 0x10000 ) & 0x8000 ) == 0 ? y_pos + 0x10000 : y_pos );
+  //write2Bytes( bytes, 0x04, unknown1 );
+  write2Bytes( bytes, 0x06, original_content );
+  write2Bytes( bytes, 0x08, cluster );
+  write2Bytes( bytes, 0x0A, unknown2 );
+}
+
+void sphere_grid_node_data_t::test() const
+{
+  bytes_mapper_t::test();
+  printf( "____________________Sphere Node Data______________________\n" );
+  printf( "X Pos: %d\n", x_pos );
+  printf( "Y Pos: %d\n", y_pos );
+  printf( "Unknown1: %d\n", unknown1 );
+  printf( "Original Content: %d\n", original_content );
+  printf( "Cluster: %d\n", cluster );
+  printf( "Unknown2: %d\n", unknown2 );
+  printf( "Content: %d\n", content );
+}
+
+void sphere_grid_data_t::mapBytes()
+{
+  switch (type)
+  {
+    case SPHERE_GRID_ORIGINAL:
+      full_content_bytes = fileToBytes( INPUT_FOLDER + ABMAP_FOLDER + "dat09.dat" );
+      break;
+    case SPHERE_GRID_STANDARD:
+      full_content_bytes = fileToBytes( INPUT_FOLDER + ABMAP_FOLDER + "dat10.dat" );
+      break;
+    case SPHERE_GRID_EXPERT:
+      full_content_bytes = fileToBytes( INPUT_FOLDER + ABMAP_FOLDER + "dat11.dat" );
+      break;
+    default:
+      break;
+  }
+  std::vector<char> temp_bytes = std::vector<char>( full_content_bytes.begin() + CONTENT_OFFSET, full_content_bytes.end() );
+
+  for (int i = 0; i < temp_bytes.size(); i++)
+  {
+    uint8_t copy = read1Byte( temp_bytes, i );
+    chunked_content_bytes.push_back( copy );
+  }
+
+  unknown1 = read2Bytes( bytes, 0x00 );
+  cluster_count = read2Bytes( bytes, 0x02 );
+  node_count = read2Bytes( bytes, 0x04 );
+  link_count = read2Bytes( bytes, 0x06 );
+  unknown2 = read2Bytes( bytes, 0x08 );
+  unknown3 = read2Bytes( bytes, 0x0A );
+  unknown4 = read2Bytes( bytes, 0x0C );
+  unknown5 = read2Bytes( bytes, 0x0E );
+
+  size_t cluster_end = 0x10 + cluster_count * CLUSTER_LENGTH;
+  size_t node_end = cluster_end + node_count * NODE_LENGTH;
+  for (int i = 0; i < node_count * NODE_LENGTH; i += NODE_LENGTH )
+  {
+    std::vector<char> copy( bytes.begin() + cluster_end + i, bytes.begin() + cluster_end + i + NODE_LENGTH );
+    sphere_grid_node_data_t* node = new sphere_grid_node_data_t( copy );
+    nodes.push_back( node );
+  }
+
+  for (int i = 0; i < chunked_content_bytes.size(); i++)
+  {
+    sphere_grid_node_data_t& node = *nodes[i];
+    node.content = chunked_content_bytes[i];
+  }
+}
+
+void sphere_grid_data_t::writeToBytes()
+{
+  //write2Bytes( bytes, 0x00, unknown1 );
+  //write2Bytes( bytes, 0x02, cluster_count );
+  //write2Bytes( bytes, 0x04, node_count );
+  //write2Bytes( bytes, 0x06, link_count );
+  //write2Bytes( bytes, 0x08, unknown2 );
+  //write2Bytes( bytes, 0x0A, unknown3 );
+  //write2Bytes( bytes, 0x0C, unknown4 );
+  //write2Bytes( bytes, 0x0E, unknown5 );
+  size_t cluster_end = 0x10 + cluster_count * CLUSTER_LENGTH;
+  for (int i = 0; i < node_count; i++)
+  {
+    sphere_grid_node_data_t& node = *nodes[i];
+    std::vector<char> copy = node.bytes;
+    for (int j = 0; j < NODE_LENGTH; j++)
+    {
+      write1Byte( bytes, cluster_end + i  + j, copy[ j ] );
+    }
+    write1Byte( full_content_bytes, i + CONTENT_OFFSET, node.content );
+  }
+}
+
+void sphere_grid_data_t::test() const
+{
+  bytes_mapper_t::test();
+  printf( "____________________Sphere Grid Data______________________\n" );
+  printf( "Unknown1: %d\n", unknown1 );
+  printf( "Cluster Count: %d\n", cluster_count );
+  printf( "Node Count: %d\n", node_count );
+  printf( "Link Count: %d\n", link_count );
+  printf( "Unknown2: %d\n", unknown2 );
+  printf( "Unknown3: %d\n", unknown3 );
+  printf( "Unknown4: %d\n", unknown4 );
+  printf( "Unknown5: %d\n", unknown5 );
+  printf( "Nodes: \n" );
+  for (auto& node : nodes)
+  {
+    node->test();
+  }
 }

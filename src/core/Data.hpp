@@ -1,11 +1,21 @@
 #pragma once
 #include <iostream>
-#include <unordered_map>
 #include <string>
-#include <vector>
 #include <cstdint>
 #include "BytesHelper.hpp"
-// #include "/FFXDataParser/"
+// #define NDEBUG
+#include <cassert>
+
+// Use (void) to silence unused warnings.
+#define assertm(exp, msg) assert((void(msg), exp));
+
+enum sphere_grid_type_t
+{
+  SPHERE_GRID_ORIGINAL,
+  SPHERE_GRID_STANDARD,
+  SPHERE_GRID_EXPERT
+};
+
 struct item_t
 {
   uint16_t id;
@@ -59,7 +69,7 @@ struct gear_data_t final : public bytes_mapper_t
   bool is_brotherhood;
   bool is_unknown_flag;
 
-  gear_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes ) {
+  gear_data_t( chunk_t& data ) : bytes_mapper_t( data.data ) {
     is_buki_get = ( bytes.size() == 16 );
     if (is_buki_get)
       mapBytesBukiGet();
@@ -351,7 +361,7 @@ struct field_data_t final : public bytes_mapper_t
   uint8_t quantity;
   uint16_t type;
 
-  field_data_t( int idx, const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), index( idx )
+  field_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), index( data.index )
   {
     mapBytes();
     // test();
@@ -368,7 +378,7 @@ struct shop_data_t final : public bytes_mapper_t
   std::vector<uint16_t> item_indexes;
   bool is_gear_shop;
 
-  shop_data_t( const std::vector<char>& bytes, bool gear ) : bytes_mapper_t( bytes ), is_gear_shop( gear )
+  shop_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), is_gear_shop( data.is_gear_shop_chunk )
   {
     mapBytes();
     // test();
@@ -382,7 +392,7 @@ struct item_rate_t : public bytes_mapper_t
 {
   uint32_t item_rate;
 
-  item_rate_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), item_rate( read4Bytes( bytes, 0x00 ) )
+  item_rate_t( chunk_t& data ) : bytes_mapper_t( data.data ), item_rate( read4Bytes( bytes, 0x00 ) )
   {
     // test();
   }
@@ -436,21 +446,58 @@ struct character_stats_t : public bytes_mapper_t
   uint32_t ability_field3;
   uint32_t encounter_count;
   uint32_t kill_count;
+  uint32_t unknown4;
+  uint32_t unknown5;
+  uint16_t overdrive_mode_counters;
+  uint32_t overdrive_mode_flags;
+  uint32_t unknown6;
+  uint32_t unknown7;
 
-  character_stats_t( int index, const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), index( index )
+  struct overdrive_flags_t
+  {
+    unsigned int warrior : 1;
+    unsigned int comrade : 1;
+    unsigned int stoic : 1;
+    unsigned int healer : 1;
+    unsigned int tactician : 1;
+    unsigned int victim : 1;
+    unsigned int dancer : 1;
+    unsigned int avenger : 1;
+    unsigned int slayer : 1;
+    unsigned int hero : 1;
+    unsigned int rook : 1;
+    unsigned int victor : 1;
+    unsigned int coward : 1;
+    unsigned int ally : 1;
+    unsigned int sufferer : 1;
+    unsigned int daredevil : 1;
+    unsigned int loner : 1;
+    unsigned int unused1 : 1;
+    unsigned int unused2 : 1;
+    unsigned int aeon : 1;
+  } overdrive_learned;
+
+  union overdrive_bytes_t
+  {
+    uint32_t bytes;
+    struct overdrive_flags_t bits;
+  } overdrive_bytes;
+
+  character_stats_t( chunk_t& data ) : bytes_mapper_t( data.data ), index( data.index )
   {
     mapBytes();
+    mapFlags();
     // test();
   }
 
   void mapBytes();
+  void mapFlags();
   void writeToBytes();
   void test() const override;
 };
 
 struct aeon_scaling_data_t : public bytes_mapper_t
 {
-  uint8_t initial_offset;
   uint8_t genre_byte;
   uint8_t ap_req_coef1;
   uint8_t ap_req_coef2;
@@ -476,7 +523,7 @@ struct aeon_scaling_data_t : public bytes_mapper_t
   uint8_t acc_coef2;
   uint16_t unknown;
 
-  aeon_scaling_data_t( const std::vector<char>& bytes, uint8_t initial_offset ) : bytes_mapper_t( bytes ), initial_offset( initial_offset )
+  aeon_scaling_data_t( chunk_t& data ) : bytes_mapper_t( data.data )
   {
     mapBytes();
     //test();
@@ -501,7 +548,7 @@ struct aeon_stat_data_t : public bytes_mapper_t
   uint8_t acc;
   uint8_t luck;
 
-  aeon_stat_data_t( int index, const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), index( index )
+  aeon_stat_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), index( data.index )
   {
     mapBytes();
     // test();
@@ -512,12 +559,236 @@ struct aeon_stat_data_t : public bytes_mapper_t
   void test() const override;
 };
 
+struct sphere_grid_node_data_t : public bytes_mapper_t
+{
+  int16_t x_pos;
+  int16_t y_pos;
+  uint16_t unknown1;
+  uint16_t original_content;
+  uint16_t cluster;
+  uint16_t unknown2;
+
+  uint8_t content;
+
+  sphere_grid_node_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes )
+  {
+    mapBytes();
+    // test();
+  }
+
+  void mapBytes();
+  void writeToBytes();
+  void test() const override;
+};
+
+struct sphere_grid_data_t : public bytes_mapper_t
+{
+  const int CLUSTER_LENGTH = 16;
+  const int NODE_LENGTH = 12;
+  const int LINK_LENGTH = 8;
+  const int CONTENT_OFFSET = 8;
+
+  sphere_grid_type_t type;
+  std::vector<char> full_content_bytes;
+  std::vector<uint8_t> chunked_content_bytes;
+
+  uint16_t unknown1;
+  uint16_t cluster_count;
+  uint16_t node_count;
+  uint16_t link_count;
+  uint16_t unknown2;
+  uint16_t unknown3;
+  uint16_t unknown4;
+  uint16_t unknown5;
+
+  std::vector<sphere_grid_node_data_t*> nodes;
+
+  sphere_grid_data_t( const std::vector<char>& bytes, sphere_grid_type_t type ) : bytes_mapper_t( bytes ), type( type )
+  {
+    mapBytes();
+    // test();
+  }
+
+  void mapBytes();
+  void writeToBytes();
+  void test() const override;
+};
+
+struct data_pack_t
+{
+  std::vector<enemy_data_t*>& enemy_data;
+  std::vector<field_data_t*>& field_data;
+  std::vector<shop_data_t*>& item_shop_data;
+  std::vector<shop_data_t*>& gear_shop_data;
+  std::vector<gear_data_t*>& buki_data;
+  std::vector<gear_data_t*>& weapon_data;
+  std::vector<gear_data_t*>& shop_arms_data;
+  std::vector<item_rate_t*>& item_rate_data;
+  std::vector<character_stats_t*>& player_stats_data;
+  std::vector<aeon_scaling_data_t*>& aeon_scaling_data;
+  std::vector<aeon_stat_data_t*>& aeon_stat_data;
+  std::vector<sphere_grid_data_t*>& sphere_grid_data;
+
+  data_pack_t() = default;
+
+  data_pack_t(
+    std::vector<enemy_data_t*>& enemy_data,
+    std::vector<field_data_t*>& field_data,
+    std::vector<shop_data_t*>& item_shop_data,
+    std::vector<shop_data_t*>& gear_shop_data,
+    std::vector<gear_data_t*>& buki_data,
+    std::vector<gear_data_t*>& weapon_data,
+    std::vector<gear_data_t*>& shop_arms_data,
+    std::vector<item_rate_t*>& item_rate_data,
+    std::vector<character_stats_t*>& player_stats_data,
+    std::vector<aeon_scaling_data_t*>& aeon_scaling_data,
+    std::vector<aeon_stat_data_t*>& aeon_stat_data,
+    std::vector<sphere_grid_data_t*>& sphere_grid_data
+  ) :
+    enemy_data( enemy_data ),
+    field_data( field_data ),
+    item_shop_data( item_shop_data ),
+    gear_shop_data( gear_shop_data ),
+    buki_data( buki_data ),
+    weapon_data( weapon_data ),
+    shop_arms_data( shop_arms_data ),
+    item_rate_data( item_rate_data ),
+    player_stats_data( player_stats_data ),
+    aeon_scaling_data( aeon_scaling_data ),
+    aeon_stat_data( aeon_stat_data ),
+    sphere_grid_data( sphere_grid_data )
+  {}
+};
+
+struct options_pack_t
+{
+  bool randomize_enemy_drops;
+  bool randomize_enemy_steals;
+  bool randomize_enemy_bribes;
+  bool randomize_enemy_gear_drops;
+  bool randomize_enemy_stats;
+  bool randomize_enemy_stats_defensive;
+  bool randomize_enemy_stats_shuffle;
+  bool randomize_shops;
+  bool randomize_shop_prices;
+  bool randomize_field_items;
+  bool randomize_gear_abilities;
+  bool randomize_player_stats;
+  bool randomize_aeon_stat_scaling;
+  bool randomize_aeon_base_stats;
+  bool shuffle_player_stats;
+  bool shuffle_aeon_stat_scaling;
+  bool shuffle_aeon_base_stats;
+  bool poison_is_deadly;
+  bool randomize_starting_overdrive_mode;
+  bool randomize_enemy_elemental_affinities;
+
+  bool shuffle_sphere_grid;
+  bool randomize_sphere_grid;
+  bool empty_sphere_grid;
+  bool fill_sphere_grid;
+  bool remove_sphere_grid_locks;
+  bool upgrade_sphere_nodes;
+  bool downgrade_sphere_nodes;
+
+  bool randomize_key_items;
+  bool randomize_celestials;
+  bool randomize_brotherhood;
+  bool keep_things_sane;
+  int32_t seed;
+  std::string seed_text;
+
+  bool fahrenheit;
+
+  options_pack_t(
+    bool randomize_enemy_drops,
+    bool randomize_enemy_steals,
+    bool randomize_enemy_bribes,
+    bool randomize_enemy_gear_drops,
+    bool randomize_enemy_stats,
+    bool randomize_enemy_stats_defensive,
+    bool randomize_enemy_stats_shuffle,
+    bool randomize_shops,
+    bool randomize_shop_prices,
+    bool randomize_field_items,
+    bool randomize_gear_abilities,
+    bool randomize_player_stats,
+    bool randomize_aeon_stat_scaling,
+    bool randomize_aeon_base_stats,
+    bool shuffle_player_stats,
+    bool shuffle_aeon_stat_scaling,
+    bool shuffle_aeon_base_stats,
+    bool poison_is_deadly,
+    bool randomize_starting_overdrive_mode,
+    bool randomize_enemy_elemental_affinities,
+    bool shuffle_sphere_grid,
+    bool randomize_sphere_grid,
+    bool empty_sphere_grid,
+    bool fill_sphere_grid,
+    bool remove_sphere_grid_locks,
+    bool upgrade_sphere_nodes,
+    bool downgrade_sphere_nodes,
+    bool randomize_key_items,
+    bool randomize_celestials,
+    bool randomize_brotherhood,
+    bool keep_things_sane,
+    int32_t seed,
+    std::string seed_text,
+    bool fahrenheit
+  ) :
+  randomize_enemy_drops( randomize_enemy_drops ),
+    randomize_enemy_steals( randomize_enemy_steals ),
+    randomize_enemy_bribes( randomize_enemy_bribes ),
+    randomize_enemy_gear_drops( randomize_enemy_gear_drops ),
+    randomize_enemy_stats( randomize_enemy_stats ),
+    randomize_enemy_stats_defensive( randomize_enemy_stats_defensive ),
+    randomize_enemy_stats_shuffle( randomize_enemy_stats_shuffle ),
+    randomize_shops( randomize_shops ),
+    randomize_shop_prices( randomize_shop_prices ),
+    randomize_field_items( randomize_field_items ),
+    randomize_gear_abilities( randomize_gear_abilities ),
+    randomize_player_stats( randomize_player_stats ),
+    randomize_aeon_stat_scaling( randomize_aeon_stat_scaling ),
+    randomize_aeon_base_stats( randomize_aeon_base_stats ),
+    shuffle_player_stats( shuffle_player_stats ),
+    shuffle_aeon_stat_scaling( shuffle_aeon_stat_scaling ),
+    shuffle_aeon_base_stats( shuffle_aeon_base_stats ),
+    poison_is_deadly( poison_is_deadly ),
+    randomize_starting_overdrive_mode( randomize_starting_overdrive_mode ),
+    randomize_enemy_elemental_affinities( randomize_enemy_elemental_affinities ),
+    shuffle_sphere_grid( shuffle_sphere_grid ),
+    randomize_sphere_grid( randomize_sphere_grid ),
+    empty_sphere_grid( empty_sphere_grid ),
+    fill_sphere_grid( fill_sphere_grid ),
+    remove_sphere_grid_locks( remove_sphere_grid_locks ),
+    upgrade_sphere_nodes( upgrade_sphere_nodes ),
+    downgrade_sphere_nodes( downgrade_sphere_nodes ),
+    randomize_key_items( randomize_key_items ),
+    randomize_celestials( randomize_celestials ),
+    randomize_brotherhood( randomize_brotherhood ),
+    keep_things_sane( keep_things_sane ),
+    seed( seed ),
+    seed_text( seed_text ),
+    fahrenheit( fahrenheit )
+  {}
+};
+
 // Constant values
 static constexpr int ENEMY_COUNT = 360;
+// Versioning
+static constexpr int MAJOR_VERSION = 1;
+static constexpr int MINOR_VERSION = 0;
+static constexpr int PATCH_VERSION = 1;
+// Information
+static const std::string VERSION = "v" + std::to_string( MAJOR_VERSION ) + "." + std::to_string( MINOR_VERSION ) + "." + std::to_string( PATCH_VERSION );
+static const std::string AUTHOR = "Taeznak";
+static const std::string NAME = "FFXRando";
+static const std::string DESCRIPTION = "A randomizer for Final Fantasy X";
 
 // Path data
 static const std::string INPUT_FOLDER = "input/";
 static const std::string OUTPUT_FOLDER = "output/";
+static const std::string FAHRENHEIT_PREFIX = "FFXRando/efl/x/";
 static const std::string FFX_FOLDER = "/ffx_ps2/ffx/";
 static const std::string JPPC_FOLDER = FFX_FOLDER + "/master/jppc/";
 static const std::string USPC_FOLDER = FFX_FOLDER + "/master/new_uspc/";
@@ -539,6 +810,7 @@ static const std::string SPPC_BTL_KERN_FOLDER = SPPC_FOLDER + "/battle/kernel/";
 static const std::string BATTLE_FOLDER = JPPC_FOLDER + "/battle/";
 static const std::string BATTLE_KERNEL_FOLDER = BATTLE_FOLDER + "/kernel/";
 static const std::string MONSTER_FOLDER = BATTLE_FOLDER + "/mon/";
+static const std::string ABMAP_FOLDER = JPPC_FOLDER + "/menu/abmap/";
 
 static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
   { "ch", CHPC_BTL_KERN_FOLDER},
@@ -550,16 +822,3 @@ static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
   { "sp", SPPC_BTL_KERN_FOLDER},
   { "us", USPC_BTL_KERN_FOLDER}
 };
-
-// Dynamic data
-static std::unordered_map<int, enemy_data_t*> enemy_data;
-static std::vector<field_data_t*> field_data;
-static std::vector<shop_data_t*> item_shop_data;
-static std::vector<shop_data_t*> gear_shop_data;
-static std::vector<gear_data_t*> buki_data;
-static std::vector<gear_data_t*> weapon_data;
-static std::vector<gear_data_t*> shop_arms_data;
-static std::vector<item_rate_t*> item_rate_data;
-static std::vector<character_stats_t*> player_stats_data;
-static std::vector<aeon_scaling_data_t*> aeon_scaling_data;
-static std::vector<aeon_stat_data_t*> aeon_stat_data;

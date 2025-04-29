@@ -4,9 +4,7 @@
 bool gui_t::OnInit()
 {
   SetAppearance( Appearance::System );
-  frame_t* frame = new frame_t( enemy_data, field_data, item_shop_data, gear_shop_data,
-                                buki_data, weapon_data, arms_shop_data, item_rate_data, 
-                                player_stats_data, aeon_scaling_data, aeon_stat_data );
+  frame_t* frame = new frame_t( dp );
   frame->Show( true );
   return true;
 }
@@ -24,6 +22,7 @@ void frame_t::initialize()
   Bind( wxEVT_TEXT, &frame_t::onSeedChange, this, ID_SEED );
 
   wxStaticText* extra_text = new wxStaticText( this, wxID_ANY, _T( "Options that affect other aspects of the randomizer:" ), wxDefaultPosition, wxDefaultSize, 0 );
+  extra_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
   header_panel_t* header_panel = new header_panel_t( this );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeKeyItems, this, ID_RANDOMIZE_KEY_ITEMS );
 
@@ -47,19 +46,33 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeStartingOverdriveMode, this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyElementalAffinities, this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleSphereGrid, this, ID_SHUFFLE_SPHERE_GRID );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeSphereGrid, this, ID_RANDOMIZE_SPHERE_GRID );
+  Bind( wxEVT_CHECKBOX, &frame_t::onEmptySphereGrid, this, ID_EMPTY_GRID );
+  Bind( wxEVT_CHECKBOX, &frame_t::onFillSphereGrid, this, ID_FULL_GRID );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRemoveSphereGridLocks, this, ID_REMOVE_LOCKS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onUpgradeSphereNodes, this, ID_UPGRADE_SPHERE_NODES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onDowngradeSphereNodes, this, ID_DOWNGRADE_SPHERE_NODES );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onKeepThingsSane, this, ID_KEEP_THINGS_SANE );
+  Bind( wxEVT_CHECKBOX, &frame_t::onFahrenheit, this, ID_FAHRENHEIT );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeCelestials, this, ID_RANDOMIZE_CELESTIALS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeBrotherhood, this, ID_RANDOMIZE_BROTHERHOOD );
 
   wxStaticText* main_text = new wxStaticText( this, wxID_ANY, _T( "Main Options:" ), wxDefaultPosition, wxDefaultSize, 0 );
+  main_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
   main_panel_t* panel = new main_panel_t( this );
 
-  wxStaticText* player_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
-  player_stats_panel_t* player_stats_panel = new player_stats_panel_t( this );
+  wxStaticText* new_game_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
+  new_game_text->SetFont( wxFont( 12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+  new_game_panel_t* new_game_pannel = new new_game_panel_t( this );
 
   wxStaticText* enemy_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
+  enemy_stats_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
   enemy_stats_panel_t* stats_panel = new enemy_stats_panel_t( this );
 
   randomize_button = new wxButton( this, ID_RANDOMIZE, _T( "Randomize" ), wxDefaultPosition, wxDefaultSize, 0 );
+  randomize_button->SetToolTip( "Click this button to randomize the game!" );
   Bind( wxEVT_BUTTON, &frame_t::onRandomize, this, ID_RANDOMIZE );
 
   wxBoxSizer* vertical_main_sizer = new wxBoxSizer( wxVERTICAL );
@@ -67,13 +80,11 @@ void frame_t::initialize()
   vertical_main_sizer->Add( panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
 
   wxBoxSizer* vertical_stats_sizer = new wxBoxSizer( wxVERTICAL );
-  vertical_stats_sizer->Add( player_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  vertical_stats_sizer->Add( player_stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  vertical_stats_sizer->Add( enemy_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  vertical_stats_sizer->Add( stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  vertical_stats_sizer->Add( new_game_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  vertical_stats_sizer->Add( new_game_pannel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
 
-  horizontal_sizer->Add( vertical_main_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  horizontal_sizer->Add( vertical_stats_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  horizontal_sizer->Add( vertical_main_sizer, 0, wxALIGN_TOP | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  horizontal_sizer->Add( vertical_stats_sizer, 0, wxALIGN_TOP | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
 
   main_vertical_sizer->Add( header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( seed_header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
@@ -81,6 +92,8 @@ void frame_t::initialize()
   main_vertical_sizer->Add( extra_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( header_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( horizontal_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+  main_vertical_sizer->Add( enemy_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  main_vertical_sizer->Add( stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( randomize_button, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   SetSizer( main_vertical_sizer );
   SetAutoLayout( true );
@@ -100,41 +113,61 @@ void frame_t::onRandomize( wxCommandEvent& event )
     return;
   }
 
+  if (randomize_sphere_grid && shuffle_sphere_grid)
+  {
+    wxLogMessage( "You can only pick one of the sphere grid randomization options" );
+    return;
+  }
+
+  if (upgrade_sphere_nodes && downgrade_sphere_nodes)
+  {
+    wxLogMessage( "You can only pick one of the sphere grid node upgrade options" );
+    return;
+  }
+
+  if (empty_sphere_grid && fill_sphere_grid)
+  {
+    wxLogMessage( "You can only pick one of the sphere grid empty/fill options" );
+    return;
+  }
+
+  options = new options_pack_t( randomize_enemy_drops,
+                                randomize_enemy_steals,
+                                randomize_enemy_bribes,
+                                randomize_enemy_gear_drops,
+                                randomize_enemy_stats,
+                                randomize_enemy_stats_defensive,
+                                randomize_enemy_stats_shuffle,
+                                randomize_shops,
+                                randomize_shop_prices,
+                                randomize_field_items,
+                                randomize_gear_abilities,
+                                randomize_player_stats,
+                                randomize_aeon_stat_scaling,
+                                randomize_aeon_base_stats,
+                                shuffle_player_stats,
+                                shuffle_aeon_stat_scaling,
+                                shuffle_aeon_base_stats,
+                                poison_is_deadly,
+                                randomize_starting_overdrive_mode,
+                                randomize_enemy_elemental_affinities,
+                                shuffle_sphere_grid,
+                                randomize_sphere_grid,
+                                empty_sphere_grid,
+                                fill_sphere_grid,
+                                remove_sphere_grid_locks,
+                                upgrade_sphere_nodes,
+                                downgrade_sphere_nodes,
+                                randomize_key_items,
+                                randomize_celestials,
+                                randomize_brotherhood,
+                                keep_things_sane,
+                                seed,
+                                seed_text->GetValue().ToStdString(),
+                                fahrenheit );
+
   wxLogMessage( "Finished Randomizing" );
-  randomizer = new randomizer_t( seed, 
-                                 enemy_data, 
-                                 field_data, 
-                                 item_shop_data, 
-                                 gear_shop_data,
-                                 buki_data, 
-                                 weapon_data,
-                                 shop_arms_data, 
-                                 item_rate_data,
-                                 player_stats_data, 
-                                 aeon_scaling_data,
-                                 aeon_stat_data,
-                                 randomize_enemy_drops,
-                                 randomize_enemy_steals, 
-                                 randomize_enemy_bribes, 
-                                 randomize_enemy_gear_drops, 
-                                 randomize_enemy_stats,
-                                 randomize_enemy_stats_defensive, 
-                                 randomize_enemy_stats_shuffle,
-                                 randomize_enemy_elemental_affinities,
-                                 randomize_shops,
-                                 randomize_shop_prices,
-                                 randomize_field_items, 
-                                 randomize_gear_abilities,
-                                 randomize_player_stats,
-                                 randomize_aeon_stat_scaling, 
-                                 randomize_aeon_base_stats,
-                                 shuffle_player_stats, 
-                                 shuffle_aeon_stat_scaling,
-                                 shuffle_aeon_base_stats,
-                                 poison_is_deadly,
-                                 randomize_starting_overdrive_mode,
-                                 randomize_key_items, 
-                                 keep_things_sane );
+  randomizer = new randomizer_t( *options, dp );
 }
 
 void frame_t::onPoisonIsDeadly( wxCommandEvent& event )
@@ -257,6 +290,48 @@ void frame_t::onRandomizeEnemyElementalAffinities( wxCommandEvent& event )
   printf( "Randomize Enemy Elemental Affinities: %d\n", randomize_enemy_elemental_affinities );
 }
 
+void frame_t::onShuffleSphereGrid( wxCommandEvent& event )
+{
+  shuffle_sphere_grid = !shuffle_sphere_grid;
+  printf( "Shuffle Sphere Grid: %d\n", shuffle_sphere_grid );
+}
+
+void frame_t::onRandomizeSphereGrid( wxCommandEvent& event )
+{
+  randomize_sphere_grid = !randomize_sphere_grid;
+  printf( "Randomize Sphere Grid: %d\n", randomize_sphere_grid );
+}
+
+void frame_t::onEmptySphereGrid( wxCommandEvent& event )
+{
+  empty_sphere_grid = !empty_sphere_grid;
+  printf( "Empty Sphere Grid: %d\n", empty_sphere_grid );
+}
+
+void frame_t::onFillSphereGrid( wxCommandEvent& event )
+{
+  fill_sphere_grid = !fill_sphere_grid;
+  printf( "Fill Sphere Grid: %d\n", fill_sphere_grid );
+}
+
+void frame_t::onRemoveSphereGridLocks( wxCommandEvent& event )
+{
+  remove_sphere_grid_locks = !remove_sphere_grid_locks;
+  printf( "Remove Sphere Grid Locks: %d\n", remove_sphere_grid_locks );
+}
+
+void frame_t::onUpgradeSphereNodes( wxCommandEvent& event )
+{
+  upgrade_sphere_nodes = !upgrade_sphere_nodes;
+  printf( "Upgrade Sphere Nodes: %d\n", upgrade_sphere_nodes );
+}
+
+void frame_t::onDowngradeSphereNodes( wxCommandEvent& event )
+{
+  downgrade_sphere_nodes = !downgrade_sphere_nodes;
+  printf( "Downgrade Sphere Nodes: %d\n", downgrade_sphere_nodes );
+}
+
 void frame_t::onRandomizeKeyItems( wxCommandEvent& event )
 {
   randomize_key_items = !randomize_key_items;
@@ -267,6 +342,24 @@ void frame_t::onKeepThingsSane( wxCommandEvent& event )
 {
   keep_things_sane = !keep_things_sane;
   printf( "Keep Things Sane: %d\n", keep_things_sane );
+}
+
+void frame_t::onFahrenheit( wxCommandEvent& event )
+{
+  fahrenheit = !fahrenheit;
+  printf( "Fahrenheit: %d\n", fahrenheit );
+}
+
+void frame_t::onRandomizeCelestials( wxCommandEvent& event )
+{
+  randomize_celestials = !randomize_celestials;
+  printf( "Randomize Celestial Weapons: %d\n", randomize_celestials );
+}
+
+void frame_t::onRandomizeBrotherhood( wxCommandEvent& event )
+{
+  randomize_brotherhood = !randomize_brotherhood;
+  printf( "Randomize Brotherhood: %d\n", randomize_brotherhood );
 }
 
 int32_t frame_t::hash( char* str )

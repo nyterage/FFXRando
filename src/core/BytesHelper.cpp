@@ -52,7 +52,7 @@ std::vector<chunk_t> bytes_mapper_t::bytesToChunks( const std::vector<char>& byt
       }
       if (to == -1)
         to = bytes.size();
-      chunks.emplace_back( bytes, offset, to );
+      chunks.emplace_back( bytes, offset, to, static_cast<int>( i ) );
     }
   }
 

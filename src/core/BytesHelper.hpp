@@ -16,10 +16,12 @@ struct chunk_t
 {
   std::vector<char> data{ 0, 0 };
   size_t initial_offset = 0;
+  int index = 0;
+  bool is_gear_shop_chunk = false; // Used for shop data
 
   chunk_t() = default; // Empty chunk constructor
 
-  chunk_t( const std::vector<char>& bytes, size_t from, size_t to ) {
+  chunk_t( const std::vector<char>& bytes, size_t from, size_t to, int index, bool is_gear_shop_data = false ) : index( index ), is_gear_shop_chunk( is_gear_shop_data ) {
     if (from < to && from >= 0 && to <= bytes.size())
     {
       initial_offset = from;

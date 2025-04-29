@@ -34,41 +34,25 @@ enum
   ID_SHUFFLE_AEON_BASE_STATS = 22,
   ID_RANDOMIZE_STARTING_OVERDRIVE_MODE = 23,
   ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES = 24,
+  ID_FAHRENHEIT = 25,
+  ID_RANDOMIZE_CELESTIALS = 26,
+  ID_RANDOMIZE_BROTHERHOOD = 27,
+  ID_SHUFFLE_SPHERE_GRID = 28,
+  ID_UPGRADE_SPHERE_NODES = 29,
+  ID_DOWNGRADE_SPHERE_NODES = 30,
+  ID_RANDOMIZE_SPHERE_GRID = 31,
+  ID_EMPTY_GRID = 32,
+  ID_FULL_GRID = 33,
+  ID_REMOVE_LOCKS = 34,
 };
 
 struct gui_t : public wxApp
 {
 private:
-  std::unordered_map<int, enemy_data_t*> enemy_data;
-  std::vector<field_data_t*> field_data;
-  std::vector<shop_data_t*> item_shop_data;
-  std::vector<shop_data_t*> gear_shop_data;
-  std::vector< gear_data_t*> buki_data;
-  std::vector< gear_data_t*> weapon_data;
-  std::vector< gear_data_t*> arms_shop_data;
-  std::vector<item_rate_t*> item_rate_data;
-  std::vector<character_stats_t*> player_stats_data;
-  std::vector<aeon_scaling_data_t*> aeon_scaling_data;
-  std::vector<aeon_stat_data_t*> aeon_stat_data;
+  data_pack_t& dp;
 
 public:
-  gui_t( std::unordered_map<int, enemy_data_t*> ed,
-         std::vector<field_data_t*> fd,
-         std::vector< shop_data_t*> isd,
-         std::vector< shop_data_t*> gsd,
-         std::vector< gear_data_t*> bd,
-         std::vector< gear_data_t*> wd,
-         std::vector< gear_data_t*> asd,
-         std::vector < item_rate_t*> ird,
-         std::vector < character_stats_t*> psd,
-         std::vector < aeon_scaling_data_t*> aesd,
-         std::vector<aeon_stat_data_t*> absd
-  ) :
-    enemy_data( ed ), field_data( fd ), item_shop_data( isd ),
-    gear_shop_data( gsd ), buki_data( bd ), weapon_data( wd ),
-    arms_shop_data( asd ), item_rate_data( ird ), player_stats_data( psd ),
-    aeon_scaling_data( aesd ), aeon_stat_data( absd )
-  {}
+  gui_t( data_pack_t& data_pack ) : dp( data_pack ) {}
 
   virtual bool OnInit();
 };
@@ -76,17 +60,8 @@ public:
 class frame_t : public wxFrame
 {
 private:
-  std::unordered_map<int, enemy_data_t*> enemy_data;
-  std::vector<field_data_t*> field_data;
-  std::vector< shop_data_t*> item_shop_data;
-  std::vector< shop_data_t*> gear_shop_data;
-  std::vector< gear_data_t*> buki_data;
-  std::vector< gear_data_t*> weapon_data;
-  std::vector< gear_data_t*> shop_arms_data;
-  std::vector<item_rate_t*> item_rate_data;
-  std::vector<character_stats_t*> player_stats_data;
-  std::vector<aeon_scaling_data_t*> aeon_scaling_data;
-  std::vector<aeon_stat_data_t*> aeon_stat_data;
+  data_pack_t& dp;
+  options_pack_t* options;
 
   randomizer_t* randomizer;
 
@@ -111,25 +86,27 @@ private:
   bool randomize_starting_overdrive_mode;
   bool randomize_enemy_elemental_affinities;
 
+  bool shuffle_sphere_grid;
+  bool randomize_sphere_grid;
+  bool empty_sphere_grid;
+  bool fill_sphere_grid;
+  bool remove_sphere_grid_locks;
+  bool upgrade_sphere_nodes;
+  bool downgrade_sphere_nodes;
+
   bool randomize_key_items;
   bool keep_things_sane;
+  bool randomize_celestials;
+  bool randomize_brotherhood;
   wxButton* randomize_button;
   int32_t seed;
   wxTextCtrl* seed_text;
 
+  bool fahrenheit;
+
 public:
-  frame_t( std::unordered_map<int, enemy_data_t*> ed,
-           std::vector<field_data_t*> fd,
-           std::vector< shop_data_t*> isd,
-           std::vector< shop_data_t*> gsd,
-           std::vector< gear_data_t*> bd,
-           std::vector< gear_data_t*> wd,
-           std::vector< gear_data_t*> asd,
-           std::vector <item_rate_t*> ird,
-           std::vector<character_stats_t*> psd,
-           std::vector<aeon_scaling_data_t*> aesd,
-           std::vector<aeon_stat_data_t*> absd
-  ) : wxFrame( NULL, wxID_ANY, "FFX Randomizer", wxDefaultPosition, wxSize( 700, 600 ) ),
+  frame_t( data_pack_t& data ) 
+    : wxFrame( NULL, wxID_ANY, "FFX Randomizer", wxDefaultPosition, wxSize( 840, 720 ) ),
     randomize_enemy_drops( false ),
     randomize_enemy_steals( false ),
     randomize_enemy_bribes( false ),
@@ -150,23 +127,24 @@ public:
     poison_is_deadly( false ),
     randomize_starting_overdrive_mode( false ),
     randomize_enemy_elemental_affinities( false ),
+    shuffle_sphere_grid( false ),
+    randomize_sphere_grid( false ),
+    empty_sphere_grid( false ),
+    fill_sphere_grid( false ),
+    remove_sphere_grid_locks( false ),
+    upgrade_sphere_nodes( false ),
+    downgrade_sphere_nodes( false ),
     randomize_key_items( false ),
     keep_things_sane( true ),
     randomizer( nullptr ),
+    randomize_celestials( false ),
+    randomize_brotherhood( false ),
     randomize_button( nullptr ),
-    enemy_data( ed ),
-    field_data( fd ),
-    item_shop_data( isd ),
-    gear_shop_data( gsd ),
-    buki_data( bd ),
-    weapon_data( wd ),
-    shop_arms_data( asd ),
-    item_rate_data( ird ),
-    player_stats_data( psd ),
-    aeon_scaling_data( aesd ),
-    aeon_stat_data( absd ),
+    dp( data ),
+    options( nullptr ),
     seed( std::chrono::system_clock::now().time_since_epoch().count() ),
-    seed_text( nullptr )
+    seed_text( nullptr ),
+    fahrenheit( false )
   {
     initialize();
     SetSizeHints( GetBestSize(), GetMaxClientSize() );
@@ -196,9 +174,19 @@ private:
   void onPoisonIsDeadly( wxCommandEvent& event );
   void onRandomizeStartingOverdriveMode( wxCommandEvent& event );
   void onRandomizeEnemyElementalAffinities( wxCommandEvent& event );
+  void onShuffleSphereGrid( wxCommandEvent& event );
+  void onRandomizeSphereGrid( wxCommandEvent& event );
+  void onEmptySphereGrid( wxCommandEvent& event );
+  void onFillSphereGrid( wxCommandEvent& event );
+  void onRemoveSphereGridLocks( wxCommandEvent& event );
+  void onUpgradeSphereNodes( wxCommandEvent& event );
+  void onDowngradeSphereNodes( wxCommandEvent& event );
 
   void onRandomizeKeyItems( wxCommandEvent& event );
   void onKeepThingsSane( wxCommandEvent& event );
+  void onFahrenheit( wxCommandEvent& event );
+  void onRandomizeCelestials( wxCommandEvent& event );
+  void onRandomizeBrotherhood( wxCommandEvent& event );
 
   int32_t hash( char* str );
 };
@@ -206,7 +194,6 @@ private:
 struct main_panel_t : public wxPanel
 {
   wxCheckBox* poisonIsDeadlyCheckbox;
-
 
   wxCheckBox* randomizeEnemyDropsCheckbox;
   wxCheckBox* randomizeEnemyStealsCheckbox;
@@ -271,71 +258,38 @@ struct header_panel_t : public wxPanel
 {
   wxCheckBox* randomizeKeyItemsCheckbox;
   wxCheckBox* keepThingsSaneCheckbox;
+  wxCheckBox* fahrenheitCheckbox;
+  wxCheckBox* randomizeCelestialsCheckbox;
+  wxCheckBox* randomizeBrotherhoodCheckbox;
 
   header_panel_t( frame_t* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME ),
     randomizeKeyItemsCheckbox( nullptr ),
-    keepThingsSaneCheckbox( nullptr )
+    keepThingsSaneCheckbox( nullptr ),
+    fahrenheitCheckbox( nullptr ),
+    randomizeCelestialsCheckbox( nullptr ),
+    randomizeBrotherhoodCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
+    fahrenheitCheckbox = new wxCheckBox( this, ID_FAHRENHEIT, _T( "Fahrenheit" ), wxDefaultPosition, wxDefaultSize, 0 );
+    fahrenheitCheckbox->SetToolTip( "Check this box to generate files in a format suitable for the Fahrenheit mod loader." );
     randomizeKeyItemsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_KEY_ITEMS, _T( "Include Key Items in Pool?" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeKeyItemsCheckbox->SetToolTip( "If checked, key items will be included in the randomization pool. This might break progression, use it with caution." );
+    randomizeCelestialsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_CELESTIALS, _T( "Randomize Celestial Weapons" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeCelestialsCheckbox->SetToolTip( "If checked, celestial weapons abilities will be able to be randomized." );
+    randomizeBrotherhoodCheckbox = new wxCheckBox( this, ID_RANDOMIZE_BROTHERHOOD, _T( "Randomize Brotherhood" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeBrotherhoodCheckbox->SetToolTip( "If checked, Brotherhood abilities will be able to be randomized." );
     keepThingsSaneCheckbox = new wxCheckBox( this, ID_KEEP_THINGS_SANE, _T( "Keep Things Sane" ), wxDefaultPosition, wxDefaultSize, 0 );
     keepThingsSaneCheckbox->SetToolTip( "If checked, the randomizer will attempt to keep things close to vanilla values. IE, if you could ever only loot 1 of an item, the randomizer will keep it that way.\nAlso keeps constraints on gil, and AP to more reasonable values, within +-100% of their original values.\nThis will mean that some spheres will sell in shops for very little, as their data has them being sold for 2 gil." );
     keepThingsSaneCheckbox->SetValue( true );
 
+    sizer->Add( fahrenheitCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeKeyItemsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeCelestialsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeBrotherhoodCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( keepThingsSaneCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
     SetSizer( sizer );
 
-    SetMinSize( GetBestVirtualSize() );
-  }
-};
-
-struct player_stats_panel_t : public wxPanel
-{
-  wxCheckBox* randomizePlayerStatsCheckbox;
-  wxCheckBox* randomizeAeonStatScalingCheckbox;
-  wxCheckBox* randomiseAeonBaseStatsCheckbox;
-  wxCheckBox* shufflePlayerStatsCheckbox;
-  wxCheckBox* shuffleAeonStatScalingCheckbox;
-  wxCheckBox* shuffleAeonBaseStatsCheckbox;
-  wxCheckBox* randomizeStartingOverdriveModeCheckbox;
-
-  player_stats_panel_t( frame_t* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME ),
-    randomizePlayerStatsCheckbox( nullptr ),
-    randomizeAeonStatScalingCheckbox( nullptr ),
-    randomiseAeonBaseStatsCheckbox( nullptr ),
-    shufflePlayerStatsCheckbox( nullptr ),
-    shuffleAeonStatScalingCheckbox( nullptr ),
-    shuffleAeonBaseStatsCheckbox( nullptr ),
-    randomizeStartingOverdriveModeCheckbox( nullptr )
-  {
-    wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
-    randomizePlayerStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_PLAYER_STATS, _T( "Randomize Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
-    randomizeAeonStatScalingCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_SCALING, _T( "Randomize Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
-    randomiseAeonBaseStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_BASE_STATS, _T( "Randomize Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomiseAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
-    shufflePlayerStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_PLAYER_STATS_SHUFFLE, _T( "Shuffle Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shufflePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be shuffled to another party members stats at random." );
-    shuffleAeonStatScalingCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_SCALING_SHUFFLE, _T( "Shuffle Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shuffleAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be shuffled to another aeons stats at random." );
-    shuffleAeonBaseStatsCheckbox = new wxCheckBox( this, ID_SHUFFLE_AEON_BASE_STATS, _T( "Shuffle Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shuffleAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be shuffled to another aeons stats at random." );
-    randomizeStartingOverdriveModeCheckbox = new wxCheckBox( this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE, _T( "Randomize Starting Overdrive Mode" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeStartingOverdriveModeCheckbox->SetToolTip( "If checked, the starting overdrive mode for playable characters will be random." );
-
-    sizer->Add( randomizePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomiseAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shufflePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shuffleAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shuffleAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeStartingOverdriveModeCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
-    SetSizer( sizer );
     SetMinSize( GetBestVirtualSize() );
   }
 };
@@ -363,6 +317,171 @@ struct enemy_stats_panel_t : public wxPanel
     sizer->Add( randomizeEnemyStatsShuffleCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
     SetSizer( sizer );
+    SetMinSize( GetBestVirtualSize() );
+  }
+};
+
+struct player_stats_panel_t : public wxPanel
+{
+  wxCheckBox* randomizePlayerStatsCheckbox;
+  wxCheckBox* shufflePlayerStatsCheckbox;
+  wxCheckBox* randomizeStartingOverdriveModeCheckbox;
+
+  player_stats_panel_t( wxPanel* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME ),
+    randomizePlayerStatsCheckbox( nullptr ),
+    shufflePlayerStatsCheckbox( nullptr ),
+    randomizeStartingOverdriveModeCheckbox( nullptr )
+  {
+    wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
+
+    randomizePlayerStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_PLAYER_STATS, _T( "Randomize Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+
+    shufflePlayerStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_PLAYER_STATS_SHUFFLE, _T( "Shuffle Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shufflePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be shuffled to another party members stats at random." );
+
+    randomizeStartingOverdriveModeCheckbox = new wxCheckBox( this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE, _T( "Randomize Starting Overdrive Mode" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeStartingOverdriveModeCheckbox->SetToolTip( "If checked, the starting overdrive mode for playable characters will be random." );
+
+    sizer->Add( randomizePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( shufflePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeStartingOverdriveModeCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
+    SetSizer( sizer );
+    SetMinSize( GetBestVirtualSize() );
+  }
+};
+
+struct aeon_stats_panel_t : public wxPanel
+{
+  wxCheckBox* randomizeAeonStatScalingCheckbox;
+  wxCheckBox* randomiseAeonBaseStatsCheckbox;
+  wxCheckBox* shuffleAeonStatScalingCheckbox;
+  wxCheckBox* shuffleAeonBaseStatsCheckbox;
+
+  aeon_stats_panel_t( wxPanel* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME ),
+    randomizeAeonStatScalingCheckbox( nullptr ),
+    randomiseAeonBaseStatsCheckbox( nullptr ),
+    shuffleAeonStatScalingCheckbox( nullptr ),
+    shuffleAeonBaseStatsCheckbox( nullptr )
+  {
+    wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
+
+    randomizeAeonStatScalingCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_SCALING, _T( "Randomize Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    randomiseAeonBaseStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_BASE_STATS, _T( "Randomize Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomiseAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+
+    shuffleAeonStatScalingCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_SCALING_SHUFFLE, _T( "Shuffle Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shuffleAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be shuffled to another aeons stats at random." );
+    shuffleAeonBaseStatsCheckbox = new wxCheckBox( this, ID_SHUFFLE_AEON_BASE_STATS, _T( "Shuffle Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shuffleAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be shuffled to another aeons stats at random." );
+
+    sizer->Add( randomiseAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( shuffleAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( shuffleAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
+    SetSizer( sizer );
+    SetMinSize( GetBestVirtualSize() );
+  }
+};
+
+struct sphere_grid_panel_t : public wxPanel
+{
+  wxCheckBox* shuffleSphereGridCheckbox;
+  wxCheckBox* randomizeSphereGridCheckbox;
+  wxCheckBox* emptySphereGridCheckbox;
+  wxCheckBox* fillSphereGridCheckbox;
+  wxCheckBox* removeSphereGridLocksCheckbox;
+  wxCheckBox* upgradeSphereNodesCheckbox;
+  wxCheckBox* downgradeSphereNodesCheckbox;
+
+  sphere_grid_panel_t( wxPanel* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME ),
+    shuffleSphereGridCheckbox( nullptr ),
+    randomizeSphereGridCheckbox( nullptr ),
+    emptySphereGridCheckbox( nullptr ),
+    fillSphereGridCheckbox( nullptr ),
+    removeSphereGridLocksCheckbox( nullptr ),
+    upgradeSphereNodesCheckbox( nullptr ),
+    downgradeSphereNodesCheckbox( nullptr )
+  {
+    wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
+
+    shuffleSphereGridCheckbox = new wxCheckBox( this, ID_SHUFFLE_SPHERE_GRID, _T( "Shuffle Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shuffleSphereGridCheckbox->SetToolTip( "If checked, the sphere grid will be shuffled. This means that the nodes will be in a different order, but the same nodes will be present." );
+    randomizeSphereGridCheckbox = new wxCheckBox( this, ID_RANDOMIZE_SPHERE_GRID, _T( "Randomize Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeSphereGridCheckbox->SetToolTip( "If checked, the sphere grid will be randomized. This means that there is no guarentee you will get all ability spheres, and there may be duplicate ability nodes." );
+    emptySphereGridCheckbox = new wxCheckBox( this, ID_EMPTY_GRID, _T( "Empty Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    emptySphereGridCheckbox->SetToolTip( "If checked, the sphere grid will be empty aside from Ability nodes. You have to find all the spheres yourself." );
+    fillSphereGridCheckbox = new wxCheckBox( this, ID_FULL_GRID, _T( "Full Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    fillSphereGridCheckbox->SetToolTip( "If checked, the sphere grid will have no empty nodes. Any slot that would be empty will be filled with a random stat node instead." );
+    removeSphereGridLocksCheckbox = new wxCheckBox( this, ID_REMOVE_LOCKS, _T( "Remove Sphere Grid Locks" ), wxDefaultPosition, wxDefaultSize, 0 );
+    removeSphereGridLocksCheckbox->SetToolTip( "If checked, the sphere grid will have no key nodes, giving you freedom to go anywhere and get anything." );
+    upgradeSphereNodesCheckbox = new wxCheckBox( this, ID_UPGRADE_SPHERE_NODES, _T( "Upgrade Sphere Nodes" ), wxDefaultPosition, wxDefaultSize, 0 );
+    upgradeSphereNodesCheckbox->SetToolTip( "If checked, all stat nodes in the sphere grid will be upgraded to their maximum value." );
+    downgradeSphereNodesCheckbox = new wxCheckBox( this, ID_DOWNGRADE_SPHERE_NODES, _T( "Downgrade Sphere Nodes" ), wxDefaultPosition, wxDefaultSize, 0 );
+    downgradeSphereNodesCheckbox->SetToolTip( "If checked, all stat nodes in the sphere grid will be downgraded to their minimum value." );
+
+    sizer->Add( shuffleSphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeSphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( emptySphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( fillSphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( removeSphereGridLocksCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( upgradeSphereNodesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( downgradeSphereNodesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
+    SetSizer( sizer );
+    SetMinSize( GetBestVirtualSize() );
+  }
+};
+
+struct new_game_panel_t : public wxPanel
+{
+  wxPanel* player_stats_panel;
+  wxPanel* aeon_stats_panel;
+  wxPanel* sphere_grid_panel;
+
+  new_game_panel_t( frame_t* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+    player_stats_panel( nullptr ),
+    aeon_stats_panel( nullptr ),
+    sphere_grid_panel( nullptr )
+  {
+    wxBoxSizer* main_sizer = new wxBoxSizer( wxVERTICAL );
+    wxBoxSizer* main_horizontal_sizer = new wxBoxSizer( wxHORIZONTAL );
+    wxBoxSizer* sphere_grid_sizer = new wxBoxSizer( wxVERTICAL );
+    wxBoxSizer* vertical_sizer = new wxBoxSizer( wxVERTICAL );
+
+    wxStaticText* sphere_grid_text = new wxStaticText( this, wxID_ANY, _T( "Sphere Grid Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    sphere_grid_panel = new sphere_grid_panel_t( this );
+    wxStaticText* aeon_stats_text = new wxStaticText( this, wxID_ANY, _T( "Aeon Stats Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    aeon_stats_panel = new aeon_stats_panel_t( this );
+    wxStaticText* player_stats_text = new wxStaticText( this, wxID_ANY, _T( "Player Stats Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    player_stats_panel = new player_stats_panel_t( this );
+
+    sphere_grid_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+    aeon_stats_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+    player_stats_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+
+    vertical_sizer->Add( aeon_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    vertical_sizer->Add( aeon_stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    vertical_sizer->Add( player_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    vertical_sizer->Add( player_stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    vertical_sizer->AddSpacer( FromDIP( 5 ) );
+
+    sphere_grid_sizer->Add( sphere_grid_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sphere_grid_sizer->Add( sphere_grid_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sphere_grid_sizer->AddSpacer( FromDIP( 5 ) );
+
+    main_horizontal_sizer->Add( sphere_grid_sizer, 0, wxALIGN_TOP | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    main_horizontal_sizer->Add( vertical_sizer, 0, wxALIGN_TOP | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    main_horizontal_sizer->InsertSpacer( main_horizontal_sizer->GetItemCount(), FromDIP( 5 ) );
+
+    main_sizer->Add( main_horizontal_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    main_sizer->InsertSpacer( main_sizer->GetItemCount(), FromDIP( 5 ) );
+
+    SetSizer( main_sizer );
     SetMinSize( GetBestVirtualSize() );
   }
 };
