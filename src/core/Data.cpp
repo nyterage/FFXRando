@@ -928,7 +928,6 @@ void character_stats_t::writeToBytes()
 void character_stats_t::test() const
 {
   bytes_mapper_t::test();
-  printf( "Index: %d\n", index );
   printf( "Name Offset: %d\n", name_offset );
   printf( "Name Key: %d\n", name_key );
   printf( "Base HP: %d\n", base_hp );
@@ -1121,7 +1120,6 @@ void aeon_stat_data_t::test() const
 {
   bytes_mapper_t::test();
   printf( "______________________\n" );
-  printf( "Index: %d\n", index );
   printf( "HP: %d\n", hp );
   printf( "MP: %d\n", mp );
   printf( "STR: %d\n", str );

@@ -38,7 +38,7 @@ private:
 
   // Shuffled vectors
   std::vector<character_stats_t*> shuffled_player_stats_data;
-  std::vector<aeon_scaling_data_t*> shuffled_aeon_data;
+  std::vector<aeon_scaling_data_t*> shuffled_aeon_scaling_data;
   std::vector<aeon_stat_data_t*> shuffled_aeon_stat_data;
   std::vector<uint16_t> shuffled_original_sphere_grid_node_ids;
   std::vector<uint16_t> shuffled_standard_sphere_grid_node_ids;
@@ -69,7 +69,7 @@ public:
     standard_sphere_grid_node_ids(),
     expert_sphere_grid_node_ids(),
     shuffled_player_stats_data(),
-    shuffled_aeon_data(),
+    shuffled_aeon_scaling_data(),
     shuffled_aeon_stat_data(),
     shuffled_original_sphere_grid_node_ids(),
     shuffled_standard_sphere_grid_node_ids(),
@@ -224,7 +224,7 @@ public:
         std::vector<char> player_stats_bytes = player_stats.bytes;
         for (int i = 0; i < player_stats_bytes.size(); i++)
         {
-          original_bytes[ 20 + player_stats.index * 148 + i ] = player_stats_bytes[ i ];
+          original_bytes[ 20 + j * player_stats_bytes.size() + i ] = player_stats_bytes[i];
         }
       }
       std::string output_path = OUTPUT_FOLDER + prefix + locale.second;
@@ -247,7 +247,7 @@ public:
         std::vector<char> aeon_scaling_bytes = aeon_scaling.bytes;
         for (int i = 0; i < aeon_scaling_bytes.size(); i++)
         {
-          original_bytes[ initial_offset + j * 44 + i ] = aeon_scaling_bytes[ i ];
+          original_bytes[ initial_offset + j * aeon_scaling_bytes.size() + i ] = aeon_scaling_bytes[i];
         }
       }
       std::string output_path = OUTPUT_FOLDER + prefix + locale.second;
@@ -261,13 +261,13 @@ public:
   {
     std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "sum_assure.bin";
     std::vector<char> original_bytes = bytes_mapper_t::fileToBytes( path );
-    for (int j = 0; j < shuffled_aeon_data.size(); j++)
+    for (int j = 0; j < data_pack.aeon_stat_data.size(); j++)
     {
-      aeon_scaling_data_t& aeon_scaling = *shuffled_aeon_data[ j ];
-      std::vector<char> aeon_scaling_bytes = aeon_scaling.bytes;
-      for (int i = 0; i < aeon_scaling_bytes.size(); i++)
+      aeon_stat_data_t& aeon_stats = *data_pack.aeon_stat_data[ j ];
+      std::vector<char> aeon_stat_bytes = aeon_stats.bytes;
+      for (int i = 0; i < aeon_stat_bytes.size(); i++)
       {
-        original_bytes[ 20 + j * 120 + i ] = aeon_scaling_bytes[ i ];
+        original_bytes[ 20 + j * aeon_stat_bytes.size() + i ] = aeon_stat_bytes[i];
       }
     }
     std::string output_path = OUTPUT_FOLDER + prefix + BATTLE_KERNEL_FOLDER;
@@ -532,7 +532,10 @@ public:
   void randomizeEnemyStatsNormal( enemy_data_t* enemy )
   {
     enemy_stat_data_t& stats = *enemy->stats_data;
-    stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 50, UINT32_MAX );
+    if (stats.hp > 1)
+      stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 50, UINT32_MAX );
+    if (stats.hp < 50)
+      stats.hp = 50;
     stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, 999 );
     stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, UINT32_MAX );
     stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
@@ -591,11 +594,15 @@ public:
     else
       stats.flags1.armored = rand() % 4 == 0;
 
-    uint32_t base_hp = stats.hp * defensive_factor;
-    if (base_hp == 0)
-      base_hp = 1;
+    uint32_t base_hp;
+    if (stats.hp > 1)
+      base_hp = stats.hp * defensive_factor;
+    if (base_hp <= 1 )
+      base_hp = 50;
     uint32_t hp = normal<uint32_t>( base_hp, base_hp / 2, 50, UINT32_MAX );
     stats.hp = hp;
+    if (stats.hp < 50)
+      stats.hp = 50;
     stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
     stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
     stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
@@ -612,7 +619,10 @@ public:
     // Pick a random index to pull the stats from
     std::uniform_int_distribution<size_t> dist( 0, data_pack.enemy_data.size() - 1 );
     int index = dist( rng );
-    stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 50, UINT32_MAX );
+    if ( stats.hp > 1 )
+      stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 50, UINT32_MAX );
+    if (stats.hp < 50)
+      stats.hp = 50;
     stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, UINT32_MAX );
     stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, UINT32_MAX );
     stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
@@ -935,6 +945,8 @@ public:
     {
       character_stats_t& stats = *data_pack.player_stats_data[i];
       stats.base_hp = normal<uint32_t>( stats.base_hp, stats.base_hp / 2, 50, 9999 );
+      if (stats.base_hp < 50)
+        stats.base_hp = 50;
       stats.base_mp = normal<uint32_t>( stats.base_mp, stats.base_mp / 2, 1, 999 );
       bool tidus_or_auron = i == 0 || i == 2;
       stats.base_str = normal<uint8_t>( stats.base_str, stats.base_str / 2, tidus_or_auron ? 14 : 0, UINT8_MAX );
@@ -1365,8 +1377,8 @@ public:
       printf( "Shuffling Aeon Stat Scaling...\n" );
       for (auto& aeon_scaling_data : data_pack.aeon_scaling_data)
       {
-        shuffled_aeon_data.push_back( aeon_scaling_data );
-        std::shuffle( shuffled_aeon_data.begin(), shuffled_aeon_data.end(), rng );
+        shuffled_aeon_scaling_data.push_back( aeon_scaling_data );
+        std::shuffle( shuffled_aeon_scaling_data.begin(), shuffled_aeon_scaling_data.end(), rng );
       }
       shuffleAeonStatScaling();
     }

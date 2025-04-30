@@ -403,7 +403,6 @@ struct item_rate_t : public bytes_mapper_t
 
 struct character_stats_t : public bytes_mapper_t
 {
-  int index;
   uint16_t name_offset;
   uint16_t name_key;
   uint32_t base_hp;
@@ -483,7 +482,7 @@ struct character_stats_t : public bytes_mapper_t
     struct overdrive_flags_t bits;
   } overdrive_bytes;
 
-  character_stats_t( chunk_t& data ) : bytes_mapper_t( data.data ), index( data.index )
+  character_stats_t( chunk_t& data ) : bytes_mapper_t( data.data )
   {
     mapBytes();
     mapFlags();
@@ -536,7 +535,6 @@ struct aeon_scaling_data_t : public bytes_mapper_t
 
 struct aeon_stat_data_t : public bytes_mapper_t
 {
-  int index;
   uint16_t hp;
   uint16_t mp;
   uint8_t str;
@@ -548,7 +546,7 @@ struct aeon_stat_data_t : public bytes_mapper_t
   uint8_t acc;
   uint8_t luck;
 
-  aeon_stat_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), index( data.index )
+  aeon_stat_data_t( chunk_t& data ) : bytes_mapper_t( data.data )
   {
     mapBytes();
     // test();
@@ -778,7 +776,7 @@ static constexpr int ENEMY_COUNT = 360;
 // Versioning
 static constexpr int MAJOR_VERSION = 1;
 static constexpr int MINOR_VERSION = 1;
-static constexpr int PATCH_VERSION = 0;
+static constexpr int PATCH_VERSION = 1;
 // Information
 static const std::string VERSION = "v" + std::to_string( MAJOR_VERSION ) + "." + std::to_string( MINOR_VERSION ) + "." + std::to_string( PATCH_VERSION );
 static const std::string AUTHOR = "Taeznak";
