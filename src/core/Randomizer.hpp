@@ -1175,7 +1175,7 @@ public:
         sphere_grid_node_data_t& node = *node_data;
         if (node.content != 0x01 )
           continue;
-        uint8_t new_content = uniform<uint8_t>( 0, 0x27 );
+        uint8_t new_content = uniform<uint8_t>( 1, 0x26 );
         node.content = new_content;
         node.writeToBytes();
       }
