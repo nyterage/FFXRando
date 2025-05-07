@@ -12,7 +12,11 @@ bool gui_t::OnInit()
 void frame_t::initialize()
 {
   wxBoxSizer* main_vertical_sizer = new wxBoxSizer( wxVERTICAL );
-  wxBoxSizer* horizontal_sizer = new wxBoxSizer( wxHORIZONTAL );
+
+  notebook = new wxNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP );
+  notebook->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_LISTBOX ) );
+  notebook->SetAutoLayout( true );
+  notebook->SetThemeEnabled( true );
 
   wxStaticText* header_text = new wxStaticText( this, wxID_ANY, _T( "FFX Randomizer" ), wxDefaultPosition, wxDefaultSize, 0 );
   header_text->SetFont( wxFont( 18, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
@@ -24,7 +28,7 @@ void frame_t::initialize()
   wxStaticText* extra_text = new wxStaticText( this, wxID_ANY, _T( "Options that affect other aspects of the randomizer:" ), wxDefaultPosition, wxDefaultSize, 0 );
   extra_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
   header_panel_t* header_panel = new header_panel_t( this );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeKeyItems, this, ID_RANDOMIZE_KEY_ITEMS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeKeyItems, this, ID_ALLOW_RANDOMIZE_KEY_ITEMS );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onPoisonIsDeadly, this, ID_POISON_IS_DEADLY );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyDrops, this, ID_RANDOMIZE_ENEMY_DROPS );
@@ -34,15 +38,20 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyStats, this, ID_RANDOMIZE_ENEMY_STATS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyStatsDefensive, this, ID_RANDOMIZE_ENEMY_STATS_DEFENSIVE );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyStatsShuffle, this, ID_RANDOMIZE_ENEMY_STATS_SHUFFLE );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeShops, this, ID_RANDOMIZE_SHOPS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeShopPrices, this, ID_RANDOMIZE_SHOP_PRICES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeItemShops, this, ID_RANDOMIZE_ITEM_SHOPS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearShops, this, ID_RANDOMIZE_GEAR_SHOPS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeItemShopPrices, this, ID_RANDOMIZE_ITEM_SHOP_PRICES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearShopPrices, this, ID_RANDOMIZE_GEAR_SHOP_PRICES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeFieldItems, this, ID_RANDOMIZE_FIELD_ITEMS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearAbilities, this, ID_RANDOMIZE_GEAR_ABILITIES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponCrit, this, ID_RANDOMIZE_WEAPON_CRIT );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponAttackPower, this, ID_RANDOMIZE_WEAPON_ATTACK_POWER );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponDamageFormula, this, ID_RANDOMIZE_WEAPON_DAMAGE_FORMULA );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonStatScaling, this, ID_RANDOMIZE_AEON_STAT_SCALING );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonBaseStats, this, ID_RANDOMIZE_AEON_BASE_STATS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onShufflePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS_SHUFFLE );
-  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonStatScaling, this, ID_RANDOMIZE_AEON_STAT_SCALING_SHUFFLE );
+  Bind( wxEVT_CHECKBOX, &frame_t::onShufflePlayerStats, this, ID_SHUFFLE_PLAYER_STATS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonStatScaling, this, ID_SHUFFLE_AEON_STAT_SCALING );
   Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeStartingOverdriveMode, this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyElementalAffinities, this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES );
@@ -56,44 +65,39 @@ void frame_t::initialize()
 
   Bind( wxEVT_CHECKBOX, &frame_t::onKeepThingsSane, this, ID_KEEP_THINGS_SANE );
   Bind( wxEVT_CHECKBOX, &frame_t::onFahrenheit, this, ID_FAHRENHEIT );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeCelestials, this, ID_RANDOMIZE_CELESTIALS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeBrotherhood, this, ID_RANDOMIZE_BROTHERHOOD );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeCelestials, this, ID_ALLOW_RANDOMIZE_CELESTIALS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeBrotherhood, this, ID_ALLOW_RANDOMIZE_BROTHERHOOD );
 
-  wxStaticText* main_text = new wxStaticText( this, wxID_ANY, _T( "Main Options:" ), wxDefaultPosition, wxDefaultSize, 0 );
-  main_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
-  main_panel_t* panel = new main_panel_t( this );
+  enemy_options_panel_t* panel = new enemy_options_panel_t( notebook );
+  notebook->AddPage( panel, _T( "Enemy" ), true );
 
-  wxStaticText* new_game_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
-  new_game_text->SetFont( wxFont( 12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
-  new_game_panel_t* new_game_pannel = new new_game_panel_t( this );
+  gear_options_panel_t* gear_panel = new gear_options_panel_t( notebook );
+  notebook->AddPage( gear_panel, _T( "Gear" ), false );
 
-  wxStaticText* enemy_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
-  enemy_stats_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
-  enemy_stats_panel_t* stats_panel = new enemy_stats_panel_t( this );
+  item_options_panel_t* item_panel = new item_options_panel_t( notebook );
+  notebook->AddPage( item_panel, _T( "Items" ), false );
+
+  player_stats_panel_t* player_stats = new player_stats_panel_t( notebook );
+  notebook->AddPage( player_stats, _T( "Player" ), false );
+
+  aeon_stats_panel_t* aeon_stats = new aeon_stats_panel_t( notebook );
+  notebook->AddPage( aeon_stats, _T( "Aeon" ), false );
+
+  sphere_grid_panel_t* grid = new sphere_grid_panel_t( notebook );
+  notebook->AddPage( grid, _T( "Sphere Grid" ), false );
 
   randomize_button = new wxButton( this, ID_RANDOMIZE, _T( "Randomize" ), wxDefaultPosition, wxDefaultSize, 0 );
   randomize_button->SetToolTip( "Click this button to randomize the game!" );
   Bind( wxEVT_BUTTON, &frame_t::onRandomize, this, ID_RANDOMIZE );
-
-  wxBoxSizer* vertical_main_sizer = new wxBoxSizer( wxVERTICAL );
-  vertical_main_sizer->Add( main_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  vertical_main_sizer->Add( panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-
-  wxBoxSizer* vertical_stats_sizer = new wxBoxSizer( wxVERTICAL );
-  vertical_stats_sizer->Add( new_game_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  vertical_stats_sizer->Add( new_game_pannel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-
-  horizontal_sizer->Add( vertical_main_sizer, 0, wxALIGN_TOP | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  horizontal_sizer->Add( vertical_stats_sizer, 0, wxALIGN_TOP | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
 
   main_vertical_sizer->Add( header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( seed_header_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( seed_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( extra_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( header_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  main_vertical_sizer->Add( horizontal_sizer, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-  main_vertical_sizer->Add( enemy_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
-  main_vertical_sizer->Add( stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  main_vertical_sizer->Add( notebook, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  //main_vertical_sizer->Add( enemy_stats_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
+  //main_vertical_sizer->Add( stats_panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   main_vertical_sizer->Add( randomize_button, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 10 ) );
   SetSizer( main_vertical_sizer );
   SetAutoLayout( true );
@@ -138,10 +142,15 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                 randomize_enemy_stats,
                                 randomize_enemy_stats_defensive,
                                 randomize_enemy_stats_shuffle,
-                                randomize_shops,
-                                randomize_shop_prices,
+                                randomize_item_shops,
+                                randomize_gear_shops,
+                                randomize_item_shop_prices,
+                                randomize_gear_shop_prices,
                                 randomize_field_items,
                                 randomize_gear_abilities,
+                                randomize_weapon_crit,
+                                randomize_weapon_attack_power,
+                                randomize_weapon_damage_formula,
                                 randomize_player_stats,
                                 randomize_aeon_stat_scaling,
                                 randomize_aeon_base_stats,
@@ -218,16 +227,28 @@ void frame_t::onRandomizeEnemyStatsShuffle( wxCommandEvent& event )
   printf( "Randomize Enemy Stats Shuffle: %d\n", randomize_enemy_stats_shuffle );
 }
 
-void frame_t::onRandomizeShops( wxCommandEvent& event )
+void frame_t::onRandomizeItemShops( wxCommandEvent& event )
 {
-  randomize_shops = !randomize_shops;
-  printf( "Randomize Shops: %d\n", randomize_shops );
+  randomize_item_shops = !randomize_item_shops;
+  printf( "Randomize Shops: %d\n", randomize_item_shops );
 }
 
-void frame_t::onRandomizeShopPrices( wxCommandEvent& event )
+void frame_t::onRandomizeGearShops( wxCommandEvent& event )
 {
-  randomize_shop_prices = !randomize_shop_prices;
-  printf( "Randomize Shop Prices: %d\n", randomize_shop_prices );
+  randomize_gear_shops = !randomize_gear_shops;
+  printf( "Randomize Gear Shops: %d\n", randomize_gear_shops );
+}
+
+void frame_t::onRandomizeItemShopPrices( wxCommandEvent& event )
+{
+  randomize_item_shop_prices = !randomize_item_shop_prices;
+  printf( "Randomize Shop Prices: %d\n", randomize_item_shop_prices );
+}
+
+void frame_t::onRandomizeGearShopPrices( wxCommandEvent& event )
+{
+  randomize_gear_shop_prices = !randomize_gear_shop_prices;
+  printf( "Randomize Gear Shop Prices: %d\n", randomize_gear_shop_prices );
 }
 
 void frame_t::onRandomizeFieldItems( wxCommandEvent& event )
@@ -240,6 +261,24 @@ void frame_t::onRandomizeGearAbilities( wxCommandEvent& event )
 {
   randomize_gear_abilities = !randomize_gear_abilities;
   printf( "Randomize Gear Abilities: %d\n", randomize_gear_abilities );
+}
+
+void frame_t::onRandomizeWeaponCrit( wxCommandEvent& event )
+{
+  randomize_weapon_crit = !randomize_weapon_crit;
+  printf( "Randomize Weapon Crit Chance: %d\n", randomize_weapon_crit );
+}
+
+void frame_t::onRandomizeWeaponAttackPower( wxCommandEvent& event )
+{
+  randomize_weapon_attack_power = !randomize_weapon_attack_power;
+  printf( "Randomize Weapon Attack Power: %d\n", randomize_weapon_attack_power );
+}
+
+void frame_t::onRandomizeWeaponDamageFormula( wxCommandEvent& event )
+{
+  randomize_weapon_damage_formula = !randomize_weapon_damage_formula;
+  printf( "Randomize Weapon Damage Formula: %d\n", randomize_weapon_damage_formula );
 }
 
 void frame_t::onRandomizePlayerStats( wxCommandEvent& event )

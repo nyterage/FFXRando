@@ -9,7 +9,7 @@
 // Use (void) to silence unused warnings.
 #define assertm(exp, msg) assert((void(msg), exp));
 
-enum sphere_grid_type_t
+enum sphere_grid_type_e
 {
   SPHERE_GRID_ORIGINAL,
   SPHERE_GRID_STANDARD,
@@ -88,6 +88,7 @@ struct gear_data_t final : public bytes_mapper_t
   void test() const override;
 
   void mapAbilities( std::vector<uint16_t>& abilities );
+  void mapFormulas( std::vector<uint8_t>& formulas );
 };
 
 struct enemy_loot_data_t final : public bytes_mapper_t
@@ -224,94 +225,117 @@ struct enemy_stat_data_t final : public bytes_mapper_t
 
   struct flags1_t
   {
-    unsigned int armored : 1;
-    unsigned int immune_fractional_damage : 1;
-    unsigned int immune_life : 1;
-    unsigned int immune_sensor : 1;
-    unsigned int unknown_flag : 1;
-    unsigned int immune_physical_damage : 1;
-    unsigned int immune_magic_damage : 1;
-    unsigned int immune_all_damage : 1;
-  } flags1;
+    union
+    {
+      uint8_t byte;
+      struct
+      {
+        unsigned int armored : 1;
+        unsigned int immune_fractional_damage : 1;
+        unsigned int immune_life : 1;
+        unsigned int immune_sensor : 1;
+        unsigned int unknown_flag : 1;
+        unsigned int immune_physical_damage : 1;
+        unsigned int immune_magic_damage : 1;
+        unsigned int immune_all_damage : 1;
+      } bits;
+    };
+  };
+
+  flags1_t flags1{ 0x00 };
 
   struct flags2_t
   {
-    unsigned int immune_delay : 1;
-    unsigned int immune_slice : 1;
-    unsigned int immune_bribe : 1;
-  } flags2;
+    union
+    {
+      uint8_t byte;
+      struct
+      {
+        unsigned int immune_delay : 1;
+        unsigned int immune_slice : 1;
+        unsigned int immune_bribe : 1;
+        unsigned int reserved : 5;
+      } bits;
+    };
+  };
+
+  flags2_t flags2{ 0x00 };
 
   struct elemement_absorb_flags_t
   {
-    unsigned int fire : 1;
-    unsigned int ice : 1;
-    unsigned int lightning : 1;
-    unsigned int water : 1;
-    unsigned int holy : 1;
-  } element_absorb_flags;
+    union
+    {
+      uint8_t byte;
+      struct
+      {
+        unsigned int fire : 1;
+        unsigned int ice : 1;
+        unsigned int lightning : 1;
+        unsigned int water : 1;
+        unsigned int holy : 1;
+        unsigned int reserved : 3;
+      } bits;
+    };
+  };
+
+  elemement_absorb_flags_t element_absorb_flags{ 0x00 };
 
   struct element_immune_flags_t
   {
-    unsigned int fire : 1;
-    unsigned int ice : 1;
-    unsigned int lightning : 1;
-    unsigned int water : 1;
-    unsigned int holy : 1;
-  } element_immune_flags;
+    union
+    {
+      uint8_t byte;
+      struct
+      {
+        unsigned int fire : 1;
+        unsigned int ice : 1;
+        unsigned int lightning : 1;
+        unsigned int water : 1;
+        unsigned int holy : 1;
+        unsigned int reserved : 3;
+      } bits;
+    };
+  };
+
+  element_immune_flags_t element_immune_flags{ 0x00 };
 
   struct element_resist_flags_t
   {
-    unsigned int fire : 1;
-    unsigned int ice : 1;
-    unsigned int lightning : 1;
-    unsigned int water : 1;
-    unsigned int holy : 1;
-  } element_resist_flags;
+    union
+    {
+      uint8_t byte;
+      struct
+      {
+        unsigned int fire : 1;
+        unsigned int ice : 1;
+        unsigned int lightning : 1;
+        unsigned int water : 1;
+        unsigned int holy : 1;
+        unsigned int reserved : 3;
+      } bits;
+    };
+  };
+
+  element_resist_flags_t element_resist_flags{ 0x00 };
 
   struct element_weakness_flags_t
   {
-    unsigned int fire : 1;
-    unsigned int ice : 1;
-    unsigned int lightning : 1;
-    unsigned int water : 1;
-    unsigned int holy : 1;
-  } element_weakness_flags;
-  
-  union flag1_byte_t
-  {
-    uint8_t byte;
-    struct flags1_t bits;
-  } flag1_byte;
+    union
+    {
+      uint8_t byte;
+      struct
+      {
+        unsigned int fire : 1;
+        unsigned int ice : 1;
+        unsigned int lightning : 1;
+        unsigned int water : 1;
+        unsigned int holy : 1;
+        unsigned int reserved : 3;
+      } bits;
+    };
+  };
 
-  union flag2_byte_t
-  {
-    uint8_t byte;
-    struct flags2_t bits;
-  } flag2_byte;
-
-  union element_absorb_byte_t
-  {
-    uint8_t byte;
-    struct elemement_absorb_flags_t bits;
-  } element_absorb_byte;
-
-  union element_immune_byte_t
-  {
-    uint8_t byte;
-    struct element_immune_flags_t bits;
-  } element_immune_byte;
-
-  union element_resist_byte_t
-  {
-    uint8_t byte;
-    struct element_resist_flags_t bits;
-  } element_resist_byte;
-
-  union element_weakness_byte_t
-  {
-    uint8_t byte;
-    struct element_weakness_flags_t bits;
-  } element_weakness_byte;
+  element_weakness_flags_t element_weakness_flags{ 0x00 };
 
   enemy_stat_data_t( const std::vector<char>& bytes, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( intial_offset ), monster_id( monster_id )
   {
@@ -372,13 +396,12 @@ struct field_data_t final : public bytes_mapper_t
   void test() const override;
 };
 
-struct shop_data_t final : public bytes_mapper_t
+struct shop_data_t : public bytes_mapper_t
 {
   uint16_t pricesUnused;
   std::vector<uint16_t> item_indexes;
-  bool is_gear_shop;
 
-  shop_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), is_gear_shop( data.is_gear_shop_chunk )
+  shop_data_t( chunk_t& data ) : bytes_mapper_t( data.data )
   {
     mapBytes();
     // test();
@@ -388,20 +411,49 @@ struct shop_data_t final : public bytes_mapper_t
   void test() const override;
 };
 
-struct item_rate_t : public bytes_mapper_t
+struct item_shop_t final : public shop_data_t
 {
-  uint32_t item_rate;
-
-  item_rate_t( chunk_t& data ) : bytes_mapper_t( data.data ), item_rate( read4Bytes( bytes, 0x00 ) )
+  item_shop_t( chunk_t& data ) : shop_data_t( data )
   {
     // test();
   }
+};
+
+struct gear_shop_t final : public shop_data_t
+{
+  gear_shop_t( chunk_t& data ) : shop_data_t( data )
+  {
+    // test();
+  }
+};
+
+struct rate_data_t : public bytes_mapper_t
+{
+  uint32_t rate;
+  rate_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), rate( read4Bytes( bytes, 0x00 ) )
+  {}
 
   void writeToBytes();
   void test() const override;
 };
 
-struct character_stats_t : public bytes_mapper_t
+struct item_rate_t final : public rate_data_t
+{
+  item_rate_t( chunk_t& data ) : rate_data_t( data )
+  {
+    // test();
+  }
+};
+
+struct arms_rate_t final : public rate_data_t
+{
+  arms_rate_t( chunk_t& data ) : rate_data_t( data )
+  {
+    // test();
+  }
+};
+
+struct character_stats_t final : public bytes_mapper_t
 {
   uint16_t name_offset;
   uint16_t name_key;
@@ -454,33 +506,171 @@ struct character_stats_t : public bytes_mapper_t
 
   struct overdrive_flags_t
   {
-    unsigned int warrior : 1;
-    unsigned int comrade : 1;
-    unsigned int stoic : 1;
-    unsigned int healer : 1;
-    unsigned int tactician : 1;
-    unsigned int victim : 1;
-    unsigned int dancer : 1;
-    unsigned int avenger : 1;
-    unsigned int slayer : 1;
-    unsigned int hero : 1;
-    unsigned int rook : 1;
-    unsigned int victor : 1;
-    unsigned int coward : 1;
-    unsigned int ally : 1;
-    unsigned int sufferer : 1;
-    unsigned int daredevil : 1;
-    unsigned int loner : 1;
-    unsigned int unused1 : 1;
-    unsigned int unused2 : 1;
-    unsigned int aeon : 1;
-  } overdrive_learned;
+    union
+    {
+      uint32_t bytes;
+      struct
+      {
+        unsigned int warrior : 1;
+        unsigned int comrade : 1;
+        unsigned int stoic : 1;
+        unsigned int healer : 1;
+        unsigned int tactician : 1;
+        unsigned int victim : 1;
+        unsigned int dancer : 1;
+        unsigned int avenger : 1;
+        unsigned int slayer : 1;
+        unsigned int hero : 1;
+        unsigned int rook : 1;
+        unsigned int victor : 1;
+        unsigned int coward : 1;
+        unsigned int ally : 1;
+        unsigned int sufferer : 1;
+        unsigned int daredevil : 1;
+        unsigned int loner : 1;
+        unsigned int unused1 : 1;
+        unsigned int unused2 : 1;
+        unsigned int aeon : 1;
+      } bits;
+    };
+  };
 
-  union overdrive_bytes_t
+  overdrive_flags_t overdrive{ 0x00000000 };
+
+  struct ability_flags_1_t
   {
-    uint32_t bytes;
-    struct overdrive_flags_t bits;
-  } overdrive_bytes;
+    union
+    {
+      uint32_t bytes;
+      struct
+      {
+        unsigned int attack : 1;
+        unsigned int item : 1;
+        unsigned int switch_out : 1;
+        unsigned int escape : 1;
+        unsigned int change_weapon : 1;
+        unsigned int change_armor : 1;
+        unsigned int delay_attack : 1;
+        unsigned int delay_buster : 1;
+        unsigned int sleep_attack : 1;
+        unsigned int silence_attack : 1;
+        unsigned int dark_attack : 1;
+        unsigned int zombie_attack : 1;
+        unsigned int sleep_buster : 1;
+        unsigned int silence_buster : 1;
+        unsigned int dark_buster : 1;
+        unsigned int triple_foul : 1;
+        unsigned int power_break : 1;
+        unsigned int magic_break : 1;
+        unsigned int armor_break : 1;
+        unsigned int mental_break : 1;
+        unsigned int mug : 1;
+        unsigned int quick_hit : 1;
+        unsigned int steal : 1;
+        unsigned int use : 1;
+        unsigned int flee : 1;
+        unsigned int pray : 1;
+        unsigned int cheer : 1;
+        unsigned int aim : 1;
+        unsigned int focus : 1;
+        unsigned int reflex : 1;
+        unsigned int luck : 1;
+        unsigned int jinx : 1;
+      } bits;
+    };
+  };
+
+  ability_flags_1_t ability_flags1{ 0x00000000 };
+
+  struct ability_flags_2_t
+  {
+    union
+    {
+      uint32_t bytes;
+      struct
+      {
+        unsigned int lancet : 1;
+        unsigned int unused1 : 1;
+        unsigned int guard : 1;
+        unsigned int sentinel : 1;
+        unsigned int spare_change : 1;
+        unsigned int threaten : 1;
+        unsigned int provoke : 1;
+        unsigned int entrust : 1;
+        unsigned int copycat : 1;
+        unsigned int doubelcast : 1;
+        unsigned int bribe : 1;
+        unsigned int cure : 1;
+        unsigned int cura : 1;
+        unsigned int curaga : 1;
+        unsigned int null_frost : 1;
+        unsigned int null_blaze : 1;
+        unsigned int null_shock : 1;
+        unsigned int null_tide : 1;
+        unsigned int scan : 1;
+        unsigned int esuna : 1;
+        unsigned int life : 1;
+        unsigned int full_life : 1;
+        unsigned int haste : 1;
+        unsigned int hastega : 1;
+        unsigned int slow : 1;
+        unsigned int slowga : 1;
+        unsigned int shell : 1;
+        unsigned int protect : 1;
+        unsigned int reflect : 1;
+        unsigned int dispel : 1;
+        unsigned int regen : 1;
+        unsigned int holy : 1;
+      } bits;
+    };
+  };
+
+  ability_flags_2_t ability_flags2{ 0x00000000 };
+
+  struct ability_flags_3_t
+  {
+    union
+    {
+      uint32_t bytes;
+      struct
+      {
+        unsigned int auto_life : 1;
+        unsigned int blizzard : 1;
+        unsigned int fire : 1;
+        unsigned int thunder : 1;
+        unsigned int water : 1;
+        unsigned int fira : 1;
+        unsigned int blizzara : 1;
+        unsigned int thundara : 1;
+        unsigned int watera : 1;
+        unsigned int firaga : 1;
+        unsigned int blizzaga : 1;
+        unsigned int thundaga : 1;
+        unsigned int waterga : 1;
+        unsigned int bio : 1;
+        unsigned int demi : 1;
+        unsigned int death : 1;
+        unsigned int drain : 1;
+        unsigned int osmose : 1;
+        unsigned int flare : 1;
+        unsigned int ultima : 1;
+        unsigned int shield : 1;
+        unsigned int boost : 1;
+        unsigned int dismiss : 1;
+        unsigned int dismiss_yojimbo : 1;
+        unsigned int pilfer_gil : 1;
+        unsigned int full_break : 1;
+        unsigned int extract_power : 1;
+        unsigned int extract_mana : 1;
+        unsigned int extract_speed : 1;
+        unsigned int extract_ability : 1;
+        unsigned int nab_gil : 1;
+        unsigned int quick_pockets : 1;
+      } bits;
+    };
+  };
+
+  ability_flags_3_t ability_flags3{ 0x00000000 };
 
   character_stats_t( chunk_t& data ) : bytes_mapper_t( data.data )
   {
@@ -495,8 +685,9 @@ struct character_stats_t : public bytes_mapper_t
   void test() const override;
 };
 
-struct aeon_scaling_data_t : public bytes_mapper_t
+struct aeon_scaling_data_t final : public bytes_mapper_t
 {
+  bool is_yuna_summon;
   uint8_t genre_byte;
   uint8_t ap_req_coef1;
   uint8_t ap_req_coef2;
@@ -522,7 +713,7 @@ struct aeon_scaling_data_t : public bytes_mapper_t
   uint8_t acc_coef2;
   uint16_t unknown;
 
-  aeon_scaling_data_t( chunk_t& data ) : bytes_mapper_t( data.data )
+  aeon_scaling_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), is_yuna_summon( false )
   {
     mapBytes();
     //test();
@@ -533,7 +724,7 @@ struct aeon_scaling_data_t : public bytes_mapper_t
   void test() const override;
 };
 
-struct aeon_stat_data_t : public bytes_mapper_t
+struct aeon_stat_data_t final : public bytes_mapper_t
 {
   uint16_t hp;
   uint16_t mp;
@@ -557,7 +748,7 @@ struct aeon_stat_data_t : public bytes_mapper_t
   void test() const override;
 };
 
-struct sphere_grid_node_data_t : public bytes_mapper_t
+struct sphere_grid_node_data_t final : public bytes_mapper_t
 {
   int16_t x_pos;
   int16_t y_pos;
@@ -579,14 +770,14 @@ struct sphere_grid_node_data_t : public bytes_mapper_t
   void test() const override;
 };
 
-struct sphere_grid_data_t : public bytes_mapper_t
+struct sphere_grid_data_t final : public bytes_mapper_t
 {
   const int CLUSTER_LENGTH = 16;
   const int NODE_LENGTH = 12;
   const int LINK_LENGTH = 8;
   const int CONTENT_OFFSET = 8;
 
-  sphere_grid_type_t type;
+  sphere_grid_type_e type;
   std::vector<char> full_content_bytes;
   std::vector<uint8_t> chunked_content_bytes;
 
@@ -601,7 +792,7 @@ struct sphere_grid_data_t : public bytes_mapper_t
 
   std::vector<sphere_grid_node_data_t*> nodes;
 
-  sphere_grid_data_t( const std::vector<char>& bytes, sphere_grid_type_t type ) : bytes_mapper_t( bytes ), type( type )
+  sphere_grid_data_t( const std::vector<char>& bytes, sphere_grid_type_e type ) : bytes_mapper_t( bytes ), type( type )
   {
     mapBytes();
     // test();
@@ -616,12 +807,13 @@ struct data_pack_t
 {
   std::vector<enemy_data_t*>& enemy_data;
   std::vector<field_data_t*>& field_data;
-  std::vector<shop_data_t*>& item_shop_data;
-  std::vector<shop_data_t*>& gear_shop_data;
+  std::vector<item_shop_t*>& item_shop_data;
+  std::vector<gear_shop_t*>& gear_shop_data;
   std::vector<gear_data_t*>& buki_data;
   std::vector<gear_data_t*>& weapon_data;
   std::vector<gear_data_t*>& shop_arms_data;
   std::vector<item_rate_t*>& item_rate_data;
+  std::vector<arms_rate_t*>& arms_rate_data;
   std::vector<character_stats_t*>& player_stats_data;
   std::vector<aeon_scaling_data_t*>& aeon_scaling_data;
   std::vector<aeon_stat_data_t*>& aeon_stat_data;
@@ -632,12 +824,13 @@ struct data_pack_t
   data_pack_t(
     std::vector<enemy_data_t*>& enemy_data,
     std::vector<field_data_t*>& field_data,
-    std::vector<shop_data_t*>& item_shop_data,
-    std::vector<shop_data_t*>& gear_shop_data,
+    std::vector<item_shop_t*>& item_shop_data,
+    std::vector<gear_shop_t*>& gear_shop_data,
     std::vector<gear_data_t*>& buki_data,
     std::vector<gear_data_t*>& weapon_data,
     std::vector<gear_data_t*>& shop_arms_data,
     std::vector<item_rate_t*>& item_rate_data,
+    std::vector<arms_rate_t*>& arms_rate_data,
     std::vector<character_stats_t*>& player_stats_data,
     std::vector<aeon_scaling_data_t*>& aeon_scaling_data,
     std::vector<aeon_stat_data_t*>& aeon_stat_data,
@@ -651,6 +844,7 @@ struct data_pack_t
     weapon_data( weapon_data ),
     shop_arms_data( shop_arms_data ),
     item_rate_data( item_rate_data ),
+    arms_rate_data( arms_rate_data ),
     player_stats_data( player_stats_data ),
     aeon_scaling_data( aeon_scaling_data ),
     aeon_stat_data( aeon_stat_data ),
@@ -667,10 +861,15 @@ struct options_pack_t
   bool randomize_enemy_stats;
   bool randomize_enemy_stats_defensive;
   bool randomize_enemy_stats_shuffle;
-  bool randomize_shops;
-  bool randomize_shop_prices;
+  bool randomize_item_shops;
+  bool randomize_gear_shops;
+  bool randomize_item_shop_prices;
+  bool randomize_gear_shop_prices;
   bool randomize_field_items;
   bool randomize_gear_abilities;
+  bool randomize_weapon_crit;
+  bool randomize_weapon_attack_power;
+  bool randomize_weapon_damage_formula;
   bool randomize_player_stats;
   bool randomize_aeon_stat_scaling;
   bool randomize_aeon_base_stats;
@@ -706,10 +905,15 @@ struct options_pack_t
     bool randomize_enemy_stats,
     bool randomize_enemy_stats_defensive,
     bool randomize_enemy_stats_shuffle,
-    bool randomize_shops,
-    bool randomize_shop_prices,
+    bool randomize_item_shops,
+    bool randomize_gear_shops,
+    bool randomize_item_shop_prices,
+    bool randomize_gear_shop_prices,
     bool randomize_field_items,
     bool randomize_gear_abilities,
+    bool randomize_weapon_crit,
+    bool randomize_weapon_attack_power,
+    bool randomize_weapon_damage_formula,
     bool randomize_player_stats,
     bool randomize_aeon_stat_scaling,
     bool randomize_aeon_base_stats,
@@ -741,10 +945,15 @@ struct options_pack_t
     randomize_enemy_stats( randomize_enemy_stats ),
     randomize_enemy_stats_defensive( randomize_enemy_stats_defensive ),
     randomize_enemy_stats_shuffle( randomize_enemy_stats_shuffle ),
-    randomize_shops( randomize_shops ),
-    randomize_shop_prices( randomize_shop_prices ),
+    randomize_item_shops( randomize_item_shops ),
+    randomize_gear_shops( randomize_gear_shops ),
+    randomize_item_shop_prices( randomize_item_shop_prices ),
+    randomize_gear_shop_prices( randomize_gear_shop_prices ),
     randomize_field_items( randomize_field_items ),
     randomize_gear_abilities( randomize_gear_abilities ),
+    randomize_weapon_crit( randomize_weapon_crit ),
+    randomize_weapon_attack_power( randomize_weapon_attack_power ),
+    randomize_weapon_damage_formula( randomize_weapon_damage_formula ),
     randomize_player_stats( randomize_player_stats ),
     randomize_aeon_stat_scaling( randomize_aeon_stat_scaling ),
     randomize_aeon_base_stats( randomize_aeon_base_stats ),
@@ -775,8 +984,8 @@ struct options_pack_t
 static constexpr int ENEMY_COUNT = 360;
 // Versioning
 static constexpr int MAJOR_VERSION = 1;
-static constexpr int MINOR_VERSION = 1;
-static constexpr int PATCH_VERSION = 1;
+static constexpr int MINOR_VERSION = 2;
+static constexpr int PATCH_VERSION = 0;
 // Information
 static const std::string VERSION = "v" + std::to_string( MAJOR_VERSION ) + "." + std::to_string( MINOR_VERSION ) + "." + std::to_string( PATCH_VERSION );
 static const std::string AUTHOR = "Taeznak";

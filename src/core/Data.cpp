@@ -93,75 +93,85 @@ void gear_data_t::mapFlags() {
 void gear_data_t::test() const
 {
   bytes_mapper_t::test();
-  std::cout << "Is Buki Get: " << is_buki_get << std::endl;
+  printf( "Is Buki Get: %d\n", is_buki_get );
+  printf( "Is Armor: %d\n", is_armor );
+  printf( "Is Flag 1: %d\n", is_flag1 );
+  printf( "Is Hidden in Menu: %d\n", is_hidden_in_menu );
+  printf( "Is Celestial: %d\n", is_celestial );
+  printf( "Is Brotherhood: %d\n", is_brotherhood );
+  printf( "Is Unknown Flag: %d\n", is_unknown_flag );
   if (!is_buki_get)
   {
-    std::cout << "Byte 00 Name ID Maybe: " << byte00_name_id_maybe << std::endl;
-    std::cout << "Byte 01 Name ID Maybe: " << byte01_name_id_maybe << std::endl;
-    std::cout << "Byte 02 Exists Maybe: " << byte02_exists_maybe << std::endl;
-    std::cout << "Misc Flags: " << misc_flags << std::endl;
-    std::cout << "Character ID: " << character_id << std::endl;
-    std::cout << "Armor Byte: " << armor_byte << std::endl;
-    std::cout << "Byte 06 Equipper Maybe: " << byte06_equipper_maybe << std::endl;
-    std::cout << "Byte 07 Equipper Maybe: " << byte07_equipper_maybe << std::endl;
-    std::cout << "Damage Calc: " << damage_calc << std::endl;
-    std::cout << "Attack Power: " << attack_power << std::endl;
-    std::cout << "Crit Bonus: " << crit_bonus << std::endl;
-    std::cout << "Slots: " << slots << std::endl;
-    std::cout << "Model ID: " << model_id << std::endl;
-    std::cout << "Ability Slot 1: " << ability_slot1 << std::endl;
-    std::cout << "Ability Slot 2: " << ability_slot2 << std::endl;
-    std::cout << "Ability Slot 3: " << ability_slot3 << std::endl;
-    std::cout << "Ability Slot 4: " << ability_slot4 << std::endl;
+    printf( "Byte 00 Name ID Maybe: %d\n", byte00_name_id_maybe );
+    printf( "Byte 01 Name ID Maybe: %d\n", byte01_name_id_maybe );
+    printf( "Byte 02 Exists Maybe: %d\n", byte02_exists_maybe );
+    printf( "Misc Flags: %d\n", misc_flags );
+    printf( "Character ID: %d\n", character_id );
+    printf( "Armor Byte: %d\n", armor_byte );
+    printf( "Byte 06 Equipper Maybe: %d\n", byte06_equipper_maybe );
+    printf( "Byte 07 Equipper Maybe: %d\n", byte07_equipper_maybe );
+    printf( "Damage Calc: %d\n", damage_calc );
+    printf( "Attack Power: %d\n", attack_power );
+    printf( "Crit Bonus: %d\n", crit_bonus );
+    printf( "Slots: %d\n", slots );
+    printf( "Model ID: %d\n", model_id );
+    printf( "Ability Slot 1: %d\n", ability_slot1 );
+    printf( "Ability Slot 2: %d\n", ability_slot2 );
+    printf( "Ability Slot 3: %d\n", ability_slot3 );
+    printf( "Ability Slot 4: %d\n", ability_slot4 );
   }
   else
   {
-    std::cout << "Misc Flags: " << misc_flags << std::endl;
-    std::cout << "Character ID: " << character_id << std::endl;
-    std::cout << "Armor Byte: " << armor_byte << std::endl;
-    std::cout << "Byte 03 Constant Zero: " << byte03_constant_zero << std::endl;
-    std::cout << "Damage Calc: " << damage_calc << std::endl;
-    std::cout << "Attack Power: " << attack_power << std::endl;
-    std::cout << "Crit Bonus: " << crit_bonus << std::endl;
-    std::cout << "Slots: " << slots << std::endl;
-    std::cout << "Ability Slot 1: " << ability_slot1 << std::endl;
-    std::cout << "Ability Slot 2: " << ability_slot2 << std::endl;
-    std::cout << "Ability Slot 3: " << ability_slot3 << std::endl;
-    std::cout << "Ability Slot 4: " << ability_slot4 << std::endl;
+    printf( "Misc Flags: %d\n", misc_flags );
+    printf( "Character ID: %d\n", character_id );
+    printf( "Armor Byte: %d\n", armor_byte );
+    printf( "Byte 03 Constant Zero: %d\n", byte03_constant_zero );
+    printf( "Damage Calc: %d\n", damage_calc );
+    printf( "Attack Power: %d\n", attack_power );
+    printf( "Crit Bonus: %d\n", crit_bonus );
+    printf( "Slots: %d\n", slots );
+    printf( "Ability Slot 1: %d\n", ability_slot1 );
+    printf( "Ability Slot 2: %d\n", ability_slot2 );
+    printf( "Ability Slot 3: %d\n", ability_slot3 );
+    printf( "Ability Slot 4: %d\n", ability_slot4 );
   }
-  std::cout << "Is Armor: " << is_armor << std::endl;
-  std::cout << "Is Flag 1: " << is_flag1 << std::endl;
-  std::cout << "Is Hidden in Menu: " << is_hidden_in_menu << std::endl;
-  std::cout << "Is Celestial: " << is_celestial << std::endl;
-  std::cout << "Is Brotherhood: " << is_brotherhood << std::endl;
-  std::cout << "Is Unknown Flag: " << is_unknown_flag << std::endl;
 }
 
 void gear_data_t::mapAbilities( std::vector<uint16_t>& abilities )
 {
-  if (ability_slot1 != 0 && ability_slot1 != 255)
+  if (ability_slot1 != 0 && ability_slot1 != UINT8_MAX && ability_slot1 != UINT16_MAX)
   {
     bool found = std::find( abilities.begin(), abilities.end(), ability_slot1 ) != abilities.end();
     if (!found)
       abilities.push_back( ability_slot1 );
   }
-  if (ability_slot2 != 0 && ability_slot2 != 255)
+  if (ability_slot2 != 0 && ability_slot2 != UINT8_MAX && ability_slot2 != UINT16_MAX)
   {
     bool found = std::find( abilities.begin(), abilities.end(), ability_slot2 ) != abilities.end();
     if (!found)
       abilities.push_back( ability_slot2 );
   }
-  if (ability_slot3 != 0 && ability_slot3 != 255)
+  if (ability_slot3 != 0 && ability_slot3 != UINT8_MAX && ability_slot3 != UINT16_MAX)
   {
     bool found = std::find( abilities.begin(), abilities.end(), ability_slot3 ) != abilities.end();
     if (!found)
       abilities.push_back( ability_slot3 );
   }
-  if (ability_slot4 != 0 && ability_slot4 != 255)
+  if (ability_slot4 != 0 && ability_slot4 != UINT8_MAX && ability_slot4 != UINT16_MAX)
   {
     bool found = std::find( abilities.begin(), abilities.end(), ability_slot4 ) != abilities.end();
     if (!found)
       abilities.push_back( ability_slot4 );
+  }
+}
+
+void gear_data_t::mapFormulas( std::vector<uint8_t>& formulas )
+{
+  if (!is_armor)
+  {
+    bool found = std::find( formulas.begin(), formulas.end(), damage_calc ) != formulas.end();
+    if (!found)
+      formulas.push_back( damage_calc );
   }
 }
 
@@ -469,13 +479,7 @@ void enemy_stat_data_t::writeToBytes()
   write1Byte( bytes, 0x25, luck );
   write1Byte( bytes, 0x26, eva );
   write1Byte( bytes, 0x27, acc );
-  write1Byte( bytes, 0x28, flag_map1 );
-  write1Byte( bytes, 0x29, flag_map2 );
   write1Byte( bytes, 0x2A, poison_damage );
-  write1Byte( bytes, 0x2B, element_absorb );
-  write1Byte( bytes, 0x2C, element_immune );
-  write1Byte( bytes, 0x2D, element_resist );
-  write1Byte( bytes, 0x2E, element_weakness );
   write1Byte( bytes, 0x2F, death_resist );
   write1Byte( bytes, 0x30, zombie_resist );
   write1Byte( bytes, 0x31, petrify_resist );
@@ -508,7 +512,7 @@ void enemy_stat_data_t::writeToBytes()
 
   for (int i = 0; i < 0x10; i++)
   {
-    write2Bytes( bytes, 0x50 + i * 2, abilities[i] );
+    write2Bytes( bytes, 0x50 + i * 2, abilities[ i ] );
   }
 
   write2Bytes( bytes, 0x70, forced_action );
@@ -523,23 +527,19 @@ void enemy_stat_data_t::writeToBytes()
   write1Byte( bytes, 0x7E, always_zero3 );
   write1Byte( bytes, 0x7F, always_zero4 );
 
-  flag1_byte.bits = { flags1.armored, flags1.immune_fractional_damage, flags1.immune_life, flags1.immune_sensor, flags1.unknown_flag, flags1.immune_physical_damage, flags1.immune_magic_damage, flags1.immune_all_damage };
-  flag_map1 = flag1_byte.byte;
+  flag_map1 = flags1.byte;
+  write1Byte( bytes, 0x28, flag_map1 );
+  flag_map2 = flags2.byte;
+  write1Byte( bytes, 0x29, flag_map2 );
 
-  flag2_byte.bits = { flags2.immune_delay, flags2.immune_slice, flags2.immune_bribe };
-  flag_map2 = flag2_byte.byte;
-
-  element_absorb_byte.bits = { element_absorb_flags.fire, element_absorb_flags.ice, element_absorb_flags.lightning, element_absorb_flags.water, element_absorb_flags.holy };
-  element_absorb = element_absorb_byte.byte;
-
-  element_immune_byte.bits = { element_immune_flags.fire, element_immune_flags.ice, element_immune_flags.lightning, element_immune_flags.water, element_immune_flags.holy };
-  element_immune = element_immune_byte.byte;
-
-  element_resist_byte.bits = { element_resist_flags.fire, element_resist_flags.ice, element_resist_flags.lightning, element_resist_flags.water, element_resist_flags.holy };
-  element_resist = element_resist_byte.byte;
-
-  element_weakness_byte.bits = { element_weakness_flags.fire, element_weakness_flags.ice, element_weakness_flags.lightning, element_weakness_flags.water, element_weakness_flags.holy };
-  element_weakness = element_weakness_byte.byte;
+  element_absorb = element_absorb_flags.byte;
+  write1Byte( bytes, 0x2B, element_absorb );
+  element_immune = element_immune_flags.byte;
+  write1Byte( bytes, 0x2C, element_immune );
+  element_resist = element_resist_flags.byte;
+  write1Byte( bytes, 0x2D, element_resist );
+  element_weakness = element_weakness_flags.byte;
+  write1Byte( bytes, 0x2E, element_weakness );
 }
 
 void enemy_stat_data_t::test() const
@@ -619,71 +619,71 @@ void enemy_stat_data_t::test() const
   printf( "Always Zero 2: %d\n", always_zero2 );
   printf( "Always Zero 3: %d\n", always_zero3 );
   printf( "Always Zero 4: %d\n", always_zero4 );
-  printf( "Flags: %d %d %d %d %d %d %d %d\n", flags1.armored, flags1.immune_fractional_damage, flags1.immune_life, flags1.immune_sensor, flags1.unknown_flag, flags1.immune_physical_damage, flags1.immune_magic_damage, flags1.immune_all_damage );
+  printf( "Flags: %d %d %d %d %d %d %d %d\n", flags1.bits.armored, flags1.bits.immune_fractional_damage, flags1.bits.immune_life, flags1.bits.immune_sensor, flags1.bits.unknown_flag, flags1.bits.immune_physical_damage, flags1.bits.immune_magic_damage, flags1.bits.immune_all_damage );
   printf( "Element Absorb Flags:\n" );
-  printf( "Absorb Fire: %d\n", element_absorb_flags.fire );
-  printf( "Absorb Ice: %d\n", element_absorb_flags.ice );
-  printf( "Absorb Lightning: %d\n", element_absorb_flags.lightning );
-  printf( "Absorb Water: %d\n", element_absorb_flags.water );
-  printf( "Absorb Holy: %d\n", element_absorb_flags.holy );
+  printf( "Absorb Fire: %d\n", element_absorb_flags.bits.fire );
+  printf( "Absorb Ice: %d\n", element_absorb_flags.bits.ice );
+  printf( "Absorb Lightning: %d\n", element_absorb_flags.bits.lightning );
+  printf( "Absorb Water: %d\n", element_absorb_flags.bits.water );
+  printf( "Absorb Holy: %d\n", element_absorb_flags.bits.holy );
   printf( "Element Immune Flags:\n" );
-  printf( "Immune Fire: %d\n", element_immune_flags.fire );
-  printf( "Immune Ice: %d\n", element_immune_flags.ice );
-  printf( "Immune Lightning: %d\n", element_immune_flags.lightning );
-  printf( "Immune Water: %d\n", element_immune_flags.water );
-  printf( "Immune Holy: %d\n", element_immune_flags.holy );
+  printf( "Immune Fire: %d\n", element_immune_flags.bits.fire );
+  printf( "Immune Ice: %d\n", element_immune_flags.bits.ice );
+  printf( "Immune Lightning: %d\n", element_immune_flags.bits.lightning );
+  printf( "Immune Water: %d\n", element_immune_flags.bits.water );
+  printf( "Immune Holy: %d\n", element_immune_flags.bits.holy );
   printf( "Element Resist Flags:\n" );
-  printf( "Resist Fire: %d\n", element_resist_flags.fire );
-  printf( "Resist Ice: %d\n", element_resist_flags.ice );
-  printf( "Resist Lightning: %d\n", element_resist_flags.lightning );
-  printf( "Resist Water: %d\n", element_resist_flags.water );
-  printf( "Resist Holy: %d\n", element_resist_flags.holy );
+  printf( "Resist Fire: %d\n", element_resist_flags.bits.fire );
+  printf( "Resist Ice: %d\n", element_resist_flags.bits.ice );
+  printf( "Resist Lightning: %d\n", element_resist_flags.bits.lightning );
+  printf( "Resist Water: %d\n", element_resist_flags.bits.water );
+  printf( "Resist Holy: %d\n", element_resist_flags.bits.holy );
   printf( "Element Weakness Flags:\n" );
-  printf( "Weakness Fire: %d\n", element_weakness_flags.fire );
-  printf( "Weakness Ice: %d\n", element_weakness_flags.ice );
-  printf( "Weakness Lightning: %d\n", element_weakness_flags.lightning );
-  printf( "Weakness Water: %d\n", element_weakness_flags.water );
-  printf( "Weakness Holy: %d\n", element_weakness_flags.holy );
+  printf( "Weakness Fire: %d\n", element_weakness_flags.bits.fire );
+  printf( "Weakness Ice: %d\n", element_weakness_flags.bits.ice );
+  printf( "Weakness Lightning: %d\n", element_weakness_flags.bits.lightning );
+  printf( "Weakness Water: %d\n", element_weakness_flags.bits.water );
+  printf( "Weakness Holy: %d\n", element_weakness_flags.bits.holy );
 }
 
 void enemy_stat_data_t::mapFlags()
 {
-  flags1.armored = ( flag_map1 & 0x01 ) > 0;
-  flags1.immune_fractional_damage = ( flag_map1 & 0x02 ) > 0;
-  flags1.immune_life = ( flag_map1 & 0x04 ) > 0;
-  flags1.immune_sensor = ( flag_map1 & 0x08 ) > 0;
-  flags1.unknown_flag = ( flag_map1 & 0x10 ) > 0;
-  flags1.immune_physical_damage = ( flag_map1 & 0x20 ) > 0;
-  flags1.immune_magic_damage = ( flag_map1 & 0x40 ) > 0;
-  flags1.immune_all_damage = ( flag_map1 & 0x80 ) > 0;
+  flags1.bits.armored = ( flag_map1 & 0x01 ) > 0;
+  flags1.bits.immune_fractional_damage = ( flag_map1 & 0x02 ) > 0;
+  flags1.bits.immune_life = ( flag_map1 & 0x04 ) > 0;
+  flags1.bits.immune_sensor = ( flag_map1 & 0x08 ) > 0;
+  flags1.bits.unknown_flag = ( flag_map1 & 0x10 ) > 0;
+  flags1.bits.immune_physical_damage = ( flag_map1 & 0x20 ) > 0;
+  flags1.bits.immune_magic_damage = ( flag_map1 & 0x40 ) > 0;
+  flags1.bits.immune_all_damage = ( flag_map1 & 0x80 ) > 0;
 
-  flags2.immune_delay = ( flag_map2 & 0x01 ) > 0;
-  flags2.immune_slice = ( flag_map2 & 0x02 ) > 0;
-  flags2.immune_bribe = ( flag_map2 & 0x04 ) > 0;
+  flags2.bits.immune_delay = ( flag_map2 & 0x01 ) > 0;
+  flags2.bits.immune_slice = ( flag_map2 & 0x02 ) > 0;
+  flags2.bits.immune_bribe = ( flag_map2 & 0x04 ) > 0;
 
-  element_absorb_flags.fire = ( element_absorb & 0x01 ) > 0;
-  element_absorb_flags.ice = ( element_absorb & 0x02 ) > 0;
-  element_absorb_flags.lightning = ( element_absorb & 0x04 ) > 0;
-  element_absorb_flags.water = ( element_absorb & 0x08 ) > 0;
-  element_absorb_flags.holy = ( element_absorb & 0x10 ) > 0;
+  element_absorb_flags.bits.fire = ( element_absorb & 0x01 ) > 0;
+  element_absorb_flags.bits.ice = ( element_absorb & 0x02 ) > 0;
+  element_absorb_flags.bits.lightning = ( element_absorb & 0x04 ) > 0;
+  element_absorb_flags.bits.water = ( element_absorb & 0x08 ) > 0;
+  element_absorb_flags.bits.holy = ( element_absorb & 0x10 ) > 0;
 
-  element_immune_flags.fire = ( element_immune & 0x01 ) > 0;
-  element_immune_flags.ice = ( element_immune & 0x02 ) > 0;
-  element_immune_flags.lightning = ( element_immune & 0x04 ) > 0;
-  element_immune_flags.water = ( element_immune & 0x08 ) > 0;
-  element_immune_flags.holy = ( element_immune & 0x10 ) > 0;
+  element_immune_flags.bits.fire = ( element_immune & 0x01 ) > 0;
+  element_immune_flags.bits.ice = ( element_immune & 0x02 ) > 0;
+  element_immune_flags.bits.lightning = ( element_immune & 0x04 ) > 0;
+  element_immune_flags.bits.water = ( element_immune & 0x08 ) > 0;
+  element_immune_flags.bits.holy = ( element_immune & 0x10 ) > 0;
 
-  element_resist_flags.fire = ( element_resist & 0x01 ) > 0;
-  element_resist_flags.ice = ( element_resist & 0x02 ) > 0;
-  element_resist_flags.lightning = ( element_resist & 0x04 ) > 0;
-  element_resist_flags.water = ( element_resist & 0x08 ) > 0;
-  element_resist_flags.holy = ( element_resist & 0x10 ) > 0;
+  element_resist_flags.bits.fire = ( element_resist & 0x01 ) > 0;
+  element_resist_flags.bits.ice = ( element_resist & 0x02 ) > 0;
+  element_resist_flags.bits.lightning = ( element_resist & 0x04 ) > 0;
+  element_resist_flags.bits.water = ( element_resist & 0x08 ) > 0;
+  element_resist_flags.bits.holy = ( element_resist & 0x10 ) > 0;
 
-  element_weakness_flags.fire = ( element_weakness & 0x01 ) > 0;
-  element_weakness_flags.ice = ( element_weakness & 0x02 ) > 0;
-  element_weakness_flags.lightning = ( element_weakness & 0x04 ) > 0;
-  element_weakness_flags.water = ( element_weakness & 0x08 ) > 0;
-  element_weakness_flags.holy = ( element_weakness & 0x10 ) > 0;
+  element_weakness_flags.bits.fire = ( element_weakness & 0x01 ) > 0;
+  element_weakness_flags.bits.ice = ( element_weakness & 0x02 ) > 0;
+  element_weakness_flags.bits.lightning = ( element_weakness & 0x04 ) > 0;
+  element_weakness_flags.bits.water = ( element_weakness & 0x08 ) > 0;
+  element_weakness_flags.bits.holy = ( element_weakness & 0x10 ) > 0;
 }
 
 void enemy_data_t::mapChunks() {
@@ -779,15 +779,15 @@ void shop_data_t::test() const
   std::cout << std::endl;
 }
 
-void item_rate_t::writeToBytes()
+void rate_data_t::writeToBytes()
 {
-  write4Bytes( bytes, 0x00, item_rate );
+  write4Bytes( bytes, 0x00, rate );
 }
 
-void item_rate_t::test() const
+void rate_data_t::test() const
 {
   bytes_mapper_t::test();
-  std::cout << "Item Rate: " << item_rate << std::endl;
+  std::cout << "Rate: " << rate << std::endl;
 }
 
 void character_stats_t::mapBytes()
@@ -844,26 +844,125 @@ void character_stats_t::mapBytes()
 
 void character_stats_t::mapFlags()
 {
-  overdrive_learned.warrior = ( overdrive_mode_flags & 0x01 ) > 0;
-  overdrive_learned.comrade = ( overdrive_mode_flags & 0x02 ) > 0;
-  overdrive_learned.stoic = ( overdrive_mode_flags & 0x04 ) > 0;
-  overdrive_learned.healer = ( overdrive_mode_flags & 0x8 ) > 0;
-  overdrive_learned.tactician = ( overdrive_mode_flags & 0x10 ) > 0;
-  overdrive_learned.victim = ( overdrive_mode_flags & 0x20 ) > 0;
-  overdrive_learned.dancer = ( overdrive_mode_flags & 0x40 ) > 0;
-  overdrive_learned.avenger = ( overdrive_mode_flags & 0x80 ) > 0;
-  overdrive_learned.slayer = ( overdrive_mode_flags & 0x100 ) > 0;
-  overdrive_learned.hero = ( overdrive_mode_flags & 0x200 ) > 0;
-  overdrive_learned.rook = ( overdrive_mode_flags & 0x400 ) > 0;
-  overdrive_learned.victor = ( overdrive_mode_flags & 0x800 ) > 0;
-  overdrive_learned.coward = ( overdrive_mode_flags & 0x1000 ) > 0;
-  overdrive_learned.ally = ( overdrive_mode_flags & 0x2000 ) > 0;
-  overdrive_learned.sufferer = ( overdrive_mode_flags & 0x4000 ) > 0;
-  overdrive_learned.daredevil = ( overdrive_mode_flags & 0x8000 ) > 0;
-  overdrive_learned.loner = ( overdrive_mode_flags & 0x10000 ) > 0;
-  overdrive_learned.unused1 = ( overdrive_mode_flags & 0x20000 ) > 0;
-  overdrive_learned.unused2 = ( overdrive_mode_flags & 0x40000 ) > 0;
-  overdrive_learned.aeon = ( overdrive_mode_flags & 0x80000 ) > 0;
+  overdrive.bits.warrior = ( overdrive_mode_flags & 0x01 ) > 0;
+  overdrive.bits.comrade = ( overdrive_mode_flags & 0x02 ) > 0;
+  overdrive.bits.stoic = ( overdrive_mode_flags & 0x04 ) > 0;
+  overdrive.bits.healer = ( overdrive_mode_flags & 0x8 ) > 0;
+  overdrive.bits.tactician = ( overdrive_mode_flags & 0x10 ) > 0;
+  overdrive.bits.victim = ( overdrive_mode_flags & 0x20 ) > 0;
+  overdrive.bits.dancer = ( overdrive_mode_flags & 0x40 ) > 0;
+  overdrive.bits.avenger = ( overdrive_mode_flags & 0x80 ) > 0;
+  overdrive.bits.slayer = ( overdrive_mode_flags & 0x100 ) > 0;
+  overdrive.bits.hero = ( overdrive_mode_flags & 0x200 ) > 0;
+  overdrive.bits.rook = ( overdrive_mode_flags & 0x400 ) > 0;
+  overdrive.bits.victor = ( overdrive_mode_flags & 0x800 ) > 0;
+  overdrive.bits.coward = ( overdrive_mode_flags & 0x1000 ) > 0;
+  overdrive.bits.ally = ( overdrive_mode_flags & 0x2000 ) > 0;
+  overdrive.bits.sufferer = ( overdrive_mode_flags & 0x4000 ) > 0;
+  overdrive.bits.daredevil = ( overdrive_mode_flags & 0x8000 ) > 0;
+  overdrive.bits.loner = ( overdrive_mode_flags & 0x10000 ) > 0;
+  overdrive.bits.unused1 = ( overdrive_mode_flags & 0x20000 ) > 0;
+  overdrive.bits.unused2 = ( overdrive_mode_flags & 0x40000 ) > 0;
+  overdrive.bits.aeon = ( overdrive_mode_flags & 0x80000 ) > 0;
+
+  ability_flags1.bits.attack = ( ability_field1 & 0x01 ) > 0;
+  ability_flags1.bits.item = ( ability_field1 & 0x02 ) > 0;
+  ability_flags1.bits.switch_out = ( ability_field1 & 0x04 ) > 0;
+  ability_flags1.bits.escape = ( ability_field1 & 0x08 ) > 0;
+  ability_flags1.bits.change_weapon = ( ability_field1 & 0x10 ) > 0;
+  ability_flags1.bits.change_armor = ( ability_field1 & 0x20 ) > 0;
+  ability_flags1.bits.delay_attack = ( ability_field1 & 0x40 ) > 0;
+  ability_flags1.bits.delay_buster = ( ability_field1 & 0x80 ) > 0;
+  ability_flags1.bits.sleep_attack = ( ability_field1 & 0x100 ) > 0;
+  ability_flags1.bits.silence_attack = ( ability_field1 & 0x200 ) > 0;
+  ability_flags1.bits.dark_attack = ( ability_field1 & 0x400 ) > 0;
+  ability_flags1.bits.zombie_attack = ( ability_field1 & 0x800 ) > 0;
+  ability_flags1.bits.sleep_buster = ( ability_field1 & 0x1000 ) > 0;
+  ability_flags1.bits.silence_buster = ( ability_field1 & 0x2000 ) > 0;
+  ability_flags1.bits.dark_buster = ( ability_field1 & 0x4000 ) > 0;
+  ability_flags1.bits.triple_foul = ( ability_field1 & 0x8000 ) > 0;
+  ability_flags1.bits.power_break = ( ability_field1 & 0x10000 ) > 0;
+  ability_flags1.bits.magic_break = ( ability_field1 & 0x20000 ) > 0;
+  ability_flags1.bits.armor_break = ( ability_field1 & 0x40000 ) > 0;
+  ability_flags1.bits.mental_break = ( ability_field1 & 0x80000 ) > 0;
+  ability_flags1.bits.mug = ( ability_field1 & 0x100000 ) > 0;
+  ability_flags1.bits.quick_hit = ( ability_field1 & 0x200000 ) > 0;
+  ability_flags1.bits.steal = ( ability_field1 & 0x400000 ) > 0;
+  ability_flags1.bits.use = ( ability_field1 & 0x800000 ) > 0;
+  ability_flags1.bits.flee = ( ability_field1 & 0x1000000 ) > 0;
+  ability_flags1.bits.pray = ( ability_field1 & 0x2000000 ) > 0;
+  ability_flags1.bits.cheer = ( ability_field1 & 0x4000000 ) > 0;
+  ability_flags1.bits.aim = ( ability_field1 & 0x8000000 ) > 0;
+  ability_flags1.bits.focus = ( ability_field1 & 0x10000000 ) > 0;
+  ability_flags1.bits.reflex = ( ability_field1 & 0x20000000 ) > 0;
+  ability_flags1.bits.luck = ( ability_field1 & 0x40000000 ) > 0;
+  ability_flags1.bits.jinx = ( ability_field1 & 0x80000000 ) > 0;
+
+  ability_flags2.bits.lancet = ( ability_field2 & 0x01 ) > 0;
+  ability_flags2.bits.unused1 = ( ability_field2 & 0x02 ) > 0;
+  ability_flags2.bits.guard = ( ability_field2 & 0x04 ) > 0;
+  ability_flags2.bits.sentinel = ( ability_field2 & 0x08 ) > 0;
+  ability_flags2.bits.spare_change = ( ability_field2 & 0x10 ) > 0;
+  ability_flags2.bits.threaten = ( ability_field2 & 0x20 ) > 0;
+  ability_flags2.bits.provoke = ( ability_field2 & 0x40 ) > 0;
+  ability_flags2.bits.entrust = ( ability_field2 & 0x80 ) > 0;
+  ability_flags2.bits.copycat = ( ability_field2 & 0x100 ) > 0;
+  ability_flags2.bits.doubelcast = ( ability_field2 & 0x200 ) > 0;
+  ability_flags2.bits.bribe = ( ability_field2 & 0x400 ) > 0;
+  ability_flags2.bits.cure = ( ability_field2 & 0x800 ) > 0;
+  ability_flags2.bits.cura = ( ability_field2 & 0x1000 ) > 0;
+  ability_flags2.bits.curaga = ( ability_field2 & 0x2000 ) > 0;
+  ability_flags2.bits.null_frost = ( ability_field2 & 0x4000 ) > 0;
+  ability_flags2.bits.null_blaze = ( ability_field2 & 0x8000 ) > 0;
+  ability_flags2.bits.null_shock = ( ability_field2 & 0x10000 ) > 0;
+  ability_flags2.bits.null_tide = ( ability_field2 & 0x20000 ) > 0;
+  ability_flags2.bits.scan = ( ability_field2 & 0x40000 ) > 0;
+  ability_flags2.bits.esuna = ( ability_field2 & 0x80000 ) > 0;
+  ability_flags2.bits.life = ( ability_field2 & 0x100000 ) > 0;
+  ability_flags2.bits.full_life = ( ability_field2 & 0x200000 ) > 0;
+  ability_flags2.bits.haste = ( ability_field2 & 0x400000 ) > 0;
+  ability_flags2.bits.hastega = ( ability_field2 & 0x800000 ) > 0;
+  ability_flags2.bits.slow = ( ability_field2 & 0x1000000 ) > 0;
+  ability_flags2.bits.slowga = ( ability_field2 & 0x2000000 ) > 0;
+  ability_flags2.bits.shell = ( ability_field2 & 0x4000000 ) > 0;
+  ability_flags2.bits.protect = ( ability_field2 & 0x8000000 ) > 0;
+  ability_flags2.bits.reflect = ( ability_field2 & 0x10000000 ) > 0;
+  ability_flags2.bits.dispel = ( ability_field2 & 0x20000000 ) > 0;
+  ability_flags2.bits.regen = ( ability_field2 & 0x40000000 ) > 0;
+  ability_flags2.bits.holy = ( ability_field2 & 0x80000000 ) > 0;
+
+  ability_flags3.bits.auto_life = ( ability_field3 & 0x01 ) > 0;
+  ability_flags3.bits.blizzard = ( ability_field3 & 0x02 ) > 0;
+  ability_flags3.bits.fire = ( ability_field3 & 0x04 ) > 0;
+  ability_flags3.bits.thunder = ( ability_field3 & 0x08 ) > 0;
+  ability_flags3.bits.water = ( ability_field3 & 0x10 ) > 0;
+  ability_flags3.bits.fira = ( ability_field3 & 0x20 ) > 0;
+  ability_flags3.bits.blizzara = ( ability_field3 & 0x40 ) > 0;
+  ability_flags3.bits.thundara = ( ability_field3 & 0x80 ) > 0;
+  ability_flags3.bits.watera = ( ability_field3 & 0x100 ) > 0;
+  ability_flags3.bits.firaga = ( ability_field3 & 0x200 ) > 0;
+  ability_flags3.bits.blizzaga = ( ability_field3 & 0x400 ) > 0;
+  ability_flags3.bits.thundaga = ( ability_field3 & 0x800 ) > 0;
+  ability_flags3.bits.waterga = ( ability_field3 & 0x1000 ) > 0;
+  ability_flags3.bits.bio = ( ability_field3 & 0x2000 ) > 0;
+  ability_flags3.bits.demi = ( ability_field3 & 0x4000 ) > 0;
+  ability_flags3.bits.death = ( ability_field3 & 0x8000 ) > 0;
+  ability_flags3.bits.drain = ( ability_field3 & 0x10000 ) > 0;
+  ability_flags3.bits.osmose = ( ability_field3 & 0x20000 ) > 0;
+  ability_flags3.bits.flare = ( ability_field3 & 0x40000 ) > 0;
+  ability_flags3.bits.ultima = ( ability_field3 & 0x80000 ) > 0;
+  ability_flags3.bits.shield = ( ability_field3 & 0x100000 ) > 0;
+  ability_flags3.bits.boost = ( ability_field3 & 0x200000 ) > 0;
+  ability_flags3.bits.dismiss = ( ability_field3 & 0x400000 ) > 0;
+  ability_flags3.bits.dismiss_yojimbo = ( ability_field3 & 0x800000 ) > 0;
+  ability_flags3.bits.pilfer_gil = ( ability_field3 & 0x1000000 ) > 0;
+  ability_flags3.bits.full_break = ( ability_field3 & 0x2000000 ) > 0;
+  ability_flags3.bits.extract_power = ( ability_field3 & 0x4000000 ) > 0;
+  ability_flags3.bits.extract_mana = ( ability_field3 & 0x8000000 ) > 0;
+  ability_flags3.bits.extract_speed = ( ability_field3 & 0x10000000 ) > 0;
+  ability_flags3.bits.extract_ability = ( ability_field3 & 0x20000000 ) > 0;
+  ability_flags3.bits.nab_gil = ( ability_field3 & 0x40000000 ) > 0;
+  ability_flags3.bits.quick_pockets = ( ability_field3 & 0x80000000 ) > 0;
 }
 
 void character_stats_t::writeToBytes()
@@ -916,13 +1015,14 @@ void character_stats_t::writeToBytes()
   write4Bytes( bytes, 0x8C, unknown6 );
   write4Bytes( bytes, 0x90, unknown7 );
 
-  overdrive_bytes.bits = { overdrive_learned.warrior, overdrive_learned.comrade, overdrive_learned.stoic, 
-    overdrive_learned.healer, overdrive_learned.tactician, overdrive_learned.victim, overdrive_learned.dancer,
-    overdrive_learned.avenger, overdrive_learned.slayer, overdrive_learned.hero, overdrive_learned.rook,
-    overdrive_learned.victor, overdrive_learned.coward, overdrive_learned.ally, overdrive_learned.sufferer,
-    overdrive_learned.daredevil, overdrive_learned.loner, overdrive_learned.unused1, overdrive_learned.unused2,
-    overdrive_learned.aeon };
-  overdrive_mode_flags = overdrive_bytes.bytes;
+  overdrive_mode_flags = overdrive.bytes;
+  write4Bytes( bytes, 0x88, overdrive_mode_flags );
+  ability_field1 = ability_flags1.bytes;
+  write4Bytes( bytes, 0x3E, ability_field1 );
+  ability_field2 = ability_flags2.bytes;
+  write4Bytes( bytes, 0x42, ability_field2 );
+  ability_field3 = ability_flags3.bytes;
+  write4Bytes( bytes, 0x46, ability_field3 );
 }
 
 void character_stats_t::test() const
@@ -966,8 +1066,113 @@ void character_stats_t::test() const
   printf( "Sphere Level Used: %d\n", sphere_level_used );
   printf( "Unknown3: %d\n", unknown3 );
   printf( "Ability Field 1: %d\n", ability_field1 );
+  printf( "Abilities Learned:\n" );
+  printf( "________________\n" );
+  printf( "Attack: %d\n", ability_flags1.bits.attack );
+  printf( "Item: %d\n", ability_flags1.bits.item );
+  printf( "Switch Out: %d\n", ability_flags1.bits.switch_out );
+  printf( "Escape: %d\n", ability_flags1.bits.escape );
+  printf( "Change Weapon: %d\n", ability_flags1.bits.change_weapon );
+  printf( "Change Armor: %d\n", ability_flags1.bits.change_armor );
+  printf( "Delay Attack: %d\n", ability_flags1.bits.delay_attack );
+  printf( "Delay Buster: %d\n", ability_flags1.bits.delay_buster );
+  printf( "Sleep Attack: %d\n", ability_flags1.bits.sleep_attack );
+  printf( "Silence Attack: %d\n", ability_flags1.bits.silence_attack );
+  printf( "Dark Attack: %d\n", ability_flags1.bits.dark_attack );
+  printf( "Zombie Attack: %d\n", ability_flags1.bits.zombie_attack );
+  printf( "Sleep Buster: %d\n", ability_flags1.bits.sleep_buster );
+  printf( "Silence Buster: %d\n", ability_flags1.bits.silence_buster );
+  printf( "Dark Buster: %d\n", ability_flags1.bits.dark_buster );
+  printf( "Triple Foul: %d\n", ability_flags1.bits.triple_foul );
+  printf( "Power Break: %d\n", ability_flags1.bits.power_break );
+  printf( "Magic Break: %d\n", ability_flags1.bits.magic_break );
+  printf( "Armor Break: %d\n", ability_flags1.bits.armor_break );
+  printf( "Mental Break: %d\n", ability_flags1.bits.mental_break );
+  printf( "Mug: %d\n", ability_flags1.bits.mug );
+  printf( "Quick Hit: %d\n", ability_flags1.bits.quick_hit );
+  printf( "Steal: %d\n", ability_flags1.bits.steal );
+  printf( "Use: %d\n", ability_flags1.bits.use );
+  printf( "Flee: %d\n", ability_flags1.bits.flee );
+  printf( "Pray: %d\n", ability_flags1.bits.pray );
+  printf( "Cheer: %d\n", ability_flags1.bits.cheer );
+  printf( "Aim: %d\n", ability_flags1.bits.aim );
+  printf( "Focus: %d\n", ability_flags1.bits.focus );
+  printf( "Reflex: %d\n", ability_flags1.bits.reflex );
+  printf( "Luck: %d\n", ability_flags1.bits.luck );
+  printf( "Jinx: %d\n", ability_flags1.bits.jinx );
+  printf( "________________\n" );
   printf( "Ability Field 2: %d\n", ability_field2 );
+  printf( "Abilities Learned:\n" );
+  printf( "________________\n" );
+  printf( "Lancet: %d\n", ability_flags2.bits.lancet );
+  printf( "Unused1: %d\n", ability_flags2.bits.unused1 );
+  printf( "Guard: %d\n", ability_flags2.bits.guard );
+  printf( "Sentinel: %d\n", ability_flags2.bits.sentinel );
+  printf( "Spare Change: %d\n", ability_flags2.bits.spare_change );
+  printf( "Threaten: %d\n", ability_flags2.bits.threaten );
+  printf( "Provoke: %d\n", ability_flags2.bits.provoke );
+  printf( "Entrust: %d\n", ability_flags2.bits.entrust );
+  printf( "Copycat: %d\n", ability_flags2.bits.copycat );
+  printf( "Doublecast: %d\n", ability_flags2.bits.doubelcast );
+  printf( "Bribe: %d\n", ability_flags2.bits.bribe );
+  printf( "Cure: %d\n", ability_flags2.bits.cure );
+  printf( "Cura: %d\n", ability_flags2.bits.cura );
+  printf( "Curaga: %d\n", ability_flags2.bits.curaga );
+  printf( "Null Frost: %d\n", ability_flags2.bits.null_frost );
+  printf( "Null Blaze: %d\n", ability_flags2.bits.null_blaze );
+  printf( "Null Shock: %d\n", ability_flags2.bits.null_shock );
+  printf( "Null Tide: %d\n", ability_flags2.bits.null_tide );
+  printf( "Scan: %d\n", ability_flags2.bits.scan );
+  printf( "Esuna: %d\n", ability_flags2.bits.esuna );
+  printf( "Life: %d\n", ability_flags2.bits.life );
+  printf( "Full Life: %d\n", ability_flags2.bits.full_life );
+  printf( "Haste: %d\n", ability_flags2.bits.haste );
+  printf( "Hastega: %d\n", ability_flags2.bits.hastega );
+  printf( "Slow: %d\n", ability_flags2.bits.slow );
+  printf( "Slowga: %d\n", ability_flags2.bits.slowga );
+  printf( "Shell: %d\n", ability_flags2.bits.shell );
+  printf( "Protect: %d\n", ability_flags2.bits.protect );
+  printf( "Reflect: %d\n", ability_flags2.bits.reflect );
+  printf( "Dispel: %d\n", ability_flags2.bits.dispel );
+  printf( "Regen: %d\n", ability_flags2.bits.regen );
+  printf( "Holy: %d\n", ability_flags2.bits.holy );
+  printf( "________________\n" );
   printf( "Ability Field 3: %d\n", ability_field3 );
+  printf( "Abilities Learned:\n" );
+  printf( "________________\n" );
+  printf( "Auto Life: %d\n", ability_flags3.bits.auto_life );
+  printf( "Blizzard: %d\n", ability_flags3.bits.blizzard );
+  printf( "Fire: %d\n", ability_flags3.bits.fire );
+  printf( "Thunder: %d\n", ability_flags3.bits.thunder );
+  printf( "Water: %d\n", ability_flags3.bits.water );
+  printf( "Fira: %d\n", ability_flags3.bits.fira );
+  printf( "Blizzara: %d\n", ability_flags3.bits.blizzara );
+  printf( "Thundara: %d\n", ability_flags3.bits.thundara );
+  printf( "Watera: %d\n", ability_flags3.bits.watera );
+  printf( "Firaga: %d\n", ability_flags3.bits.firaga );
+  printf( "Blizzaga: %d\n", ability_flags3.bits.blizzaga );
+  printf( "Thundaga: %d\n", ability_flags3.bits.thundaga );
+  printf( "Waterga: %d\n", ability_flags3.bits.waterga );
+  printf( "Bio: %d\n", ability_flags3.bits.bio );
+  printf( "Demi: %d\n", ability_flags3.bits.demi );
+  printf( "Death: %d\n", ability_flags3.bits.death );
+  printf( "Drain: %d\n", ability_flags3.bits.drain );
+  printf( "Osmose: %d\n", ability_flags3.bits.osmose );
+  printf( "Flare: %d\n", ability_flags3.bits.flare );
+  printf( "Ultima: %d\n", ability_flags3.bits.ultima );
+  printf( "Shield: %d\n", ability_flags3.bits.shield );
+  printf( "Boost: %d\n", ability_flags3.bits.boost );
+  printf( "Dismiss: %d\n", ability_flags3.bits.dismiss );
+  printf( "Dismiss Yojimbo: %d\n", ability_flags3.bits.dismiss_yojimbo );
+  printf( "Pilfer Gil: %d\n", ability_flags3.bits.pilfer_gil );
+  printf( "Full Break: %d\n", ability_flags3.bits.full_break );
+  printf( "Extract Power: %d\n", ability_flags3.bits.extract_power );
+  printf( "Extract Mana: %d\n", ability_flags3.bits.extract_mana );
+  printf( "Extract Speed: %d\n", ability_flags3.bits.extract_speed );
+  printf( "Extract Ability: %d\n", ability_flags3.bits.extract_ability );
+  printf( "Nab Gil: %d\n", ability_flags3.bits.nab_gil );
+  printf( "Quick Pockets: %d\n", ability_flags3.bits.quick_pockets );
+  printf( "________________\n" );
   printf( "Encounter Count: %d\n", encounter_count );
   printf( "Kill Count: %d\n", kill_count );
   printf( "Unknown4: %d\n", unknown4 );
@@ -976,26 +1181,26 @@ void character_stats_t::test() const
   printf( "Overdrive Mode Flags: %d\n", overdrive_mode_flags );
   printf( "________________\n" );
   printf( "Overdrive Learned:\n" );
-  printf( "Warrior: %d\n", overdrive_learned.warrior );
-  printf( "Comrade: %d\n", overdrive_learned.comrade );
-  printf( "Stoic: %d\n", overdrive_learned.stoic );
-  printf( "Healer: %d\n", overdrive_learned.healer );
-  printf( "Tactician: %d\n", overdrive_learned.tactician );
-  printf( "Victim: %d\n", overdrive_learned.victim );
-  printf( "Dancer: %d\n", overdrive_learned.dancer );
-  printf( "Avenger: %d\n", overdrive_learned.avenger );
-  printf( "Slayer: %d\n", overdrive_learned.slayer );
-  printf( "Hero: %d\n", overdrive_learned.hero );
-  printf( "Rook: %d\n", overdrive_learned.rook );
-  printf( "Victor: %d\n", overdrive_learned.victor );
-  printf( "Coward: %d\n", overdrive_learned.coward );
-  printf( "Ally: %d\n", overdrive_learned.ally );
-  printf( "Sufferer: %d\n", overdrive_learned.sufferer );
-  printf( "Daredevil: %d\n", overdrive_learned.daredevil );
-  printf( "Loner: %d\n", overdrive_learned.loner );
-  printf( "Unused1: %d\n", overdrive_learned.unused1 );
-  printf( "Unused2: %d\n", overdrive_learned.unused2 );
-  printf( "Aeon: %d\n", overdrive_learned.aeon );
+  printf( "Warrior: %d\n", overdrive.bits.warrior );
+  printf( "Comrade: %d\n", overdrive.bits.comrade );
+  printf( "Stoic: %d\n", overdrive.bits.stoic );
+  printf( "Healer: %d\n", overdrive.bits.healer );
+  printf( "Tactician: %d\n", overdrive.bits.tactician );
+  printf( "Victim: %d\n", overdrive.bits.victim );
+  printf( "Dancer: %d\n", overdrive.bits.dancer );
+  printf( "Avenger: %d\n", overdrive.bits.avenger );
+  printf( "Slayer: %d\n", overdrive.bits.slayer );
+  printf( "Hero: %d\n", overdrive.bits.hero );
+  printf( "Rook: %d\n", overdrive.bits.rook );
+  printf( "Victor: %d\n", overdrive.bits.victor );
+  printf( "Coward: %d\n", overdrive.bits.coward );
+  printf( "Ally: %d\n", overdrive.bits.ally );
+  printf( "Sufferer: %d\n", overdrive.bits.sufferer );
+  printf( "Daredevil: %d\n", overdrive.bits.daredevil );
+  printf( "Loner: %d\n", overdrive.bits.loner );
+  printf( "Unused1: %d\n", overdrive.bits.unused1 );
+  printf( "Unused2: %d\n", overdrive.bits.unused2 );
+  printf( "Aeon: %d\n", overdrive.bits.aeon );
   printf( "________________\n" );
   printf( "Unknown6: %d\n", unknown6 );
   printf( "Unknown7: %d\n", unknown7 );
@@ -1027,6 +1232,11 @@ void aeon_scaling_data_t::mapBytes()
   acc_coef1 = read1Byte( bytes, 0x28 );
   acc_coef2 = read1Byte( bytes, 0x29 );
   unknown = read2Bytes( bytes, 0x2A );
+
+  if (ap_req_coef1 == 0 && ap_req_coef2 == 0 && ap_req_coef3 == 0 && hp_coef1 > 0)
+  {
+    is_yuna_summon = true;
+  }
 }
 
 void aeon_scaling_data_t::writeToBytes()
@@ -1192,7 +1402,7 @@ void sphere_grid_data_t::mapBytes()
   }
   std::vector<char> temp_bytes = std::vector<char>( full_content_bytes.begin() + CONTENT_OFFSET, full_content_bytes.end() );
 
-  for (int i = 0; i < temp_bytes.size(); i++)
+  for (size_t i = 0; i < temp_bytes.size(); i++)
   {
     uint8_t copy = read1Byte( temp_bytes, i );
     chunked_content_bytes.push_back( copy );
@@ -1209,17 +1419,17 @@ void sphere_grid_data_t::mapBytes()
 
   size_t cluster_end = 0x10 + cluster_count * CLUSTER_LENGTH;
   size_t node_end = cluster_end + node_count * NODE_LENGTH;
-  for (int i = 0; i < node_count * NODE_LENGTH; i += NODE_LENGTH )
+  for (int i = 0; i < node_count * NODE_LENGTH; i += NODE_LENGTH)
   {
     std::vector<char> copy( bytes.begin() + cluster_end + i, bytes.begin() + cluster_end + i + NODE_LENGTH );
     sphere_grid_node_data_t* node = new sphere_grid_node_data_t( copy );
     nodes.push_back( node );
   }
 
-  for (int i = 0; i < chunked_content_bytes.size(); i++)
+  for (size_t i = 0; i < chunked_content_bytes.size(); i++)
   {
-    sphere_grid_node_data_t& node = *nodes[i];
-    node.content = chunked_content_bytes[i];
+    sphere_grid_node_data_t& node = *nodes[ i ];
+    node.content = chunked_content_bytes[ i ];
   }
 }
 
@@ -1236,11 +1446,11 @@ void sphere_grid_data_t::writeToBytes()
   size_t cluster_end = 0x10 + cluster_count * CLUSTER_LENGTH;
   for (int i = 0; i < node_count; i++)
   {
-    sphere_grid_node_data_t& node = *nodes[i];
+    sphere_grid_node_data_t& node = *nodes[ i ];
     std::vector<char> copy = node.bytes;
     for (int j = 0; j < NODE_LENGTH; j++)
     {
-      write1Byte( bytes, cluster_end + i  + j, copy[ j ] );
+      write1Byte( bytes, cluster_end + i + j, copy[ j ] );
     }
     write1Byte( full_content_bytes, i + CONTENT_OFFSET, node.content );
   }
