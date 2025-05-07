@@ -39,3 +39,16 @@ ____
 **Big shoutout to the wonderful folks in the [Cid's Salvage Ship](https://discord.gg/vEu5wkjXGv) discord for answering all my questions and giving suggestions while i was making this.**
 
 **This would not have been possible without the data mapping already done by Karifean and their [Data Parser](https://github.com/Karifean/FFXDataParser) project , as well as the [Fahrenheit](https://github.com/peppy-enterprises/fahrenheit) team**
+
+## External Libraries
+
+This program uses the following external libraries.
+
+json (https://github.com/nlohmann/json)
+Copyright © 2013-2025 Niels Lohmann
+MIT License (see LICENSE.MIT for more information).
+
+wxWidgets (https://wxwidgets.org/)
+
+Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al
+[wxWindows Library Licence](https://github.com/wxWidgets/wxWidgets/blob/master/docs/licence.txt)
