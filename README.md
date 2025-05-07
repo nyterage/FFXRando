@@ -45,6 +45,7 @@ ____
 This program uses the following external libraries.
 
 json (https://github.com/nlohmann/json)
+
 Copyright © 2013-2025 Niels Lohmann
 MIT License (see LICENSE.MIT for more information).
 
