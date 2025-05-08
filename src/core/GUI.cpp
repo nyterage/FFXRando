@@ -4,6 +4,9 @@
 bool gui_t::OnInit()
 {
   SetAppearance( Appearance::System );
+  SetAppName( "FFX Randomizer" );
+  SetVendorName( "FFX Randomizer" );
+  SetUseBestVisual( true, true );
   frame_t* frame = new frame_t( dp );
   frame->Show( true );
   return true;
@@ -13,10 +16,11 @@ void frame_t::initialize()
 {
   wxBoxSizer* main_vertical_sizer = new wxBoxSizer( wxVERTICAL );
 
-  notebook = new wxNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP );
-  notebook->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_LISTBOX ) );
+  notebook = new wxAuiNotebook( this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxNB_DEFAULT );
   notebook->SetAutoLayout( true );
   notebook->SetThemeEnabled( true );
+  wxColor notebook_color = wxSystemSettings::GetColour( wxSYS_COLOUR_MENU );
+  notebook->SetBackgroundColour( notebook_color );
 
   wxStaticText* header_text = new wxStaticText( this, wxID_ANY, _T( "FFX Randomizer" ), wxDefaultPosition, wxDefaultSize, 0 );
   header_text->SetFont( wxFont( 18, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
@@ -105,7 +109,7 @@ void frame_t::initialize()
 
 void frame_t::onRandomize( wxCommandEvent& event )
 {
-  if (randomize_enemy_stats && randomize_enemy_stats_defensive || randomize_enemy_stats && randomize_enemy_stats_shuffle || randomize_enemy_stats_shuffle && randomize_enemy_stats_defensive )
+  if (randomize_enemy_stats && randomize_enemy_stats_defensive || randomize_enemy_stats && randomize_enemy_stats_shuffle || randomize_enemy_stats_shuffle && randomize_enemy_stats_defensive)
   {
     wxLogMessage( "You can only pick one of the enemy stat randomization options" );
     return;

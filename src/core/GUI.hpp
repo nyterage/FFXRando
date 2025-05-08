@@ -1,8 +1,8 @@
 #pragma once
 #include <wx/wxprec.h>
 #include <wx/grid.h>
-#include "wx/notebook.h"
-#include "wx/simplebook.h"
+#include <wx/aui/auibook.h>
+#include <wx/aui/aui.h>
 #include <chrono>
 #include "Randomizer.hpp"
 
@@ -51,6 +51,8 @@ enum
   ID_EMPTY_GRID,
   ID_FULL_GRID,
   ID_REMOVE_LOCKS,
+  ID_BASE_WINDOW = 1000,
+  ID_NOTEBOOK,
 };
 
 struct gui_t : public wxApp
@@ -116,11 +118,11 @@ private:
 
   bool fahrenheit;
 
-  wxNotebook* notebook;
+  wxAuiNotebook* notebook;
 
 public:
   frame_t( data_pack_t& data )
-    : wxFrame( NULL, wxID_ANY, "FFX Randomizer", wxDefaultPosition, wxSize( 840, 720 ) ),
+    : wxFrame( NULL, ID_BASE_WINDOW, "FFX Randomizer", wxDefaultPosition, wxSize( 840, 720 ) ),
     randomize_enemy_drops( false ),
     randomize_enemy_steals( false ),
     randomize_enemy_bribes( false ),
@@ -168,6 +170,7 @@ public:
   {
     initialize();
     SetSizeHints( GetBestSize(), GetMaxClientSize() );
+    SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
     wxSize size = GetBestSize();
     size.SetHeight( size.GetHeight() + 20 );
     SetSize( size );
@@ -232,7 +235,7 @@ struct enemy_options_panel_t : public wxPanel
   wxCheckBox* randomizeEnemyStatsDefensiveCheckbox;
   wxCheckBox* randomizeEnemyStatsShuffleCheckbox;
 
-  enemy_options_panel_t( wxNotebook* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+  enemy_options_panel_t( wxAuiNotebook* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     poisonIsDeadlyCheckbox( nullptr ),
     randomizeEnemyDropsCheckbox( nullptr ),
     randomizeEnemyStealsCheckbox( nullptr ),
@@ -326,7 +329,7 @@ struct gear_options_panel_t : public wxPanel
   wxCheckBox* randomizeGearShopsCheckbox;
   wxCheckBox* randomizeGearPricesCheckbox;
 
-  gear_options_panel_t( wxNotebook* book ) : wxPanel( book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+  gear_options_panel_t( wxAuiNotebook* book ) : wxPanel( book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     randomizeCelestialsCheckbox( nullptr ),
     randomizeBrotherhoodCheckbox( nullptr ),
     randomizeGearAbilitiesCheckbox( nullptr ),
@@ -383,7 +386,7 @@ struct item_options_panel_t : wxPanel
   wxCheckBox* randomizeShopPricesCheckbox;
   wxCheckBox* randomizeFieldItemsCheckbox;
 
-  item_options_panel_t( wxNotebook* book ) : wxPanel( book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+  item_options_panel_t( wxAuiNotebook* book ) : wxPanel( book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     randomizeKeyItemsCheckbox( nullptr ),
     randomizeShopsCheckbox( nullptr ),
     randomizeShopPricesCheckbox( nullptr ),
@@ -417,7 +420,7 @@ struct player_stats_panel_t : public wxPanel
   wxCheckBox* shufflePlayerStatsCheckbox;
   wxCheckBox* randomizeStartingOverdriveModeCheckbox;
 
-  player_stats_panel_t( wxNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+  player_stats_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     randomizePlayerStatsCheckbox( nullptr ),
     shufflePlayerStatsCheckbox( nullptr ),
     randomizeStartingOverdriveModeCheckbox( nullptr )
@@ -459,7 +462,7 @@ struct aeon_stats_panel_t : public wxPanel
   wxCheckBox* shuffleAeonStatScalingCheckbox;
   wxCheckBox* shuffleAeonBaseStatsCheckbox;
 
-  aeon_stats_panel_t( wxNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+  aeon_stats_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     randomizeAeonStatScalingCheckbox( nullptr ),
     randomiseAeonBaseStatsCheckbox( nullptr ),
     shuffleAeonStatScalingCheckbox( nullptr ),
@@ -513,7 +516,7 @@ struct sphere_grid_panel_t : public wxPanel
   wxCheckBox* upgradeSphereNodesCheckbox;
   wxCheckBox* downgradeSphereNodesCheckbox;
 
-  sphere_grid_panel_t( wxNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+  sphere_grid_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     shuffleSphereGridCheckbox( nullptr ),
     randomizeSphereGridCheckbox( nullptr ),
     emptySphereGridCheckbox( nullptr ),

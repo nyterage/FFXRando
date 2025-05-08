@@ -20,7 +20,7 @@ struct chunk_t
 
   chunk_t() = default; // Empty chunk constructor
 
-  chunk_t( const std::vector<char>& bytes, size_t from, size_t to, int index ) : index( index ) 
+  chunk_t( const std::vector<char>& bytes, size_t from, size_t to, int index ) : index( index )
   {
     if (from < to && from >= 0 && to <= bytes.size())
     {

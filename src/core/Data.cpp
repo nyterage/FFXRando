@@ -1,6 +1,5 @@
 #include "Data.hpp"
 
-
 void gear_data_t::mapBytesNormal() {
   byte00_name_id_maybe = read1Byte( bytes, 0x00 );
   byte01_name_id_maybe = read1Byte( bytes, 0x01 );

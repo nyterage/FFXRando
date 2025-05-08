@@ -465,7 +465,7 @@ public:
       else
         loot.ap = 0;
       if (loot.ap_overkill > 0)
-        loot.ap_overkill = normal<uint16_t>( loot.ap_overkill, loot.ap_overkill / 2, loot.ap_overkill * 0.05, static_cast<uint16_t>( std::min<double>( loot.ap_overkill * 3, UINT16_MAX ) ) );
+        loot.ap_overkill = normal<uint16_t>( loot.ap_overkill, loot.ap_overkill / 2, loot.ap_overkill * 0.05, static_cast< uint16_t >( std::min<double>( loot.ap_overkill * 3, UINT16_MAX ) ) );
       else
         loot.ap_overkill = 0;
     }
@@ -493,7 +493,7 @@ public:
     int secondary_rare_overkill_drop_quantity = getRandomItemQuantity( secondary_rare_overkill_drop );
     loot.primary_normal_drop = normal_drop->id;
     loot.primary_normal_drop_rare = rare_drop->id;
-    if (options_pack.keep_things_sane && loot.primary_drop_chance > 0 )
+    if (options_pack.keep_things_sane && loot.primary_drop_chance > 0)
       loot.primary_drop_chance = normal<uint8_t>( loot.primary_drop_chance, loot.primary_drop_chance / 2, 0, 255 );
     else
       loot.primary_drop_chance = uniform<uint8_t>( 0, 255 );
@@ -515,21 +515,21 @@ public:
     loot.n_primary_normal_drop_overkill_rare = rare_overkill_drop_quantity;
     loot.n_secondary_normal_drop_overkill = secondary_overkill_drop_quantity;
     loot.n_secondary_normal_drop_overkill_rare = secondary_rare_overkill_drop_quantity;
-    if (options_pack.randomize_weapon_attack_power && loot.gear_attack_power > 0 )
+    if (options_pack.randomize_weapon_attack_power && loot.gear_attack_power > 0)
     {
       if (options_pack.keep_things_sane)
         loot.gear_attack_power = normal<uint8_t>( loot.gear_attack_power, loot.gear_attack_power / 2, 1, 24 );
       else
         loot.gear_attack_power = uniform<uint8_t>( 1, 100 );
     }
-    if (options_pack.randomize_weapon_crit && loot.gear_crit_bonus > 0 )
+    if (options_pack.randomize_weapon_crit && loot.gear_crit_bonus > 0)
     {
       if (options_pack.keep_things_sane)
         loot.gear_crit_bonus = normal<uint8_t>( loot.gear_crit_bonus, loot.gear_crit_bonus / 2, 0, 100 );
       else
         loot.gear_crit_bonus = uniform<uint8_t>( 1, 100 );
     }
-    if (options_pack.randomize_weapon_damage_formula && loot.gear_damage_calc > 0 )
+    if (options_pack.randomize_weapon_damage_formula && loot.gear_damage_calc > 0)
     {
       loot.gear_damage_calc = getRandomFormula();
     }
@@ -545,7 +545,7 @@ public:
     int steal_item_quantity = getRandomItemQuantity( steal_item );
     item_t* rare_steal_item = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
     int rare_steal_item_quantity = getRandomItemQuantity( rare_steal_item );
-    if (options_pack.keep_things_sane && loot.steal_chance > 0 )
+    if (options_pack.keep_things_sane && loot.steal_chance > 0)
       loot.steal_chance = normal<uint8_t>( loot.steal_chance, loot.steal_chance / 2, 0, 255 );
     else
       loot.steal_chance = uniform<int>( 0, 255 );
@@ -555,7 +555,7 @@ public:
     loot.n_steal_item_rare = rare_steal_item_quantity;
     if (loot.n_gil_steal > 0)
     {
-      if (options_pack.keep_things_sane )
+      if (options_pack.keep_things_sane)
         loot.n_gil_steal = normal<uint16_t>( loot.n_gil_steal, loot.n_gil_steal / 2, 1, UINT16_MAX );
       else
         loot.n_gil_steal = uniform<uint16_t>( 1, UINT16_MAX );

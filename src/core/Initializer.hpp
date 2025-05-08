@@ -31,7 +31,7 @@ struct initializer_t
   initializer_t() : gui( nullptr ), data_pack( nullptr ),
     enemy_data(), field_data(), item_shop_data(), gear_shop_data(),
     buki_data(), weapon_data(), shop_arms_data(), item_rate_data(),
-    arms_rate_data(), player_stats_data(), aeon_scaling_data(), 
+    arms_rate_data(), player_stats_data(), aeon_scaling_data(),
     aeon_stat_data(), sphere_grid_data()
   {
     initializeGUI();
