@@ -28,6 +28,7 @@ enum
   ID_RANDOMIZE_ENEMY_STATS_DEFENSIVE,
   ID_RANDOMIZE_ENEMY_STATS_SHUFFLE,
   ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES,
+  ID_RANDOMIZE_ENCOUNTERS,
   ID_RANDOMIZE_ITEM_SHOPS,
   ID_RANDOMIZE_ITEM_SHOP_PRICES,
   ID_RANDOMIZE_FIELD_ITEMS,
@@ -99,6 +100,7 @@ private:
   bool poison_is_deadly;
   bool randomize_starting_overdrive_mode;
   bool randomize_enemy_elemental_affinities;
+  bool randomize_encounters;
 
   bool shuffle_sphere_grid;
   bool randomize_sphere_grid;
@@ -148,6 +150,7 @@ public:
     poison_is_deadly( false ),
     randomize_starting_overdrive_mode( false ),
     randomize_enemy_elemental_affinities( false ),
+    randomize_encounters( false ),
     shuffle_sphere_grid( false ),
     randomize_sphere_grid( false ),
     empty_sphere_grid( false ),
@@ -205,6 +208,7 @@ private:
   void onPoisonIsDeadly( wxCommandEvent& event );
   void onRandomizeStartingOverdriveMode( wxCommandEvent& event );
   void onRandomizeEnemyElementalAffinities( wxCommandEvent& event );
+  void onRandomizeEncounters( wxCommandEvent& event );
   void onShuffleSphereGrid( wxCommandEvent& event );
   void onRandomizeSphereGrid( wxCommandEvent& event );
   void onEmptySphereGrid( wxCommandEvent& event );
@@ -234,6 +238,7 @@ struct enemy_options_panel_t : public wxPanel
   wxCheckBox* randomizeEnemyStatsCheckbox;
   wxCheckBox* randomizeEnemyStatsDefensiveCheckbox;
   wxCheckBox* randomizeEnemyStatsShuffleCheckbox;
+  wxCheckBox* randomizeEncountersCheckbox;
 
   enemy_options_panel_t( wxAuiNotebook* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     poisonIsDeadlyCheckbox( nullptr ),
@@ -244,12 +249,13 @@ struct enemy_options_panel_t : public wxPanel
     randomizeEnemyElementalAffinitiesCheckbox( nullptr ),
     randomizeEnemyStatsCheckbox( nullptr ),
     randomizeEnemyStatsDefensiveCheckbox( nullptr ),
-    randomizeEnemyStatsShuffleCheckbox( nullptr )
+    randomizeEnemyStatsShuffleCheckbox( nullptr ),
+    randomizeEncountersCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
 
     poisonIsDeadlyCheckbox = new wxCheckBox( this, ID_POISON_IS_DEADLY, _T( "Enemy Poison is Deadly" ), wxDefaultPosition, wxDefaultSize, 0 );
-    poisonIsDeadlyCheckbox->SetToolTip( "If checked, poison will deal 50% of the players HP per tick instead of the default 25%." );
+    poisonIsDeadlyCheckbox->SetToolTip( "If checked, poison will deal 50% of the player's HP per tick instead of the default 25%." );
 
     randomizeEnemyDropsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_DROPS, _T( "Randomize Enemy Drops" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEnemyStealsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_STEALS, _T( "Randomize Enemy Steals" ), wxDefaultPosition, wxDefaultSize, 0 );
@@ -257,6 +263,9 @@ struct enemy_options_panel_t : public wxPanel
     randomizeEnemyGearDropsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_GEAR_DROPS, _T( "Randomize Enemy Gear Drops" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEnemyElementalAffinitiesCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES, _T( "Randomize Enemy Elemental Affinities" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEnemyElementalAffinitiesCheckbox->SetToolTip( "If checked, enemy elemental affinities will be randomized. This includes:\n- Weaknesss \n- Resists \n- Immunities \n- Absorbs\n\nThis is slightly skewed in favor of giving an enemy a weakness if it gets an affinity." );
+    randomizeEncountersCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENCOUNTERS, _T( "Randomize Random Encounters" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeEncountersCheckbox->SetToolTip( "If checked, random encounters will be randomized." );
+
     wxStaticText* enemy_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
     enemy_stats_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
@@ -276,6 +285,7 @@ struct enemy_options_panel_t : public wxPanel
     sizer->Add( randomizeEnemyBribesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEnemyGearDropsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEnemyElementalAffinitiesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeEncountersCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
 

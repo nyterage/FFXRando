@@ -13,8 +13,12 @@ struct initializer_t
   gui_t* gui;
   data_pack_t* data_pack;
 
+  // Static Data
+  btl_data_t* btl_data;
+
   // Dynamic data
-  std::vector<enemy_data_t*> enemy_data;
+  std::unordered_map<int, enemy_data_t*> enemy_data;
+  std::unordered_map<int, enemy_data_t*> unmodified_enemy_data;
   std::vector<field_data_t*> field_data;
   std::vector<item_shop_t*> item_shop_data;
   std::vector<gear_shop_t*> gear_shop_data;
@@ -27,12 +31,13 @@ struct initializer_t
   std::vector<aeon_scaling_data_t*> aeon_scaling_data;
   std::vector<aeon_stat_data_t*> aeon_stat_data;
   std::vector<sphere_grid_data_t*> sphere_grid_data;
+  std::vector<encounter_file_t*> encounter_file_data;
 
-  initializer_t() : gui( nullptr ), data_pack( nullptr ),
-    enemy_data(), field_data(), item_shop_data(), gear_shop_data(),
+  initializer_t() : gui( nullptr ), data_pack( nullptr ), btl_data( nullptr ),
+    enemy_data(), unmodified_enemy_data(), field_data(), item_shop_data(), gear_shop_data(),
     buki_data(), weapon_data(), shop_arms_data(), item_rate_data(),
     arms_rate_data(), player_stats_data(), aeon_scaling_data(),
-    aeon_stat_data(), sphere_grid_data()
+    aeon_stat_data(), sphere_grid_data(), encounter_file_data()
   {
     initializeGUI();
   }
@@ -69,6 +74,7 @@ struct initializer_t
   void initializeAeonScalingData();
   void initializeAeonStatData();
   void initializeSphereGridData();
+  void initializeBtlData();
   void initializeGUI();
   void initializeAllData();
 

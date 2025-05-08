@@ -9,8 +9,6 @@
 #include <unordered_map>
 #include <string>
 #include <algorithm>
-#include <map>
-#include <functional>
 
 struct chunk_t
 {

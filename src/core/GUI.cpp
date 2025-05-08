@@ -22,14 +22,14 @@ void frame_t::initialize()
   wxColor notebook_color = wxSystemSettings::GetColour( wxSYS_COLOUR_MENU );
   notebook->SetBackgroundColour( notebook_color );
 
-  wxStaticText* header_text = new wxStaticText( this, wxID_ANY, _T( "FFX Randomizer" ), wxDefaultPosition, wxDefaultSize, 0 );
+  wxStaticText* header_text = new wxStaticText( this, wxID_ANY, _T( "FFX Randomizer" ), wxDefaultPosition, wxDefaultSize );
   header_text->SetFont( wxFont( 18, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-  wxStaticText* seed_header_text = new wxStaticText( this, wxID_ANY, _T( "RNG Seed" ), wxDefaultPosition, wxDefaultSize, 0 );
-  seed_text = new wxTextCtrl( this, ID_SEED, std::to_string( seed ), wxDefaultPosition, wxDefaultSize, 0 );
+  wxStaticText* seed_header_text = new wxStaticText( this, wxID_ANY, _T( "RNG Seed" ), wxDefaultPosition, wxDefaultSize );
+  seed_text = new wxTextCtrl( this, ID_SEED, std::to_string( seed ), wxDefaultPosition, wxDefaultSize );
   Bind( wxEVT_TEXT, &frame_t::onSeedChange, this, ID_SEED );
 
-  wxStaticText* extra_text = new wxStaticText( this, wxID_ANY, _T( "Options that affect other aspects of the randomizer:" ), wxDefaultPosition, wxDefaultSize, 0 );
+  wxStaticText* extra_text = new wxStaticText( this, wxID_ANY, _T( "Options that affect other aspects of the randomizer:" ), wxDefaultPosition, wxDefaultSize );
   extra_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
   header_panel_t* header_panel = new header_panel_t( this );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeKeyItems, this, ID_ALLOW_RANDOMIZE_KEY_ITEMS );
@@ -59,6 +59,7 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeStartingOverdriveMode, this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyElementalAffinities, this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEncounters, this, ID_RANDOMIZE_ENCOUNTERS );
   Bind( wxEVT_CHECKBOX, &frame_t::onShuffleSphereGrid, this, ID_SHUFFLE_SPHERE_GRID );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeSphereGrid, this, ID_RANDOMIZE_SPHERE_GRID );
   Bind( wxEVT_CHECKBOX, &frame_t::onEmptySphereGrid, this, ID_EMPTY_GRID );
@@ -90,7 +91,7 @@ void frame_t::initialize()
   sphere_grid_panel_t* grid = new sphere_grid_panel_t( notebook );
   notebook->AddPage( grid, _T( "Sphere Grid" ), false );
 
-  randomize_button = new wxButton( this, ID_RANDOMIZE, _T( "Randomize" ), wxDefaultPosition, wxDefaultSize, 0 );
+  randomize_button = new wxButton( this, ID_RANDOMIZE, _T( "Randomize" ), wxDefaultPosition, wxDefaultSize, wxBU_ALIGN_MASK );
   randomize_button->SetToolTip( "Click this button to randomize the game!" );
   Bind( wxEVT_BUTTON, &frame_t::onRandomize, this, ID_RANDOMIZE );
 
@@ -164,6 +165,7 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                 poison_is_deadly,
                                 randomize_starting_overdrive_mode,
                                 randomize_enemy_elemental_affinities,
+                                randomize_encounters,
                                 shuffle_sphere_grid,
                                 randomize_sphere_grid,
                                 empty_sphere_grid,
@@ -331,6 +333,12 @@ void frame_t::onRandomizeEnemyElementalAffinities( wxCommandEvent& event )
 {
   randomize_enemy_elemental_affinities = !randomize_enemy_elemental_affinities;
   printf( "Randomize Enemy Elemental Affinities: %d\n", randomize_enemy_elemental_affinities );
+}
+
+void frame_t::onRandomizeEncounters( wxCommandEvent& event )
+{
+  randomize_encounters = !randomize_encounters;
+  printf( "Randomize Encounters: %d\n", randomize_encounters );
 }
 
 void frame_t::onShuffleSphereGrid( wxCommandEvent& event )

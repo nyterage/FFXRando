@@ -9,6 +9,57 @@
 // Use (void) to silence unused warnings.
 #define assertm(exp, msg) assert((void(msg), exp));
 
+// Constant values
+static constexpr int ENEMY_COUNT = 360;
+// Versioning
+static constexpr int MAJOR_VERSION = 1;
+static constexpr int MINOR_VERSION = 2;
+static constexpr int PATCH_VERSION = 0;
+// Information
+static const std::string VERSION = "v" + std::to_string( MAJOR_VERSION ) + "." + std::to_string( MINOR_VERSION ) + "." + std::to_string( PATCH_VERSION );
+static const std::string AUTHOR = "Taeznak";
+static const std::string NAME = "FFXRando";
+static const std::string DESCRIPTION = "A randomizer for Final Fantasy X";
+
+// Path data
+static const std::string INPUT_FOLDER = "input/";
+static const std::string OUTPUT_FOLDER = "output/";
+static const std::string FAHRENHEIT_PREFIX = "FFXRando/efl/x/";
+static const std::string FFX_FOLDER = "/ffx_ps2/ffx/";
+static const std::string JPPC_FOLDER = FFX_FOLDER + "/master/jppc/";
+static const std::string USPC_FOLDER = FFX_FOLDER + "/master/new_uspc/";
+static const std::string USPC_BTL_KERN_FOLDER = USPC_FOLDER + "/battle/kernel/";
+static const std::string CHPC_FOLDER = FFX_FOLDER + "/master/new_chpc/";
+static const std::string CHPC_BTL_KERN_FOLDER = CHPC_FOLDER + "/battle/kernel/";
+static const std::string DEPC_FOLDER = FFX_FOLDER + "/master/new_depc/";
+static const std::string DEPC_BTL_KERN_FOLDER = DEPC_FOLDER + "/battle/kernel/";
+static const std::string FRPC_FOLDER = FFX_FOLDER + "/master/new_frpc/";
+static const std::string FRPC_BTL_KERN_FOLDER = FRPC_FOLDER + "/battle/kernel/";
+static const std::string ITPC_FOLDER = FFX_FOLDER + "/master/new_itpc/";
+static const std::string ITPC_BTL_KERN_FOLDER = ITPC_FOLDER + "/battle/kernel/";
+static const std::string NEW_JPPC_FOLDER = FFX_FOLDER + "/master/new_jppc/";
+static const std::string NEW_JPPC_BTL_KERN_FOLDER = NEW_JPPC_FOLDER + "/battle/kernel/";
+static const std::string KRPC_FOLDER = FFX_FOLDER + "/master/new_krpc/";
+static const std::string KRPC_BTL_KERN_FOLDER = KRPC_FOLDER + "/battle/kernel/";
+static const std::string SPPC_FOLDER = FFX_FOLDER + "/master/new_sppc/";
+static const std::string SPPC_BTL_KERN_FOLDER = SPPC_FOLDER + "/battle/kernel/";
+static const std::string BATTLE_FOLDER = JPPC_FOLDER + "/battle/";
+static const std::string BATTLE_KERNEL_FOLDER = BATTLE_FOLDER + "/kernel/";
+static const std::string BTL_FOLDER = BATTLE_FOLDER + "/btl/";
+static const std::string MONSTER_FOLDER = BATTLE_FOLDER + "/mon/";
+static const std::string ABMAP_FOLDER = JPPC_FOLDER + "/menu/abmap/";
+
+static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
+  { "ch", CHPC_BTL_KERN_FOLDER},
+  { "de", DEPC_BTL_KERN_FOLDER},
+  { "fr", FRPC_BTL_KERN_FOLDER},
+  { "it", ITPC_BTL_KERN_FOLDER},
+  { "jp", NEW_JPPC_BTL_KERN_FOLDER},
+  { "kr", KRPC_BTL_KERN_FOLDER},
+  { "sp", SPPC_BTL_KERN_FOLDER},
+  { "us", USPC_BTL_KERN_FOLDER}
+};
+
 enum sphere_grid_type_e
 {
   SPHERE_GRID_ORIGINAL,
@@ -803,9 +854,232 @@ struct sphere_grid_data_t final : public bytes_mapper_t
   void test() const override;
 };
 
+struct formation_data_t final : public bytes_mapper_t
+{
+  chunk_t& data;
+  uint8_t voice;
+  uint8_t unknown1;
+  uint8_t unknown2;
+  uint8_t in_water;
+  uint8_t always_zero1;
+  uint8_t always_zero2;
+  uint8_t always_zero3;
+  uint8_t always_zero4;
+  uint8_t always_zero5;
+  uint8_t always_zero6;
+  uint8_t always_zero7;
+  uint8_t always_zero8;
+  std::vector<uint16_t> monster_ids;
+
+  formation_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), data( data )
+  {
+    voice = read1Byte( bytes, 0x00 );
+    unknown1 = read1Byte( bytes, 0x01 );
+    unknown2 = read1Byte( bytes, 0x02 );
+    in_water = read1Byte( bytes, 0x03 );
+    always_zero1 = read1Byte( bytes, 0x04 );
+    always_zero2 = read1Byte( bytes, 0x05 );
+    always_zero3 = read1Byte( bytes, 0x06 );
+    always_zero4 = read1Byte( bytes, 0x07 );
+    always_zero5 = read1Byte( bytes, 0x08 );
+    always_zero6 = read1Byte( bytes, 0x09 );
+    always_zero7 = read1Byte( bytes, 0x0A );
+    always_zero8 = read1Byte( bytes, 0x0B );
+    monster_ids.push_back( read2Bytes( bytes, 0x0C ) - 0x1000 );
+    monster_ids.push_back( read2Bytes( bytes, 0x0E ) - 0x1000 );
+    monster_ids.push_back( read2Bytes( bytes, 0x10 ) - 0x1000 );
+    monster_ids.push_back( read2Bytes( bytes, 0x12 ) - 0x1000 );
+    monster_ids.push_back( read2Bytes( bytes, 0x14 ) - 0x1000 );
+    monster_ids.push_back( read2Bytes( bytes, 0x16 ) - 0x1000 );
+    monster_ids.push_back( read2Bytes( bytes, 0x18 ) - 0x1000 );
+    monster_ids.push_back( read2Bytes( bytes, 0x1A ) - 0x1000 );
+
+    //printf( "Monster IDs: " );
+    //for (auto id : monster_ids)
+    //{
+    //  if( id != UINT16_MAX - 0x1000 )
+    //  printf( "%d\n", id );
+    //}
+  }
+
+  void writeToBytes()
+  {
+    write1Byte( bytes, 0x00, voice );
+    write1Byte( bytes, 0x01, unknown1 );
+    write1Byte( bytes, 0x02, unknown2 );
+    write1Byte( bytes, 0x03, in_water );
+    write1Byte( bytes, 0x04, always_zero1 );
+    write1Byte( bytes, 0x05, always_zero2 );
+    write1Byte( bytes, 0x06, always_zero3 );
+    write1Byte( bytes, 0x07, always_zero4 );
+    write1Byte( bytes, 0x08, always_zero5 );
+    write1Byte( bytes, 0x09, always_zero6 );
+    write1Byte( bytes, 0x0A, always_zero7 );
+    write1Byte( bytes, 0x0B, always_zero8 );
+    for (size_t i = 0; i < monster_ids.size(); i++)
+      write2Bytes( bytes, 0x0C + i * 2, monster_ids[ i ] + 0x1000 );
+  }
+};
+
+struct encounter_file_t final : public bytes_mapper_t
+{
+  std::string name;
+  std::vector<chunk_t> chunks;
+  formation_data_t* formation;
+
+  encounter_file_t( std::vector<char>& bytes, std::string name ) : bytes_mapper_t( bytes ), name( name ), chunks( bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 ) )
+  {
+    formation = new formation_data_t( chunks[ 2 ] );
+    printf( "%s", name );
+  }
+
+  void writeFormationData()
+  {
+    formation_data_t& forma = *this->formation;
+    forma.writeToBytes();
+    for (int i = 0; i < forma.bytes.size(); i++)
+    {
+      bytes[ forma.data.initial_offset + i ] = forma.bytes[ i ];
+    }
+  }
+};
+
+struct field_formation_data_t final : public bytes_mapper_t
+{
+  uint8_t id;
+  uint8_t weight;
+
+  field_formation_data_t( chunk_t& data ) : bytes_mapper_t( data.data ),
+    id( read1Byte( bytes, 0x00 ) ), weight( read1Byte( bytes, 0x01 ) )
+  {
+  }
+};
+
+struct field_group_data_t final : public bytes_mapper_t
+{
+  uint8_t formation_count;
+  uint16_t battlefield;
+  uint8_t danger_level;
+  uint8_t weight;
+  std::vector<field_formation_data_t*> formations;
+
+  field_group_data_t( chunk_t& data ) : bytes_mapper_t( data.data ),
+    formation_count( read1Byte( bytes, 0x00 ) ), battlefield( read2Bytes( bytes, 0x01 ) ),
+    danger_level( read1Byte( bytes, 0x03 ) ), weight( read1Byte( bytes, 0x04 ) ), formations()
+  {
+    for (size_t i = 0; i < formation_count; i++)
+    {
+      chunk_t field_chunk = chunk_t( bytes, 0x05 + i * 2, 0x05 + i * 2 + 2, i );
+      field_formation_data_t* formation = new field_formation_data_t( field_chunk );
+      formations.push_back( formation );
+    }
+  }
+};
+
+struct field_encounter_data_t final : public bytes_mapper_t
+{
+  uint16_t id;
+  uint16_t data_offset;
+  uint16_t formation_offset;
+  std::string field;
+  uint16_t unknown;
+
+  uint8_t total_formation_count;
+  uint8_t group_count;
+  std::vector<field_group_data_t*> groups;
+
+  field_encounter_data_t( chunk_t& data, const std::vector<char>& field_data ) : bytes_mapper_t( data.data ), groups()
+  {
+    id = read2Bytes( bytes, 0x00 );
+    data_offset = read2Bytes( bytes, 0x02 );
+    formation_offset = read2Bytes( bytes, 0x04 );
+    field = std::string( bytes.begin() + 0x06, bytes.begin() + 0x06 + 0x06 );
+    unknown = read2Bytes( bytes, 0x0C );
+
+    total_formation_count = read1Byte( field_data, data_offset );
+    group_count = read1Byte( field_data, 0x01 + data_offset);
+    size_t group_offset = 2;
+    for (size_t i = 0; i < group_count; i++)
+    {
+      size_t end_offset = 0x05 + read1Byte( field_data, data_offset + group_offset ) * 0x02;
+      chunk_t field_chunk = chunk_t( field_data, data_offset + group_offset, data_offset + end_offset + group_offset, i );
+      field_group_data_t* group = new field_group_data_t( field_chunk );
+      groups.push_back( group );
+      group_offset += end_offset;
+    }
+  }
+};
+
+struct btl_data_t final : public bytes_mapper_t
+{
+  std::vector<char> fields;
+  std::vector<char> field_data;
+  std::vector<chunk_t> field_chunks;
+  std::vector<field_encounter_data_t*> field_battle_data;
+  uint32_t chunk_count;
+  uint32_t field_initial_offset;
+  uint32_t field_data_initial_offset;
+  btl_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), fields(), field_data(), field_chunks(), field_battle_data(),
+    chunk_count( read4Bytes( bytes, 0x00 ) ), field_initial_offset( read4Bytes( bytes, 0x04 ) ), field_data_initial_offset( read4Bytes( bytes, 0x08 ) )
+  {
+    fields = std::vector<char>( bytes.begin() + field_initial_offset, bytes.begin() + field_data_initial_offset );
+    field_chunks = std::move( chunkData( fields, 14 ) );
+    field_data = std::vector<char>( bytes.begin() + field_data_initial_offset, bytes.end() );
+    for (auto chunk : field_chunks)
+    {
+      field_battle_data.push_back( new field_encounter_data_t( chunk, field_data ) );
+    }
+  }
+
+  std::vector<chunk_t> chunkData( std::vector<char>& bytes, int size ) const
+  {
+    std::vector<chunk_t> chunks;
+    int index = 0;
+    for (size_t i = 0; i < bytes.size(); i += size)
+    {
+      chunk_t chunk = chunk_t( bytes, i, i + size, index );
+      chunks.push_back( chunk );
+      index++;
+    }
+    return chunks;
+  }
+
+  void getEncounterFiles( std::vector<encounter_file_t*>& encounters )
+  {
+    std::vector<uint16_t> blacklist{};
+    std::vector<std::string> encounter_names{ "znkd08_00", "znkd08_01", "znkd09_00", "bjyt02_00", "bjyt02_01", "bjyt04_00" };
+    std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11" };
+    for (auto& field_data : field_battle_data)
+    {
+      std::string field_name = field_data->field;
+      if (std::find( blacklist.begin(), blacklist.end(), field_data->data_offset ) != blacklist.end())
+        continue;
+      if (std::find( field_names.begin(), field_names.end(), field_name ) == field_names.end())
+        continue;
+      blacklist.push_back( field_data->data_offset );
+      for (auto& group : field_data->groups)
+      {
+        for (auto& formation : group->formations)
+        {
+          std::string formation_id = std::to_string( formation->id );
+          if (formation_id.size() < 2)
+            formation_id.insert( 0, "0" );
+          std::string encounter_name = field_name + "_" + formation_id;
+          if (std::find( encounter_names.begin(), encounter_names.end(), encounter_name ) != encounter_names.end())
+            continue;
+          std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + BTL_FOLDER + encounter_name + "/" + encounter_name + ".bin" );
+          encounter_file_t* encounter_file = new encounter_file_t( bytes, encounter_name );
+          encounters.push_back( encounter_file );
+        }
+      }
+    }
+  }
+};
+
 struct data_pack_t
 {
-  std::vector<enemy_data_t*>& enemy_data;
+  std::unordered_map<int, enemy_data_t*>& enemy_data;
+  std::unordered_map<int, enemy_data_t*>& unmodified_enemy_data;
   std::vector<field_data_t*>& field_data;
   std::vector<item_shop_t*>& item_shop_data;
   std::vector<gear_shop_t*>& gear_shop_data;
@@ -818,11 +1092,14 @@ struct data_pack_t
   std::vector<aeon_scaling_data_t*>& aeon_scaling_data;
   std::vector<aeon_stat_data_t*>& aeon_stat_data;
   std::vector<sphere_grid_data_t*>& sphere_grid_data;
+  btl_data_t* btl_data;
+  std::vector<encounter_file_t*>& encounter_files;
 
   data_pack_t() = default;
 
   data_pack_t(
-    std::vector<enemy_data_t*>& enemy_data,
+    std::unordered_map<int, enemy_data_t*>& enemy_data,
+    std::unordered_map<int, enemy_data_t*>& unmodified_enemy_data,
     std::vector<field_data_t*>& field_data,
     std::vector<item_shop_t*>& item_shop_data,
     std::vector<gear_shop_t*>& gear_shop_data,
@@ -834,9 +1111,12 @@ struct data_pack_t
     std::vector<character_stats_t*>& player_stats_data,
     std::vector<aeon_scaling_data_t*>& aeon_scaling_data,
     std::vector<aeon_stat_data_t*>& aeon_stat_data,
-    std::vector<sphere_grid_data_t*>& sphere_grid_data
+    std::vector<sphere_grid_data_t*>& sphere_grid_data,
+    btl_data_t* btl_data,
+    std::vector<encounter_file_t*>& encounter_files
   ) :
     enemy_data( enemy_data ),
+    unmodified_enemy_data( unmodified_enemy_data ),
     field_data( field_data ),
     item_shop_data( item_shop_data ),
     gear_shop_data( gear_shop_data ),
@@ -848,7 +1128,9 @@ struct data_pack_t
     player_stats_data( player_stats_data ),
     aeon_scaling_data( aeon_scaling_data ),
     aeon_stat_data( aeon_stat_data ),
-    sphere_grid_data( sphere_grid_data )
+    sphere_grid_data( sphere_grid_data ),
+    btl_data( btl_data ),
+    encounter_files( encounter_files )
   {}
 };
 
@@ -879,6 +1161,7 @@ struct options_pack_t
   bool poison_is_deadly;
   bool randomize_starting_overdrive_mode;
   bool randomize_enemy_elemental_affinities;
+  bool randomize_encounters;
 
   bool shuffle_sphere_grid;
   bool randomize_sphere_grid;
@@ -923,6 +1206,7 @@ struct options_pack_t
     bool poison_is_deadly,
     bool randomize_starting_overdrive_mode,
     bool randomize_enemy_elemental_affinities,
+    bool randomize_encounters,
     bool shuffle_sphere_grid,
     bool randomize_sphere_grid,
     bool empty_sphere_grid,
@@ -963,6 +1247,7 @@ struct options_pack_t
     poison_is_deadly( poison_is_deadly ),
     randomize_starting_overdrive_mode( randomize_starting_overdrive_mode ),
     randomize_enemy_elemental_affinities( randomize_enemy_elemental_affinities ),
+    randomize_encounters( randomize_encounters ),
     shuffle_sphere_grid( shuffle_sphere_grid ),
     randomize_sphere_grid( randomize_sphere_grid ),
     empty_sphere_grid( empty_sphere_grid ),
@@ -978,54 +1263,4 @@ struct options_pack_t
     seed_text( seed_text ),
     fahrenheit( fahrenheit )
   {}
-};
-
-// Constant values
-static constexpr int ENEMY_COUNT = 360;
-// Versioning
-static constexpr int MAJOR_VERSION = 1;
-static constexpr int MINOR_VERSION = 2;
-static constexpr int PATCH_VERSION = 0;
-// Information
-static const std::string VERSION = "v" + std::to_string( MAJOR_VERSION ) + "." + std::to_string( MINOR_VERSION ) + "." + std::to_string( PATCH_VERSION );
-static const std::string AUTHOR = "Taeznak";
-static const std::string NAME = "FFXRando";
-static const std::string DESCRIPTION = "A randomizer for Final Fantasy X";
-
-// Path data
-static const std::string INPUT_FOLDER = "input/";
-static const std::string OUTPUT_FOLDER = "output/";
-static const std::string FAHRENHEIT_PREFIX = "FFXRando/efl/x/";
-static const std::string FFX_FOLDER = "/ffx_ps2/ffx/";
-static const std::string JPPC_FOLDER = FFX_FOLDER + "/master/jppc/";
-static const std::string USPC_FOLDER = FFX_FOLDER + "/master/new_uspc/";
-static const std::string USPC_BTL_KERN_FOLDER = USPC_FOLDER + "/battle/kernel/";
-static const std::string CHPC_FOLDER = FFX_FOLDER + "/master/new_chpc/";
-static const std::string CHPC_BTL_KERN_FOLDER = CHPC_FOLDER + "/battle/kernel/";
-static const std::string DEPC_FOLDER = FFX_FOLDER + "/master/new_depc/";
-static const std::string DEPC_BTL_KERN_FOLDER = DEPC_FOLDER + "/battle/kernel/";
-static const std::string FRPC_FOLDER = FFX_FOLDER + "/master/new_frpc/";
-static const std::string FRPC_BTL_KERN_FOLDER = FRPC_FOLDER + "/battle/kernel/";
-static const std::string ITPC_FOLDER = FFX_FOLDER + "/master/new_itpc/";
-static const std::string ITPC_BTL_KERN_FOLDER = ITPC_FOLDER + "/battle/kernel/";
-static const std::string NEW_JPPC_FOLDER = FFX_FOLDER + "/master/new_jppc/";
-static const std::string NEW_JPPC_BTL_KERN_FOLDER = NEW_JPPC_FOLDER + "/battle/kernel/";
-static const std::string KRPC_FOLDER = FFX_FOLDER + "/master/new_krpc/";
-static const std::string KRPC_BTL_KERN_FOLDER = KRPC_FOLDER + "/battle/kernel/";
-static const std::string SPPC_FOLDER = FFX_FOLDER + "/master/new_sppc/";
-static const std::string SPPC_BTL_KERN_FOLDER = SPPC_FOLDER + "/battle/kernel/";
-static const std::string BATTLE_FOLDER = JPPC_FOLDER + "/battle/";
-static const std::string BATTLE_KERNEL_FOLDER = BATTLE_FOLDER + "/kernel/";
-static const std::string MONSTER_FOLDER = BATTLE_FOLDER + "/mon/";
-static const std::string ABMAP_FOLDER = JPPC_FOLDER + "/menu/abmap/";
-
-static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
-  { "ch", CHPC_BTL_KERN_FOLDER},
-  { "de", DEPC_BTL_KERN_FOLDER},
-  { "fr", FRPC_BTL_KERN_FOLDER},
-  { "it", ITPC_BTL_KERN_FOLDER},
-  { "jp", NEW_JPPC_BTL_KERN_FOLDER},
-  { "kr", KRPC_BTL_KERN_FOLDER},
-  { "sp", SPPC_BTL_KERN_FOLDER},
-  { "us", USPC_BTL_KERN_FOLDER}
 };

@@ -2,15 +2,9 @@
 #include "BytesHelper.hpp"
 #include "Data.hpp"
 #include "json.hpp"
-#include <Windows.h>
-#include <cstdint>
-#include <filesystem>
 #include <random>
-#include <string>
+#include <filesystem>
 #include <thread>
-#include <algorithm>
-#include <type_traits>
-#include <unordered_map>
 #include <vector>
 
 using json = nlohmann::json;
@@ -38,6 +32,7 @@ private:
   std::vector<uint16_t> original_sphere_grid_node_ids;
   std::vector<uint16_t> standard_sphere_grid_node_ids;
   std::vector<uint16_t> expert_sphere_grid_node_ids;
+  std::vector<uint16_t> random_monster_encounter_ids;
 
   // Shuffled vectors
   std::vector<character_stats_t*> shuffled_player_stats_data;
@@ -46,6 +41,8 @@ private:
   std::vector<uint16_t> shuffled_original_sphere_grid_node_ids;
   std::vector<uint16_t> shuffled_standard_sphere_grid_node_ids;
   std::vector<uint16_t> shuffled_expert_sphere_grid_node_ids;
+  std::vector<uint16_t> shuffled_random_monster_encounter_ids;
+  std::unordered_map<uint16_t, uint16_t> paired_mosnter_ids;
 
 public:
   std::string prefix;
@@ -71,12 +68,14 @@ public:
     original_sphere_grid_node_ids(),
     standard_sphere_grid_node_ids(),
     expert_sphere_grid_node_ids(),
+    random_monster_encounter_ids(),
     shuffled_player_stats_data(),
     shuffled_aeon_scaling_data(),
     shuffled_aeon_stat_data(),
     shuffled_original_sphere_grid_node_ids(),
     shuffled_standard_sphere_grid_node_ids(),
     shuffled_expert_sphere_grid_node_ids(),
+    shuffled_random_monster_encounter_ids(),
     prefix( options_pack.fahrenheit ? FAHRENHEIT_PREFIX : "" ),
     btl_kernel_input( INPUT_FOLDER + BATTLE_KERNEL_FOLDER ),
     btl_kernel_output( OUTPUT_FOLDER + prefix + BATTLE_KERNEL_FOLDER ),
@@ -99,6 +98,7 @@ public:
     getFieldItems();
     getShopItems();
     getMonsterItems();
+    getRandomEncounterIDs();
 
     if (options_pack.shuffle_sphere_grid)
       getSphereGridNodeIds();
@@ -370,7 +370,7 @@ public:
   {
     for (auto& enemy : data_pack.enemy_data)
     {
-      enemy_loot_data_t& loot = *enemy->loot_data;
+      enemy_loot_data_t& loot = *enemy.second->loot_data;
       checkItemList( loot.primary_normal_drop, loot.n_primary_normal_drop );
       checkItemList( loot.primary_normal_drop_rare, loot.n_primary_normal_drop_rare );
       checkItemList( loot.secondary_normal_drop, loot.n_secondary_normal_drop );
@@ -382,6 +382,19 @@ public:
       checkItemList( loot.steal_item, loot.n_steal_item );
       checkItemList( loot.steal_item_rare, loot.n_steal_item_rare );
       checkItemList( loot.bribe_item, loot.n_bribe_item );
+    }
+  }
+
+  void getRandomEncounterIDs()
+  {
+    for (auto& encounter : data_pack.encounter_files)
+    {
+      for (auto& monster : encounter->formation->monster_ids)
+      {
+        bool found = std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) != random_monster_encounter_ids.end();
+        if (!found && monster != UINT16_MAX - 0x1000)
+          random_monster_encounter_ids.push_back( monster );
+      }
     }
   }
 
@@ -790,7 +803,7 @@ public:
     }
     for (auto& enemy : data_pack.enemy_data)
     {
-      enemy_loot_data_t& loot = *enemy->loot_data;
+      enemy_loot_data_t& loot = *enemy.second->loot_data;
       for (int chr = 0; chr < 7; chr++)
       {
         for (int i = 0; i < 8; i++)
@@ -827,7 +840,7 @@ public:
     }
     for (auto& enemy : data_pack.enemy_data)
     {
-      enemy_loot_data_t& loot = *enemy->loot_data;
+      enemy_loot_data_t& loot = *enemy.second->loot_data;
       bool found = std::find( weapon_formulas.begin(), weapon_formulas.end(), loot.gear_damage_calc ) != weapon_formulas.end();
       if (!found)
         weapon_formulas.push_back( loot.gear_damage_calc );
@@ -1433,57 +1446,57 @@ public:
     // Generate the enemy defensive stats pool before going into the main loop
     if (options_pack.randomize_enemy_stats_defensive || options_pack.randomize_enemy_stats_shuffle)
       for (auto& enemy : data_pack.enemy_data)
-        addEnemyDefenses( enemy );
+        addEnemyDefenses( enemy.second );
 
     for (auto& enemy : data_pack.enemy_data)
     {
       if (options_pack.randomize_enemy_drops)
       {
-        printf( "Randomizing Enemy Drops for monster %s\n", enemy->monster_id.c_str() );
-        randomizeEnemyDrops( enemy );
+        printf( "Randomizing Enemy Drops for monster %s\n", enemy.second->monster_id.c_str() );
+        randomizeEnemyDrops( enemy.second );
       }
       if (options_pack.randomize_enemy_steals)
       {
-        printf( "Randomizing Enemy Steals for monster %s\n", enemy->monster_id.c_str() );
-        randomizeEnemySteal( enemy );
+        printf( "Randomizing Enemy Steals for monster %s\n", enemy.second->monster_id.c_str() );
+        randomizeEnemySteal( enemy.second );
       }
       if (options_pack.randomize_enemy_bribes)
       {
-        printf( "Randomizing Enemy Bribes for monster %s\n", enemy->monster_id.c_str() );
-        randomizeEnemyBribe( enemy );
+        printf( "Randomizing Enemy Bribes for monster %s\n", enemy.second->monster_id.c_str() );
+        randomizeEnemyBribe( enemy.second );
       }
       if (options_pack.randomize_enemy_gear_drops)
       {
-        printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy->monster_id.c_str() );
-        randomizeEnemyGearDrops( enemy );
+        printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy.second->monster_id.c_str() );
+        randomizeEnemyGearDrops( enemy.second );
       }
       if (options_pack.randomize_enemy_stats)
       {
-        printf( "Randomizing Enemy Stats for monster %s\n", enemy->monster_id.c_str() );
-        randomizeEnemyStatsNormal( enemy );
+        printf( "Randomizing Enemy Stats for monster %s\n", enemy.second->monster_id.c_str() );
+        randomizeEnemyStatsNormal( enemy.second );
       }
       if (options_pack.randomize_enemy_stats_defensive)
       {
-        printf( "Randomizing Enemy Defensive for monster %s\n", enemy->monster_id.c_str() );
-        randomizeEnemyStatsDefensiveNormalization( enemy );
+        printf( "Randomizing Enemy Defensive for monster %s\n", enemy.second->monster_id.c_str() );
+        randomizeEnemyStatsDefensiveNormalization( enemy.second );
       }
       if (options_pack.randomize_enemy_stats_shuffle)
       {
-        printf( "Shuffling Enemy Stats for monster %s\n", enemy->monster_id.c_str() );
-        shuffleEnemyStats( enemy );
+        printf( "Shuffling Enemy Stats for monster %s\n", enemy.second->monster_id.c_str() );
+        shuffleEnemyStats( enemy.second );
       }
       if (options_pack.randomize_enemy_elemental_affinities)
       {
-        printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy->monster_id.c_str() );
-        randomizeEnemyElementalAffinities( enemy );
+        printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy.second->monster_id.c_str() );
+        randomizeEnemyElementalAffinities( enemy.second );
       }
 
-      printf( "Reconstructing files for for monster %s\n", enemy->monster_id.c_str() );
-      std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy->monster_id;
+      printf( "Reconstructing files for for monster %s\n", enemy.second->monster_id.c_str() );
+      std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy.second->monster_id;
       std::filesystem::path path = pathstr;
       std::filesystem::create_directories( path );
-      std::string filepath = pathstr + "/m" + enemy->monster_id + ".bin";
-      enemy->writeBytesToNewFile( enemy->bytes, filepath );
+      std::string filepath = pathstr + "/m" + enemy.second->monster_id + ".bin";
+      enemy.second->writeBytesToNewFile( enemy.second->bytes, filepath );
     }
   }
 
@@ -1927,12 +1940,57 @@ public:
     reconstructSphereGridData();
   }
 
+  void randomizeEncounters( encounter_file_t& encounter )
+  {
+
+    shuffled_random_monster_encounter_ids = random_monster_encounter_ids;
+    std::shuffle( shuffled_random_monster_encounter_ids.begin(), shuffled_random_monster_encounter_ids.end(), rng );
+
+    for (int i = 0; i < random_monster_encounter_ids.size(); i++)
+    {
+      paired_mosnter_ids.insert( { random_monster_encounter_ids[ i ], shuffled_random_monster_encounter_ids[ i ] } );
+    }
+
+    formation_data_t& formation_data = *encounter.formation;
+    for (int i = 0; i < formation_data.monster_ids.size(); i++)
+    {
+      if (formation_data.monster_ids[ i ] == UINT16_MAX - 0x1000)
+        continue;
+
+      uint16_t it = paired_mosnter_ids[ formation_data.monster_ids[ i ] ];
+      formation_data.monster_ids[ i ] = it;
+    }
+  }
+
+  void doRandomEcnounterRandomization()
+  {
+    if (!options_pack.randomize_encounters)
+      return;
+
+    printf( "Randomizing Encounters...\n" );
+    for (auto& encounter : data_pack.encounter_files)
+    {
+      encounter_file_t& encounter_file = *encounter;
+
+      randomizeEncounters( encounter_file );
+
+      encounter_file.writeFormationData();
+      std::string pathstr = OUTPUT_FOLDER + prefix + BTL_FOLDER + encounter_file.name;
+      std::filesystem::path path = pathstr;
+      std::filesystem::create_directories( path );
+      std::string filepath = pathstr + "/" + encounter_file.name + ".bin";
+      encounter_file.writeBytesToNewFile( encounter_file.bytes, filepath );
+    }
+  }
+
   void randomize()
   {
     printf( "Starting Randomizer...\n" );
 
     // Clean the output folder to prevent any issues
     std::filesystem::remove_all( OUTPUT_FOLDER );
+
+    doRandomEcnounterRandomization();
 
     std::thread enemy_thread( &randomizer_t::doEnemyRandomization, this );
     std::thread shop_thread( &randomizer_t::doShopRandomization, this );

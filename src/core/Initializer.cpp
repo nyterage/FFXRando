@@ -35,7 +35,8 @@ void initializer_t::initializeEnemyData()
     std::string monster_file = path + "/" + monster_id + ".bin";
     std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );
     monster_id.erase( 0, 1 );
-    enemy_data.push_back( new enemy_data_t( monster_id, getDataFromFile( monster_file ) ) );
+    enemy_data.insert( std::make_pair( i, new enemy_data_t( monster_id, bytes ) ) );
+    unmodified_enemy_data.insert( std::make_pair( i, new enemy_data_t( monster_id, getDataFromFile( monster_file ) ) ) );
   }
 }
 
@@ -115,6 +116,14 @@ void initializer_t::initializeSphereGridData()
   }
 }
 
+void initializer_t::initializeBtlData()
+{
+  std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "btl.bin";
+  btl_data = new btl_data_t( getDataFromFile( path ) );
+
+  btl_data->getEncounterFiles( encounter_file_data );
+}
+
 void initializer_t::initializeGUI()
 {
   initializeAllData();
@@ -122,6 +131,7 @@ void initializer_t::initializeGUI()
   // runTests();
   data_pack = new data_pack_t(
     enemy_data,
+    unmodified_enemy_data,
     field_data,
     item_shop_data,
     gear_shop_data,
@@ -133,7 +143,9 @@ void initializer_t::initializeGUI()
     player_stats_data,
     aeon_scaling_data,
     aeon_stat_data,
-    sphere_grid_data );
+    sphere_grid_data,
+    btl_data,
+    encounter_file_data );
 
   gui = new gui_t( *data_pack );
   wxApp::SetInstance( gui );
@@ -159,6 +171,7 @@ void initializer_t::initializeAllData()
   std::thread aeon_scaling_thread( &initializer_t::initializeAeonScalingData, this );
   std::thread aeon_stat_thread( &initializer_t::initializeAeonStatData, this );
   std::thread sphere_grid_thread( &initializer_t::initializeSphereGridData, this );
+  std::thread btl_data_thread( &initializer_t::initializeBtlData, this );
 
   enemy_thread.join();
   field_thread.join();
@@ -173,12 +186,13 @@ void initializer_t::initializeAllData()
   aeon_scaling_thread.join();
   aeon_stat_thread.join();
   sphere_grid_thread.join();
+  btl_data_thread.join();
 }
 
 void initializer_t::runEnemyTests()
 {
   for (auto& enemy : enemy_data)
-    enemy->test();
+    enemy.second->test();
 }
 
 void initializer_t::runFieldTests()
@@ -216,7 +230,7 @@ void initializer_t::runShopArmsTests()
 void initializer_t::runEnemyLootTests()
 {
   for (auto& loot : enemy_data)
-    loot->loot_data->test();
+    loot.second->loot_data->test();
 }
 
 void initializer_t::runItemRateTests()
