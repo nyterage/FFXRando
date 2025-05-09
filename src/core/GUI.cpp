@@ -67,6 +67,8 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRemoveSphereGridLocks, this, ID_REMOVE_LOCKS );
   Bind( wxEVT_CHECKBOX, &frame_t::onUpgradeSphereNodes, this, ID_UPGRADE_SPHERE_NODES );
   Bind( wxEVT_CHECKBOX, &frame_t::onDowngradeSphereNodes, this, ID_DOWNGRADE_SPHERE_NODES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onSwapRandomEncounterStats, this, ID_SWAP_RANDOM_ENCOUNTER_STATS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onScaleEncounterStats, this, ID_SCALE_ECOUNTER_STATS );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onKeepThingsSane, this, ID_KEEP_THINGS_SANE );
   Bind( wxEVT_CHECKBOX, &frame_t::onFahrenheit, this, ID_FAHRENHEIT );
@@ -173,6 +175,8 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                 remove_sphere_grid_locks,
                                 upgrade_sphere_nodes,
                                 downgrade_sphere_nodes,
+                                swap_random_stats,
+                                scale_encounter_stats,
                                 randomize_key_items,
                                 randomize_celestials,
                                 randomize_brotherhood,
@@ -381,6 +385,18 @@ void frame_t::onDowngradeSphereNodes( wxCommandEvent& event )
 {
   downgrade_sphere_nodes = !downgrade_sphere_nodes;
   printf( "Downgrade Sphere Nodes: %d\n", downgrade_sphere_nodes );
+}
+
+void frame_t::onSwapRandomEncounterStats( wxCommandEvent& event )
+{
+  swap_random_stats = !swap_random_stats;
+  printf( "Swap Random Encounter Stats: %d\n", swap_random_stats );
+}
+
+void frame_t::onScaleEncounterStats( wxCommandEvent& event )
+{
+  scale_encounter_stats = !scale_encounter_stats;
+  printf( "Scale Encounter Stats: %d\n", scale_encounter_stats );
 }
 
 void frame_t::onRandomizeKeyItems( wxCommandEvent& event )

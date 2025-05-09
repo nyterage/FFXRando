@@ -390,10 +390,8 @@ struct enemy_stat_data_t final : public bytes_mapper_t
 
   enemy_stat_data_t( const std::vector<char>& bytes, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( intial_offset ), monster_id( monster_id )
   {
-    mapBytes();
-    mapFlags();
-    // writeToBytes( locialization );
-    // test();
+    this->mapBytes();
+    this->mapFlags();
   }
 
   void mapBytes();
@@ -405,6 +403,7 @@ struct enemy_stat_data_t final : public bytes_mapper_t
 struct enemy_data_t final : public bytes_mapper_t
 {
   std::string monster_id;
+  std::vector<chunk_t> chunks;
   std::vector<char> script;
   std::vector<char> mapping_bytes;
   std::vector<char> stats_bytes;
@@ -412,14 +411,14 @@ struct enemy_data_t final : public bytes_mapper_t
   std::vector<char> loot_bytes;
   std::vector<char> audio_bytes;
   std::vector<char> text_bytes;
-  std::vector<chunk_t> chunks;
   enemy_loot_data_t* loot_data;
   enemy_stat_data_t* stats_data;
 
   enemy_data_t( std::string id, const std::vector<char>& bytes )
-    : bytes_mapper_t( bytes ), monster_id( id ), chunks( bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 ) ), loot_data( nullptr ), stats_data( nullptr )
+    : bytes_mapper_t( bytes ), monster_id( id ), chunks(), loot_data( nullptr ), stats_data( nullptr )
   {
-    mapChunks();
+    this->chunks = bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 );
+    this->mapChunks();
     // test();
   }
 
@@ -427,6 +426,19 @@ struct enemy_data_t final : public bytes_mapper_t
   void writeLootData( const enemy_loot_data_t& lootData );
   void writeStatsData( const enemy_stat_data_t& statsData );
   void test() const override;
+  enemy_stat_data_t& getStatData()
+  {
+    if (this->stats_data == nullptr)
+    {
+      this->stats_data = new enemy_stat_data_t( stats_bytes, chunks.at( 2 ).initial_offset, monster_id );
+    }
+    return *this->stats_data;
+  };
+
+  const enemy_stat_data_t& getStatData() const
+  {
+    return *this->stats_data;
+  }
 };
 
 struct field_data_t final : public bytes_mapper_t
@@ -930,7 +942,15 @@ struct encounter_file_t final : public bytes_mapper_t
   encounter_file_t( std::vector<char>& bytes, std::string name ) : bytes_mapper_t( bytes ), name( name ), chunks( bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 ) )
   {
     formation = new formation_data_t( chunks[ 2 ] );
-    printf( "%s", name );
+    // std::cout << name << std::endl;
+    //if (name == "cdsp00_00" || name == "cdsp00_01" || name == "cdsp00_02" || name == "cdsp02_00" || name == "cdsp07_00" || name == "cdsp07_01" )
+    //{
+    //  for (auto& id : formation->monster_ids)
+    //  {
+    //    printf( "%d\n", id );
+
+    //  }
+    //}
   }
 
   void writeFormationData()
@@ -969,7 +989,7 @@ struct field_group_data_t final : public bytes_mapper_t
   {
     for (size_t i = 0; i < formation_count; i++)
     {
-      chunk_t field_chunk = chunk_t( bytes, 0x05 + i * 2, 0x05 + i * 2 + 2, i );
+      chunk_t field_chunk = chunk_t( bytes, 0x05 + i * 2, 0x05 + i * 2 + 2, static_cast<int>( i ) );
       field_formation_data_t* formation = new field_formation_data_t( field_chunk );
       formations.push_back( formation );
     }
@@ -1002,7 +1022,7 @@ struct field_encounter_data_t final : public bytes_mapper_t
     for (size_t i = 0; i < group_count; i++)
     {
       size_t end_offset = 0x05 + read1Byte( field_data, data_offset + group_offset ) * 0x02;
-      chunk_t field_chunk = chunk_t( field_data, data_offset + group_offset, data_offset + end_offset + group_offset, i );
+      chunk_t field_chunk = chunk_t( field_data, data_offset + group_offset, data_offset + end_offset + group_offset, static_cast< int >( i ) );
       field_group_data_t* group = new field_group_data_t( field_chunk );
       groups.push_back( group );
       group_offset += end_offset;
@@ -1047,14 +1067,17 @@ struct btl_data_t final : public bytes_mapper_t
   void getEncounterFiles( std::vector<encounter_file_t*>& encounters )
   {
     std::vector<uint16_t> blacklist{};
-    std::vector<std::string> encounter_names{ "znkd08_00", "znkd08_01", "znkd09_00", "bjyt02_00", "bjyt02_01", "bjyt04_00" };
-    std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11" };
+    std::vector<std::string> encounter_names{ "znkd08_00", "znkd08_01", "znkd09_00", "bjyt02_00", "bjyt02_01", "bjyt04_00", "bjyt04_01",
+      "cdsp07_00", "cdsp07_01", "mtgz01_10", "klyt00_05", "slik02_01" };
+    std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11", "sins07", "bsil05", "bsil07" };
     for (auto& field_data : field_battle_data)
     {
       std::string field_name = field_data->field;
-      if (std::find( blacklist.begin(), blacklist.end(), field_data->data_offset ) != blacklist.end())
+      bool is_blacklisted = std::find( blacklist.begin(), blacklist.end(), field_data->data_offset ) != blacklist.end();
+      if (is_blacklisted)
         continue;
-      if (std::find( field_names.begin(), field_names.end(), field_name ) == field_names.end())
+      bool field_found = std::find( field_names.begin(), field_names.end(), field_name ) != field_names.end();
+      if (field_found)
         continue;
       blacklist.push_back( field_data->data_offset );
       for (auto& group : field_data->groups)
@@ -1065,7 +1088,8 @@ struct btl_data_t final : public bytes_mapper_t
           if (formation_id.size() < 2)
             formation_id.insert( 0, "0" );
           std::string encounter_name = field_name + "_" + formation_id;
-          if (std::find( encounter_names.begin(), encounter_names.end(), encounter_name ) != encounter_names.end())
+          bool found = std::find( encounter_names.begin(), encounter_names.end(), encounter_name ) != encounter_names.end();
+          if (found)
             continue;
           std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + BTL_FOLDER + encounter_name + "/" + encounter_name + ".bin" );
           encounter_file_t* encounter_file = new encounter_file_t( bytes, encounter_name );
@@ -1078,8 +1102,8 @@ struct btl_data_t final : public bytes_mapper_t
 
 struct data_pack_t
 {
-  std::unordered_map<int, enemy_data_t*>& enemy_data;
-  std::unordered_map<int, enemy_data_t*>& unmodified_enemy_data;
+  std::vector<enemy_data_t>& enemy_data;
+  std::vector<enemy_data_t>& unmodified_enemy_data;
   std::vector<field_data_t*>& field_data;
   std::vector<item_shop_t*>& item_shop_data;
   std::vector<gear_shop_t*>& gear_shop_data;
@@ -1098,8 +1122,8 @@ struct data_pack_t
   data_pack_t() = default;
 
   data_pack_t(
-    std::unordered_map<int, enemy_data_t*>& enemy_data,
-    std::unordered_map<int, enemy_data_t*>& unmodified_enemy_data,
+    std::vector<enemy_data_t>& enemy_data,
+    std::vector<enemy_data_t>& unmodified_enemy_data,
     std::vector<field_data_t*>& field_data,
     std::vector<item_shop_t*>& item_shop_data,
     std::vector<gear_shop_t*>& gear_shop_data,
@@ -1171,6 +1195,9 @@ struct options_pack_t
   bool upgrade_sphere_nodes;
   bool downgrade_sphere_nodes;
 
+  bool swap_random_stats;
+  bool scale_encounter_stats;
+
   bool randomize_key_items;
   bool randomize_celestials;
   bool randomize_brotherhood;
@@ -1214,6 +1241,8 @@ struct options_pack_t
     bool remove_sphere_grid_locks,
     bool upgrade_sphere_nodes,
     bool downgrade_sphere_nodes,
+    bool swap_random_stats,
+    bool scale_encounter_stats,
     bool randomize_key_items,
     bool randomize_celestials,
     bool randomize_brotherhood,
@@ -1255,6 +1284,8 @@ struct options_pack_t
     remove_sphere_grid_locks( remove_sphere_grid_locks ),
     upgrade_sphere_nodes( upgrade_sphere_nodes ),
     downgrade_sphere_nodes( downgrade_sphere_nodes ),
+    swap_random_stats( swap_random_stats ),
+    scale_encounter_stats( scale_encounter_stats ),
     randomize_key_items( randomize_key_items ),
     randomize_celestials( randomize_celestials ),
     randomize_brotherhood( randomize_brotherhood ),

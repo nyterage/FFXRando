@@ -23,21 +23,26 @@ std::vector<char> initializer_t::getDataFromFile( const std::string& filepath, b
   return bytes;
 }
 
-void initializer_t::initializeEnemyData()
-{
-  for (int i = 0; i < ENEMY_COUNT; i++)
-  {
-    std::string monster_id = std::to_string( i );
-    while (monster_id.size() < 3)
-      monster_id.insert( 0, "0" );
-    monster_id.insert( 0, "m" );
-    std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;
-    std::string monster_file = path + "/" + monster_id + ".bin";
-    std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );
-    monster_id.erase( 0, 1 );
-    enemy_data.insert( std::make_pair( i, new enemy_data_t( monster_id, bytes ) ) );
-    unmodified_enemy_data.insert( std::make_pair( i, new enemy_data_t( monster_id, getDataFromFile( monster_file ) ) ) );
-  }
+void initializer_t::initializeEnemyData()  
+{  
+ for (int i = 0; i < ENEMY_COUNT; i++)  
+ {  
+   std::string monster_id = std::to_string( i );  
+   while (monster_id.size() < 3)  
+     monster_id.insert( 0, "0" );  
+   monster_id.insert( 0, "m" );  
+   std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;  
+   std::string monster_file = path + "/" + monster_id + ".bin";  
+   std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );  
+   std::vector<char> other_bytes = bytes;  
+   monster_id.erase( 0, 1 );  
+   enemy_data_t enemy = enemy_data_t( monster_id, bytes );  
+   enemy_data.push_back( enemy );  
+ }
+ // Copy enemy_data to unmodified_enemy_data
+ unmodified_enemy_data = enemy_data;
+ for (auto& enemy : unmodified_enemy_data)
+   enemy.mapChunks();
 }
 
 void initializer_t::initializeFieldData()
@@ -192,7 +197,7 @@ void initializer_t::initializeAllData()
 void initializer_t::runEnemyTests()
 {
   for (auto& enemy : enemy_data)
-    enemy.second->test();
+    enemy.test();
 }
 
 void initializer_t::runFieldTests()
@@ -230,7 +235,7 @@ void initializer_t::runShopArmsTests()
 void initializer_t::runEnemyLootTests()
 {
   for (auto& loot : enemy_data)
-    loot.second->loot_data->test();
+    loot.loot_data->test();
 }
 
 void initializer_t::runItemRateTests()

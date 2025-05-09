@@ -34,10 +34,6 @@ struct bytes_mapper_t
 
   bytes_mapper_t( const std::vector<char>& bytes ) : bytes( bytes )
   {
-    if (bytes.empty())
-    {
-      throw std::runtime_error( "Empty bytes" );
-    }
   }
 
   static std::vector<char> fileToBytes( const std::string& filepath );

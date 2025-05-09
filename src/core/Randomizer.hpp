@@ -15,8 +15,8 @@ private:
   std::mt19937 rng;
 
   // Static data
-  data_pack_t& data_pack;
-  options_pack_t& options_pack;
+  const data_pack_t& data_pack;
+  const options_pack_t& options_pack;
 
   // Dynamically populated data
   std::unordered_map<int, item_t*> all_items;
@@ -44,6 +44,10 @@ private:
   std::vector<uint16_t> shuffled_random_monster_encounter_ids;
   std::unordered_map<uint16_t, uint16_t> paired_mosnter_ids;
 
+  // Lists
+  const std::vector<uint16_t> enemy_id_blacklist{ UINT16_MAX - 0x1000, 0x46, 0xDF, 0xE0, 0x90, 0x107, 0x108, 0x77, 0x78, 0x72 };
+  std::vector<uint16_t> randomized_monsters{};
+
 public:
   std::string prefix;
   std::string btl_kernel_input;
@@ -51,8 +55,8 @@ public:
 
   json json_data;
 
-  randomizer_t( options_pack_t& options_pack,
-                data_pack_t& data_pack )
+  randomizer_t( const options_pack_t& options_pack,
+                const data_pack_t& data_pack )
     :
     data_pack( data_pack ),
     options_pack( options_pack ),
@@ -370,7 +374,7 @@ public:
   {
     for (auto& enemy : data_pack.enemy_data)
     {
-      enemy_loot_data_t& loot = *enemy.second->loot_data;
+      enemy_loot_data_t& loot = *enemy.loot_data;
       checkItemList( loot.primary_normal_drop, loot.n_primary_normal_drop );
       checkItemList( loot.primary_normal_drop_rare, loot.n_primary_normal_drop_rare );
       checkItemList( loot.secondary_normal_drop, loot.n_secondary_normal_drop );
@@ -392,7 +396,8 @@ public:
       for (auto& monster : encounter->formation->monster_ids)
       {
         bool found = std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) != random_monster_encounter_ids.end();
-        if (!found && monster != UINT16_MAX - 0x1000)
+        bool blacklisted = std::find( enemy_id_blacklist.begin(), enemy_id_blacklist.end(), monster ) != enemy_id_blacklist.end();
+        if (!found && !blacklisted )
           random_monster_encounter_ids.push_back( monster );
       }
     }
@@ -454,7 +459,7 @@ public:
       if (is_monster)
         return uniform<uint8_t>( 1, 4 );
       if (item->getAverageQuantity() > 2 && item->getMaxQuantity() > item->getMinQuantity() + 1)
-        return normal<uint8_t>( item->getAverageQuantity(), item->getStandardDeviation(), item->getMinQuantity(), item->getMaxQuantity() );
+        return normal<uint8_t>( item->getAverageQuantity(), item->getMinQuantity() * 5, item->getMinQuantity(), 25 );
       else if (item->getMaxQuantity() > item->getMinQuantity())
         return uniform<uint8_t>( item->getMinQuantity(), item->getMaxQuantity() );
       else
@@ -598,11 +603,11 @@ public:
     if (stats.hp <= 1)
       return;
     if (stats.hp > 1)
-      stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 50, UINT32_MAX );
+      stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, std::floor( stats.hp * 0.5 ), stats.hp * 3 );
     if (stats.hp < 50)
       stats.hp = 50;
     stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, 999 );
-    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, UINT32_MAX );
+    stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, 99999 );
     stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
     stats.def = normal<uint8_t>( stats.def, stats.def / 2, 0, UINT8_MAX );
     stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
@@ -699,7 +704,7 @@ public:
       stats.hp = normal<uint32_t>( stats.hp, stats.hp / 2, 50, UINT32_MAX );
     if (stats.hp < 50)
       stats.hp = 50;
-    stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, UINT32_MAX );
+    stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, 9999 );
     stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, UINT32_MAX );
     stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
     stats.def = def_pool[ index ];
@@ -803,7 +808,7 @@ public:
     }
     for (auto& enemy : data_pack.enemy_data)
     {
-      enemy_loot_data_t& loot = *enemy.second->loot_data;
+      enemy_loot_data_t& loot = *enemy.loot_data;
       for (int chr = 0; chr < 7; chr++)
       {
         for (int i = 0; i < 8; i++)
@@ -840,7 +845,7 @@ public:
     }
     for (auto& enemy : data_pack.enemy_data)
     {
-      enemy_loot_data_t& loot = *enemy.second->loot_data;
+      enemy_loot_data_t& loot = *enemy.loot_data;
       bool found = std::find( weapon_formulas.begin(), weapon_formulas.end(), loot.gear_damage_calc ) != weapon_formulas.end();
       if (!found)
         weapon_formulas.push_back( loot.gear_damage_calc );
@@ -1104,7 +1109,7 @@ public:
         {
           case 0:
             field_data.flag = 0;
-            field_data.quantity = uniform<uint8_t>( 1, UINT8_MAX );
+            field_data.quantity = normal<uint8_t>( 15, 5, 1, 255 );
             field_data.writeToBytes();
             break;
           case 1:
@@ -1138,13 +1143,13 @@ public:
     {
       item_rate_t& item_rate = *price;
       if (item_rate.rate > 1 && item_rate.rate != 2 && options_pack.keep_things_sane)
-        item_rate.rate = normal<uint32_t>( item_rate.rate, item_rate.rate, 1, UINT32_MAX );
+        item_rate.rate = normal<uint32_t>( item_rate.rate, item_rate.rate, 1, UINT16_MAX );
       else if (item_rate.rate == 2 && options_pack.keep_things_sane)
         // Spheres normally cost 2 gil in data, since they are never sold by vendors. 
         // Since this can happen with randomization, bump the price to something more reasonable. 
-        item_rate.rate = normal<uint32_t>( 500, 250, 1, UINT32_MAX );
+        item_rate.rate = normal<uint32_t>( 500, 250, 1, UINT16_MAX );
       else
-        item_rate.rate = uniform<uint32_t>( 1, UINT32_MAX );
+        item_rate.rate = uniform<uint32_t>( 1, UINT16_MAX );
       item_rate.writeToBytes();
     }
   }
@@ -1155,9 +1160,9 @@ public:
     {
       arms_rate_t& arms_rate = *price;
       if (arms_rate.rate > 1 && options_pack.keep_things_sane)
-        arms_rate.rate = normal<uint32_t>( arms_rate.rate, arms_rate.rate, 1, UINT32_MAX );
+        arms_rate.rate = normal<uint32_t>( arms_rate.rate, arms_rate.rate, 1, UINT16_MAX );
       else
-        arms_rate.rate = uniform<uint32_t>( 1, UINT32_MAX );
+        arms_rate.rate = uniform<uint32_t>( 1, UINT16_MAX );
       arms_rate.writeToBytes();
     }
   }
@@ -1172,25 +1177,25 @@ public:
         stats.base_hp = 50;
       stats.base_mp = normal<uint32_t>( stats.base_mp, stats.base_mp / 2, 1, 999 );
       bool tidus_or_auron = i == 0 || i == 2;
-      stats.base_str = normal<uint8_t>( stats.base_str, stats.base_str / 2, tidus_or_auron ? 14 : 0, UINT8_MAX );
-      stats.base_def = normal<uint8_t>( stats.base_def, stats.base_def / 2, 0, UINT8_MAX );
-      stats.base_mag = normal<uint8_t>( stats.base_mag, stats.base_mag / 2, 0, UINT8_MAX );
-      stats.base_mdef = normal<uint8_t>( stats.base_mdef, stats.base_mdef / 2, 0, UINT8_MAX );
-      stats.base_agi = normal<uint8_t>( stats.base_agi, stats.base_agi / 2, 0, UINT8_MAX );
-      stats.base_acc = normal<uint8_t>( stats.base_acc, stats.base_acc / 2, 0, UINT8_MAX );
-      stats.base_luck = normal<uint8_t>( stats.base_luck, stats.base_luck / 2, 0, UINT8_MAX );
+      stats.base_str = normal<uint8_t>( stats.base_str, stats.base_str / 2, tidus_or_auron ? 14 : 0, stats.base_str * 3 );
+      stats.base_def = normal<uint8_t>( stats.base_def, stats.base_def / 2, 0, stats.base_def * 3 );
+      stats.base_mag = normal<uint8_t>( stats.base_mag, stats.base_mag / 2, 0, stats.base_mag * 3 );
+      stats.base_mdef = normal<uint8_t>( stats.base_mdef, stats.base_mdef / 2, 0, stats.base_mdef * 3 );
+      stats.base_agi = normal<uint8_t>( stats.base_agi, stats.base_agi / 2, 0, stats.base_agi * 3 );
+      stats.base_acc = normal<uint8_t>( stats.base_acc, stats.base_acc / 2, 0, stats.base_acc * 3 );
+      stats.base_luck = normal<uint8_t>( stats.base_luck, stats.base_luck / 2, 0, stats.base_luck * 3 );
       stats.current_ap = normal<uint16_t>( stats.current_ap, stats.current_ap / 2, 0, UINT16_MAX );
-      stats.current_hp = normal<uint32_t>( stats.current_hp, stats.current_hp / 2, 1, UINT32_MAX );
-      stats.current_mp = normal<uint32_t>( stats.current_mp, stats.current_mp / 2, 1, UINT32_MAX );
-      stats.max_hp = normal<uint32_t>( stats.max_hp, stats.max_hp / 2, 1, UINT32_MAX );
-      stats.max_mp = normal<uint32_t>( stats.max_mp, stats.max_mp / 2, 1, UINT32_MAX );
-      stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
-      stats.def = normal<uint8_t>( stats.def, stats.def / 2, 0, UINT8_MAX );
-      stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
-      stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 2, 0, UINT8_MAX );
-      stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
-      stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
-      stats.luck = normal<uint8_t>( stats.luck, stats.luck / 2, 0, UINT8_MAX );
+      stats.current_hp = normal<uint32_t>( stats.current_hp, stats.current_hp / 2, 1, 9999 );
+      stats.current_mp = normal<uint32_t>( stats.current_mp, stats.current_mp / 2, 1, 999 );
+      stats.max_hp = stats.base_hp;
+      stats.max_mp = stats.base_mp;
+      stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, stats.str * 3 );
+      stats.def = normal<uint8_t>( stats.def, stats.def / 2, 0, stats.def * 3 );
+      stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, stats.mag * 3 );
+      stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 2, 0, stats.mdef * 3 );
+      stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, stats.agi * 3 );
+      stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, stats.acc * 3 );
+      stats.luck = normal<uint8_t>( stats.luck, stats.luck / 2, 0, stats.luck * 3 );
       stats.writeToBytes();
     }
   }
@@ -1229,8 +1234,8 @@ public:
   {
     for (auto& aeon : data_pack.aeon_stat_data)
     {
-      aeon->hp = normal<uint32_t>( aeon->hp, aeon->hp / 2, 50, UINT32_MAX );
-      aeon->mp = normal<uint32_t>( aeon->mp, aeon->mp / 2, 1, UINT32_MAX );
+      aeon->hp = normal<uint32_t>( aeon->hp, aeon->hp / 2, 50, 99999 );
+      aeon->mp = normal<uint32_t>( aeon->mp, aeon->mp / 2, 1, 9999 );
       aeon->str = normal<uint8_t>( aeon->str, aeon->str / 2, 0, UINT8_MAX );
       aeon->def = normal<uint8_t>( aeon->def, aeon->def / 2, 0, UINT8_MAX );
       aeon->mag = normal<uint8_t>( aeon->mag, aeon->mag / 2, 0, UINT8_MAX );
@@ -1440,63 +1445,65 @@ public:
   {
     if (!options_pack.randomize_enemy_drops && !options_pack.randomize_enemy_steals && !options_pack.randomize_enemy_bribes && !options_pack.randomize_enemy_gear_drops &&
          !options_pack.randomize_enemy_stats && !options_pack.randomize_enemy_stats_defensive && !options_pack.randomize_enemy_stats_shuffle &&
-         !options_pack.randomize_enemy_elemental_affinities)
+         !options_pack.randomize_enemy_elemental_affinities && !options_pack.swap_random_stats && !options_pack.scale_encounter_stats )
       return;
+
+    doRandomEcnounterRandomization();
 
     // Generate the enemy defensive stats pool before going into the main loop
     if (options_pack.randomize_enemy_stats_defensive || options_pack.randomize_enemy_stats_shuffle)
       for (auto& enemy : data_pack.enemy_data)
-        addEnemyDefenses( enemy.second );
+        addEnemyDefenses( &enemy );
 
     for (auto& enemy : data_pack.enemy_data)
     {
       if (options_pack.randomize_enemy_drops)
       {
-        printf( "Randomizing Enemy Drops for monster %s\n", enemy.second->monster_id.c_str() );
-        randomizeEnemyDrops( enemy.second );
+        printf( "Randomizing Enemy Drops for monster %s\n", enemy.monster_id.c_str() );
+        randomizeEnemyDrops( &enemy );
       }
       if (options_pack.randomize_enemy_steals)
       {
-        printf( "Randomizing Enemy Steals for monster %s\n", enemy.second->monster_id.c_str() );
-        randomizeEnemySteal( enemy.second );
+        printf( "Randomizing Enemy Steals for monster %s\n", enemy.monster_id.c_str() );
+        randomizeEnemySteal( &enemy );
       }
       if (options_pack.randomize_enemy_bribes)
       {
-        printf( "Randomizing Enemy Bribes for monster %s\n", enemy.second->monster_id.c_str() );
-        randomizeEnemyBribe( enemy.second );
+        printf( "Randomizing Enemy Bribes for monster %s\n", enemy.monster_id.c_str() );
+        randomizeEnemyBribe( &enemy );
       }
       if (options_pack.randomize_enemy_gear_drops)
       {
-        printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy.second->monster_id.c_str() );
-        randomizeEnemyGearDrops( enemy.second );
+        printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy.monster_id.c_str() );
+        randomizeEnemyGearDrops( &enemy );
       }
       if (options_pack.randomize_enemy_stats)
       {
-        printf( "Randomizing Enemy Stats for monster %s\n", enemy.second->monster_id.c_str() );
-        randomizeEnemyStatsNormal( enemy.second );
+        printf( "Randomizing Enemy Stats for monster %s\n", enemy.monster_id.c_str() );
+        randomizeEnemyStatsNormal( &enemy );
       }
       if (options_pack.randomize_enemy_stats_defensive)
       {
-        printf( "Randomizing Enemy Defensive for monster %s\n", enemy.second->monster_id.c_str() );
-        randomizeEnemyStatsDefensiveNormalization( enemy.second );
+        printf( "Randomizing Enemy Defensive for monster %s\n", enemy.monster_id.c_str() );
+        randomizeEnemyStatsDefensiveNormalization( &enemy );
       }
       if (options_pack.randomize_enemy_stats_shuffle)
       {
-        printf( "Shuffling Enemy Stats for monster %s\n", enemy.second->monster_id.c_str() );
-        shuffleEnemyStats( enemy.second );
+        printf( "Shuffling Enemy Stats for monster %s\n", enemy.monster_id.c_str() );
+        shuffleEnemyStats( &enemy );
       }
       if (options_pack.randomize_enemy_elemental_affinities)
       {
-        printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy.second->monster_id.c_str() );
-        randomizeEnemyElementalAffinities( enemy.second );
+        printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy.monster_id.c_str() );
+        randomizeEnemyElementalAffinities( &enemy );
       }
 
-      printf( "Reconstructing files for for monster %s\n", enemy.second->monster_id.c_str() );
-      std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy.second->monster_id;
+      printf( "Reconstructing files for for monster %s\n", enemy.monster_id.c_str() );
+      std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy.monster_id;
       std::filesystem::path path = pathstr;
       std::filesystem::create_directories( path );
-      std::string filepath = pathstr + "/m" + enemy.second->monster_id + ".bin";
-      enemy.second->writeBytesToNewFile( enemy.second->bytes, filepath );
+      std::string filepath = pathstr + "/m" + enemy.monster_id + ".bin";
+      enemy.writeBytesToNewFile( enemy.bytes, filepath );
     }
   }
 
@@ -1675,10 +1682,12 @@ public:
       for (int i = 0; i < 7; i++)
       {
         character_stats_t& stats = *data_pack.player_stats_data.at( i );
+        if( i == 2 )
+          continue; // Auron's overdrive mode is always 2
         uint8_t overdrive_mode = uniform<uint8_t>( 0, 16 );
         stats.overdrive_current = overdrive_mode;
         stats.overdrive_mode = overdrive_mode;
-        if (overdrive_mode != 2)
+        if (overdrive_mode != 2 )
           stats.overdrive.bits.stoic = 0;
 
         switch (overdrive_mode)
@@ -1940,25 +1949,78 @@ public:
     reconstructSphereGridData();
   }
 
+  void adjustStats()
+  {
+    if (!options_pack.swap_random_stats && !options_pack.scale_encounter_stats)
+      return;
+
+    for (auto& pair : paired_mosnter_ids)
+    {
+      const enemy_data_t& monster = data_pack.unmodified_enemy_data.at( pair.first );
+      enemy_data_t& new_monster = data_pack.enemy_data.at( pair.second );
+      const enemy_stat_data_t& stats = monster.getStatData();
+      enemy_stat_data_t& new_stats = new_monster.getStatData();
+
+      if (options_pack.scale_encounter_stats)
+      {
+        long long monster_stats_total = stats.hp + stats.mp + stats.str + stats.def + stats.mag + stats.mdef + stats.agi + stats.acc + stats.eva + stats.luck;
+        long long new_monster_stats_total = new_stats.hp + new_stats.mp + new_stats.str + new_stats.def + new_stats.mag + new_stats.mdef + new_stats.agi + new_stats.acc + new_stats.eva + new_stats.luck;
+
+        long long delta = monster_stats_total / new_monster_stats_total;
+
+        new_stats.hp = static_cast< uint32_t >( std::ceil( stats.hp * delta ) );
+        new_stats.mp = static_cast< uint32_t >( std::ceil( stats.mp * delta ) );
+        new_stats.str = static_cast< uint8_t >( std::ceil( stats.str * delta ) );
+        new_stats.def = static_cast< uint8_t >( std::ceil( stats.def * delta ) );
+        new_stats.mag = static_cast< uint8_t >( std::ceil( stats.mag * delta ) );
+        new_stats.mdef = static_cast< uint8_t >( std::ceil( stats.mdef * delta ) );
+        new_stats.agi = static_cast< uint8_t >( std::ceil( stats.agi * delta ) );
+        new_stats.acc = static_cast< uint8_t >( std::ceil( stats.acc * delta ) );
+        new_stats.eva = static_cast< uint8_t >( std::ceil( stats.eva * delta ) );
+        new_stats.luck = static_cast< uint8_t >( std::ceil( stats.luck * delta ) );
+      }
+
+      if (options_pack.swap_random_stats)
+      {
+        new_stats.hp = stats.hp;
+        new_stats.mp = stats.mp;
+        new_stats.str = stats.str;
+        new_stats.def = stats.def;
+        new_stats.mag = stats.mag;
+        new_stats.mdef = stats.mdef;
+        new_stats.agi = stats.agi;
+        new_stats.acc = stats.acc;
+        new_stats.eva = stats.eva;
+        new_stats.luck = stats.luck;
+      }
+
+      if (options_pack.swap_random_stats || options_pack.scale_encounter_stats)
+      {
+        new_stats.writeToBytes();
+        new_monster.stats_data = &new_stats;
+        new_monster.writeStatsData( new_stats );
+      }
+    }
+  }
+
   void randomizeEncounters( encounter_file_t& encounter )
   {
-
-    shuffled_random_monster_encounter_ids = random_monster_encounter_ids;
-    std::shuffle( shuffled_random_monster_encounter_ids.begin(), shuffled_random_monster_encounter_ids.end(), rng );
-
-    for (int i = 0; i < random_monster_encounter_ids.size(); i++)
-    {
-      paired_mosnter_ids.insert( { random_monster_encounter_ids[ i ], shuffled_random_monster_encounter_ids[ i ] } );
-    }
-
     formation_data_t& formation_data = *encounter.formation;
-    for (int i = 0; i < formation_data.monster_ids.size(); i++)
+    for (auto& mon : formation_data.monster_ids )
     {
-      if (formation_data.monster_ids[ i ] == UINT16_MAX - 0x1000)
+      bool blacklisted = std::find( enemy_id_blacklist.begin(), enemy_id_blacklist.end(), mon ) != enemy_id_blacklist.end();
+      if ( blacklisted  )
         continue;
 
-      uint16_t it = paired_mosnter_ids[ formation_data.monster_ids[ i ] ];
-      formation_data.monster_ids[ i ] = it;
+      std::unordered_map<uint16_t, uint16_t>::iterator it = paired_mosnter_ids.find( mon );
+      bool found = it != paired_mosnter_ids.end();
+      if (!found)
+      {
+        std::cerr << "Monster ID " << mon << " not found in paired monster IDs" << std::endl;
+        continue;
+      }
+
+      mon = it->second;
     }
   }
 
@@ -1966,6 +2028,17 @@ public:
   {
     if (!options_pack.randomize_encounters)
       return;
+
+    shuffled_random_monster_encounter_ids.clear();
+    shuffled_random_monster_encounter_ids = random_monster_encounter_ids;
+    std::shuffle( shuffled_random_monster_encounter_ids.begin(), shuffled_random_monster_encounter_ids.end(), rng );
+
+    for (int i = 0; i < random_monster_encounter_ids.size(); i++)
+    {
+      paired_mosnter_ids.insert( std::make_pair( random_monster_encounter_ids[ i ], shuffled_random_monster_encounter_ids[ i ] ) );
+    }
+    printf( "Adjusting Random Ecnounter Stats...\n" );
+    adjustStats();
 
     printf( "Randomizing Encounters...\n" );
     for (auto& encounter : data_pack.encounter_files)
@@ -1989,8 +2062,6 @@ public:
 
     // Clean the output folder to prevent any issues
     std::filesystem::remove_all( OUTPUT_FOLDER );
-
-    doRandomEcnounterRandomization();
 
     std::thread enemy_thread( &randomizer_t::doEnemyRandomization, this );
     std::thread shop_thread( &randomizer_t::doShopRandomization, this );

@@ -364,11 +364,6 @@ void enemy_stat_data_t::mapBytes()
   scan_text_key = read2Bytes( bytes, 0x0E );
   unused_str2_offset = read2Bytes( bytes, 0x10 );
   unused_str2_key = read2Bytes( bytes, 0x12 );
-  //name = read4Bytes( bytes, 0x00 );
-  //sensor_text = read4Bytes( bytes, 0x04 );
-  //unused_str = read4Bytes( bytes, 0x08 );
-  //scan_text = read4Bytes( bytes, 0x0C );
-  //unused_str2 = read4Bytes( bytes, 0x10 );
   hp = read4Bytes( bytes, 0x14 );
   mp = read4Bytes( bytes, 0x18 );
   overkill_threshold = read4Bytes( bytes, 0x1C );
@@ -434,26 +429,6 @@ void enemy_stat_data_t::mapBytes()
   always_zero3 = read1Byte( bytes, 0x7E );
   always_zero4 = read1Byte( bytes, 0x7F );
 }
-
-//void enemy_stat_data_t::mapStrings( const std::string& localization )
-//{
-//  name.readAndSetLocalizedContent( localization, bytes, name_offset, name_key );
-//  sensor_text.readAndSetLocalizedContent( localization, bytes, sensor_text_offset, sensor_text_key );
-//  unused_str.readAndSetLocalizedContent( localization, bytes, unused_str_offset, unused_str_key );
-//  scan_text.readAndSetLocalizedContent( localization, bytes, scan_text_offset, scan_text_key );
-//  unused_str2.readAndSetLocalizedContent( localization, bytes, unused_str2_offset, unused_str2_key );
-//}
-
-//std::vector<KeyedString> enemy_stat_data_t::streamKeyedStrings( const std::string& localization ) const
-//{
-//  std::vector<KeyedString> result;
-//  result.push_back( name.getLocalizedContent( localization ) );
-//  result.push_back( sensor_text.getLocalizedContent( localization ) );
-//  result.push_back( unused_str.getLocalizedContent( localization ) );
-//  result.push_back( scan_text.getLocalizedContent( localization ) );
-//  result.push_back( unused_str2.getLocalizedContent( localization ) );
-//  return result;
-//}
 
 void enemy_stat_data_t::writeToBytes()
 {
@@ -703,7 +678,7 @@ void enemy_data_t::writeLootData( const enemy_loot_data_t& lootData )
   loot_bytes = lootData.bytes;
   for (int i = 0; i < lootData.BYTE_LENGTH; i++)
   {
-    bytes[ loot_data->initial_offset + i ] = loot_bytes[ i ];
+    bytes[ loot_data->initial_offset + i] = loot_bytes[i];
   }
 }
 

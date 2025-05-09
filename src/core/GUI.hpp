@@ -49,6 +49,8 @@ enum
   ID_RANDOMIZE_SPHERE_GRID,
   ID_UPGRADE_SPHERE_NODES,
   ID_DOWNGRADE_SPHERE_NODES,
+  ID_SWAP_RANDOM_ENCOUNTER_STATS,
+  ID_SCALE_ECOUNTER_STATS,
   ID_EMPTY_GRID,
   ID_FULL_GRID,
   ID_REMOVE_LOCKS,
@@ -110,6 +112,9 @@ private:
   bool upgrade_sphere_nodes;
   bool downgrade_sphere_nodes;
 
+  bool swap_random_stats;
+  bool scale_encounter_stats;
+
   bool randomize_key_items;
   bool keep_things_sane;
   bool randomize_celestials;
@@ -158,6 +163,8 @@ public:
     remove_sphere_grid_locks( false ),
     upgrade_sphere_nodes( false ),
     downgrade_sphere_nodes( false ),
+    swap_random_stats( false ),
+    scale_encounter_stats( false ),
     randomize_key_items( false ),
     keep_things_sane( true ),
     randomizer( nullptr ),
@@ -216,6 +223,8 @@ private:
   void onRemoveSphereGridLocks( wxCommandEvent& event );
   void onUpgradeSphereNodes( wxCommandEvent& event );
   void onDowngradeSphereNodes( wxCommandEvent& event );
+  void onSwapRandomEncounterStats( wxCommandEvent& event );
+  void onScaleEncounterStats( wxCommandEvent& event );
 
   void onRandomizeKeyItems( wxCommandEvent& event );
   void onKeepThingsSane( wxCommandEvent& event );
@@ -239,6 +248,8 @@ struct enemy_options_panel_t : public wxPanel
   wxCheckBox* randomizeEnemyStatsDefensiveCheckbox;
   wxCheckBox* randomizeEnemyStatsShuffleCheckbox;
   wxCheckBox* randomizeEncountersCheckbox;
+  wxCheckBox* swapRandomizedStatsCheckbox;
+  wxCheckBox* normalizeEncounterStatsCheckbox;
 
   enemy_options_panel_t( wxAuiNotebook* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     poisonIsDeadlyCheckbox( nullptr ),
@@ -250,7 +261,9 @@ struct enemy_options_panel_t : public wxPanel
     randomizeEnemyStatsCheckbox( nullptr ),
     randomizeEnemyStatsDefensiveCheckbox( nullptr ),
     randomizeEnemyStatsShuffleCheckbox( nullptr ),
-    randomizeEncountersCheckbox( nullptr )
+    randomizeEncountersCheckbox( nullptr ),
+    swapRandomizedStatsCheckbox( nullptr ),
+    normalizeEncounterStatsCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
 
@@ -265,6 +278,10 @@ struct enemy_options_panel_t : public wxPanel
     randomizeEnemyElementalAffinitiesCheckbox->SetToolTip( "If checked, enemy elemental affinities will be randomized. This includes:\n- Weaknesss \n- Resists \n- Immunities \n- Absorbs\n\nThis is slightly skewed in favor of giving an enemy a weakness if it gets an affinity." );
     randomizeEncountersCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENCOUNTERS, _T( "Randomize Random Encounters" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEncountersCheckbox->SetToolTip( "If checked, random encounters will be randomized." );
+    swapRandomizedStatsCheckbox = new wxCheckBox( this, ID_SWAP_RANDOM_ENCOUNTER_STATS, _T( "Swap Randomized Encounter Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    swapRandomizedStatsCheckbox->SetToolTip( "If checked, randomized encounters will get the stats of their original enemy." );
+    normalizeEncounterStatsCheckbox = new wxCheckBox( this, ID_SCALE_ECOUNTER_STATS, _T( "Normalize Encounter Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    normalizeEncounterStatsCheckbox->SetToolTip( "If checked, randomized encounters will have their stats scaled based on the difference between the original and new enemies stats." );
 
     wxStaticText* enemy_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
     enemy_stats_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
@@ -286,6 +303,8 @@ struct enemy_options_panel_t : public wxPanel
     sizer->Add( randomizeEnemyGearDropsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEnemyElementalAffinitiesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEncountersCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( swapRandomizedStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( normalizeEncounterStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
 
