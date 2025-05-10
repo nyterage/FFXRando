@@ -1362,13 +1362,13 @@ void sphere_grid_data_t::mapBytes()
 {
   switch (type)
   {
-    case SPHERE_GRID_ORIGINAL:
+    case sphere_grid_type_e::SPHERE_GRID_ORIGINAL:
       full_content_bytes = fileToBytes( INPUT_FOLDER + ABMAP_FOLDER + "dat09.dat" );
       break;
-    case SPHERE_GRID_STANDARD:
+    case sphere_grid_type_e::SPHERE_GRID_STANDARD:
       full_content_bytes = fileToBytes( INPUT_FOLDER + ABMAP_FOLDER + "dat10.dat" );
       break;
-    case SPHERE_GRID_EXPERT:
+    case sphere_grid_type_e::SPHERE_GRID_EXPERT:
       full_content_bytes = fileToBytes( INPUT_FOLDER + ABMAP_FOLDER + "dat11.dat" );
       break;
     default:

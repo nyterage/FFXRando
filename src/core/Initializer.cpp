@@ -178,7 +178,6 @@ void initializer_t::initializeAllData()
   std::thread sphere_grid_thread( &initializer_t::initializeSphereGridData, this );
   std::thread btl_data_thread( &initializer_t::initializeBtlData, this );
 
-  enemy_thread.join();
   field_thread.join();
   shop_item_thread.join();
   shop_gear_thread.join();
@@ -192,6 +191,7 @@ void initializer_t::initializeAllData()
   aeon_stat_thread.join();
   sphere_grid_thread.join();
   btl_data_thread.join();
+  enemy_thread.join();
 }
 
 void initializer_t::runEnemyTests()

@@ -37,5 +37,8 @@
 # directories
 input/
 output/
+Release/
+Debug/
+x64/
 .vs/
 .vscode/

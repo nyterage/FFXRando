@@ -148,9 +148,16 @@
   <ItemGroup>
     <ClCompile Include="src\core\BytesHelper.cpp" />
     <ClCompile Include="src\core\Data.cpp" />
+    <ClCompile Include="src\core\EnemyDataRandomizer.cpp" />
     <ClCompile Include="src\core\FFXRando.cpp" />
+    <ClCompile Include="src\core\GearRandomizer.cpp" />
     <ClCompile Include="src\core\GUI.cpp" />
     <ClCompile Include="src\core\Initializer.cpp" />
+    <ClCompile Include="src\core\ItemRandomizer.cpp" />
+    <ClCompile Include="src\core\PlayerCharacterRandomizer.cpp" />
+    <ClCompile Include="src\core\RandomEncounterRandomizer.cpp" />
+    <ClCompile Include="src\core\ShopRandomizer.cpp" />
+    <ClCompile Include="src\core\SphereGridRandomizer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

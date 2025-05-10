@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdint>
 #include "BytesHelper.hpp"
+#include "DataEnums.hpp"
 // #define NDEBUG
 #include <cassert>
 
@@ -60,34 +61,47 @@ static const std::unordered_map<std::string, std::string> LOCALIZATIONS = {
   { "us", USPC_BTL_KERN_FOLDER}
 };
 
-enum sphere_grid_type_e
-{
-  SPHERE_GRID_ORIGINAL,
-  SPHERE_GRID_STANDARD,
-  SPHERE_GRID_EXPERT
-};
-
 struct item_t
 {
   uint16_t id;
   uint8_t min_quantity = 0;
   uint8_t max_quantity = 0;
+  std::vector<int> quantities;
 
-  item_t( uint16_t id, uint8_t min_quantity, uint8_t max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ) {
+  item_t( uint16_t id, uint8_t min_quantity, uint8_t max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ), quantities() {
     //test();
   }
 
   uint8_t getMinQuantity() const { return min_quantity; }
   uint8_t getMaxQuantity() const { return max_quantity; }
-  uint8_t getAverageQuantity() const { return ( min_quantity + max_quantity ) / 2; }
-  uint8_t getStandardDeviation() const { return ( max_quantity - min_quantity ) / 2; }
+  double getAverageQuantity() const { return getTotalQuantities() / quantities.size(); }
+  double getStandardDeviation() const {
+    if (quantities.size() == 0)
+      return 0;
+    double mean = getAverageQuantity();
+    double sum = 0;
+    for (auto& quantity : quantities)
+      sum += ( quantity - mean ) * ( quantity - mean );
+    return std::sqrt( sum / ( quantities.size() - 1 ) );
+  }
+  int getTotalQuantities() const {
+    int total = 0;
+    for (auto& quantity : quantities)
+      total += quantity;
+    return total;
+  }
   void setMinQuantity( uint8_t min ) { min_quantity = min; };
   void setMaxQuantity( uint8_t max ) { max_quantity = max; };
+  void addInstance( uint8_t quantity ) { quantities.push_back( quantity ); }
   void test()
   {
     printf( "Item ID: %d\n", id );
     printf( "Min Quantity: %d\n", min_quantity );
     printf( "Max Quantity: %d\n", max_quantity );
+    printf( "Average Quantity: %f\n", getAverageQuantity() );
+    printf( "Standard Deviation: %f\n", getStandardDeviation() );
+    printf( "Instances: %zu\n", quantities.size() );
+    printf( "Total Count: %d\n", getTotalQuantities() );
   }
 };
 
@@ -971,8 +985,7 @@ struct field_formation_data_t final : public bytes_mapper_t
 
   field_formation_data_t( chunk_t& data ) : bytes_mapper_t( data.data ),
     id( read1Byte( bytes, 0x00 ) ), weight( read1Byte( bytes, 0x01 ) )
-  {
-  }
+  {}
 };
 
 struct field_group_data_t final : public bytes_mapper_t
@@ -989,7 +1002,7 @@ struct field_group_data_t final : public bytes_mapper_t
   {
     for (size_t i = 0; i < formation_count; i++)
     {
-      chunk_t field_chunk = chunk_t( bytes, 0x05 + i * 2, 0x05 + i * 2 + 2, static_cast<int>( i ) );
+      chunk_t field_chunk = chunk_t( bytes, 0x05 + i * 2, 0x05 + i * 2 + 2, static_cast< int >( i ) );
       field_formation_data_t* formation = new field_formation_data_t( field_chunk );
       formations.push_back( formation );
     }
@@ -1017,7 +1030,7 @@ struct field_encounter_data_t final : public bytes_mapper_t
     unknown = read2Bytes( bytes, 0x0C );
 
     total_formation_count = read1Byte( field_data, data_offset );
-    group_count = read1Byte( field_data, 0x01 + data_offset);
+    group_count = read1Byte( field_data, 0x01 + data_offset );
     size_t group_offset = 2;
     for (size_t i = 0; i < group_count; i++)
     {
@@ -1066,20 +1079,20 @@ struct btl_data_t final : public bytes_mapper_t
 
   void getEncounterFiles( std::vector<encounter_file_t*>& encounters )
   {
-    std::vector<uint16_t> blacklist{};
+    std::vector<uint16_t> repeat{};
     std::vector<std::string> encounter_names{ "znkd08_00", "znkd08_01", "znkd09_00", "bjyt02_00", "bjyt02_01", "bjyt04_00", "bjyt04_01",
       "cdsp07_00", "cdsp07_01", "mtgz01_10", "klyt00_05", "slik02_01" };
     std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11", "sins07", "bsil05", "bsil07" };
     for (auto& field_data : field_battle_data)
     {
       std::string field_name = field_data->field;
-      bool is_blacklisted = std::find( blacklist.begin(), blacklist.end(), field_data->data_offset ) != blacklist.end();
-      if (is_blacklisted)
+      bool is_repeat = std::find( repeat.begin(), repeat.end(), field_data->data_offset ) != repeat.end();
+      if (is_repeat)
         continue;
       bool field_found = std::find( field_names.begin(), field_names.end(), field_name ) != field_names.end();
       if (field_found)
         continue;
-      blacklist.push_back( field_data->data_offset );
+      repeat.push_back( field_data->data_offset );
       for (auto& group : field_data->groups)
       {
         for (auto& formation : group->formations)
@@ -1088,8 +1101,8 @@ struct btl_data_t final : public bytes_mapper_t
           if (formation_id.size() < 2)
             formation_id.insert( 0, "0" );
           std::string encounter_name = field_name + "_" + formation_id;
-          bool found = std::find( encounter_names.begin(), encounter_names.end(), encounter_name ) != encounter_names.end();
-          if (found)
+          bool encounter_found = std::find( encounter_names.begin(), encounter_names.end(), encounter_name ) != encounter_names.end();
+          if (encounter_found)
             continue;
           std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + BTL_FOLDER + encounter_name + "/" + encounter_name + ".bin" );
           encounter_file_t* encounter_file = new encounter_file_t( bytes, encounter_name );
