@@ -29,18 +29,18 @@ private:
   std::vector<uint8_t> def_pool;
   std::vector<uint8_t> mdef_pool;
   std::vector<uint8_t> eva_pool;
-  std::vector<uint16_t> original_sphere_grid_node_ids;
-  std::vector<uint16_t> standard_sphere_grid_node_ids;
-  std::vector<uint16_t> expert_sphere_grid_node_ids;
+  std::vector<uint8_t> original_sphere_grid_node_ids;
+  std::vector<uint8_t> standard_sphere_grid_node_ids;
+  std::vector<uint8_t> expert_sphere_grid_node_ids;
   std::vector<uint16_t> random_monster_encounter_ids;
 
   // Shuffled vectors
   std::vector<character_stats_t*> shuffled_player_stats_data;
   std::vector<aeon_scaling_data_t*> shuffled_aeon_scaling_data;
   std::vector<aeon_stat_data_t*> shuffled_aeon_stat_data;
-  std::vector<uint16_t> shuffled_original_sphere_grid_node_ids;
-  std::vector<uint16_t> shuffled_standard_sphere_grid_node_ids;
-  std::vector<uint16_t> shuffled_expert_sphere_grid_node_ids;
+  std::vector<uint8_t> shuffled_original_sphere_grid_node_ids;
+  std::vector<uint8_t> shuffled_standard_sphere_grid_node_ids;
+  std::vector<uint8_t> shuffled_expert_sphere_grid_node_ids;
   std::vector<uint16_t> shuffled_random_monster_encounter_ids;
   std::unordered_map<uint16_t, uint16_t> paired_mosnter_ids;
 

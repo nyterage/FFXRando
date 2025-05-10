@@ -23,36 +23,41 @@ std::vector<char> initializer_t::getDataFromFile( const std::string& filepath, b
   return bytes;
 }
 
-void initializer_t::initializeEnemyData()  
-{  
- for (int i = 0; i < ENEMY_COUNT; i++)  
- {  
-   std::string monster_id = std::to_string( i );  
-   while (monster_id.size() < 3)  
-     monster_id.insert( 0, "0" );  
-   monster_id.insert( 0, "m" );  
-   std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;  
-   std::string monster_file = path + "/" + monster_id + ".bin";  
-   std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );  
-   std::vector<char> other_bytes = bytes;  
-   monster_id.erase( 0, 1 );  
-   enemy_data_t enemy = enemy_data_t( monster_id, bytes );  
-   enemy_data.push_back( enemy );  
- }
- // Copy enemy_data to unmodified_enemy_data
- unmodified_enemy_data = enemy_data;
- for (auto& enemy : unmodified_enemy_data)
-   enemy.mapChunks();
+void initializer_t::initializeEnemyData()
+{
+  enemy_data.reserve( ENEMY_COUNT );
+  unmodified_enemy_data.reserve( ENEMY_COUNT );
+  for (int i = 0; i < ENEMY_COUNT; i++)
+  {
+    std::string monster_id = std::to_string( i );
+    while (monster_id.size() < 3)
+      monster_id.insert( 0, "0" );
+    monster_id.insert( 0, "m" );
+    std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;
+    std::string monster_file = path + "/" + monster_id + ".bin";
+    std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );
+    std::vector<char> other_bytes = bytes;
+    monster_id.erase( 0, 1 );
+    enemy_data_t enemy = enemy_data_t( monster_id, bytes );
+    enemy_data.push_back( enemy );
+  }
+  // Copy enemy_data to unmodified_enemy_data
+  unmodified_enemy_data = enemy_data;
+  for (auto& enemy : unmodified_enemy_data)
+    enemy.mapChunks();
 }
 
 void initializer_t::initializeFieldData()
 {
+  field_data.reserve( 498 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "takara.bin";
   genericExcelReader<field_data_t>( path, field_data, 4 );
 }
 
 void initializer_t::initializeShopData( bool gear )
 {
+  gear_shop_data.reserve( 46 );
+  item_shop_data.reserve( 46 );
   std::string file = gear ? "arms_shop.bin" : "item_shop.bin";
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + file;
   if (gear)
@@ -63,42 +68,49 @@ void initializer_t::initializeShopData( bool gear )
 
 void initializer_t::initializeBukiData()
 {
+  buki_data.reserve( 85 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "buki_get.bin";
   genericExcelReader<gear_data_t>( path, buki_data, 16 );
 }
 
 void initializer_t::initializeWeaponData()
 {
+  weapon_data.reserve( 152 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "weapon.bin";
   genericExcelReader<gear_data_t>( path, weapon_data, 22 );
 }
 
 void initializer_t::initializeShopArmsData()
 {
+  shop_arms_data.reserve( 427 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "shop_arms.bin";
   genericExcelReader<gear_data_t>( path, shop_arms_data, 22 );
 }
 
 void initializer_t::initializeItemRateData()
 {
+  item_rate_data.reserve( 111 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "item_rate.bin";
   genericExcelReader<item_rate_t>( path, item_rate_data, 4 );
 }
 
 void initializer_t::initializeArmsRateData()
 {
+  arms_rate_data.reserve( 134 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "arms_rate.bin";
   genericExcelReader<arms_rate_t>( path, arms_rate_data, 4 );
 }
 
 void initializer_t::initializePlayerStatData()
 {
+  player_stats_data.reserve( 19 );
   std::string path = INPUT_FOLDER + USPC_BTL_KERN_FOLDER + "ply_save.bin";
   genericExcelReader<character_stats_t>( path, player_stats_data, 148 );
 }
 
 void initializer_t::initializeAeonScalingData()
 {
+  aeon_scaling_data.reserve( 30 );
   std::string path = INPUT_FOLDER + USPC_BTL_KERN_FOLDER + "ply_rom.bin";
   genericExcelReader<aeon_scaling_data_t>( path, aeon_scaling_data, 44, true, 8 );
 }
@@ -111,6 +123,7 @@ void initializer_t::initializeAeonStatData()
 
 void initializer_t::initializeSphereGridData()
 {
+  sphere_grid_data.reserve( 3 );
   for (int i = 0; i < 3; i++)
   {
     std::string name = "dat0" + std::to_string( i + 1 ) + ".dat";

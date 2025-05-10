@@ -40,6 +40,12 @@ struct initializer_t
     arms_rate_data(), player_stats_data(), aeon_scaling_data(),
     aeon_stat_data(), sphere_grid_data(), encounter_file_data()
   {
+    if (!std::filesystem::exists( INPUT_FOLDER + JPPC_FOLDER ))
+    {
+      const WCHAR* message = L"Input files do not exist.\n Please be sure your extracted ffx_ps2 folder is in the input folder";
+      MessageBox( nullptr, message, L"Error", MB_OK | MB_ICONERROR );
+      return;
+    }
     initializeGUI();
   }
 

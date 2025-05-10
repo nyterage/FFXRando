@@ -6,7 +6,6 @@ std::vector<char> bytes_mapper_t::fileToBytes( const std::string& filepath ) {
   {
     std::cerr << "Failed to open file: " << filepath << std::endl;
     std::cout << "Please be sure your extracted ffx_ps2 folder is in the input folder" << std::endl;
-    system( "pause" );
     return {};
   }
 

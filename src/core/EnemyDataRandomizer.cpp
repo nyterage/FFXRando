@@ -65,32 +65,6 @@ void randomizer_t::randomizeEnemyDrops( enemy_data_t* enemy )
   loot.n_primary_normal_drop_overkill_rare = rare_overkill_drop_quantity;
   loot.n_secondary_normal_drop_overkill = secondary_overkill_drop_quantity;
   loot.n_secondary_normal_drop_overkill_rare = secondary_rare_overkill_drop_quantity;
-  if (options_pack.keep_things_sane)
-    loot.gear_ability_count_byte = uniform<uint8_t>( 0, 16 );
-  else
-    loot.gear_ability_count_byte = uniform<uint8_t>( 0, 20 );
-  if (options_pack.keep_things_sane && loot.gear_drop_chance > 0)
-    loot.gear_drop_chance = normal<uint8_t>( loot.gear_drop_chance, loot.gear_drop_chance / 2, 0, 101 );
-  else
-    loot.gear_drop_chance = uniform<uint8_t>( 0, 255 );
-  if (options_pack.randomize_weapon_attack_power && loot.gear_attack_power > 0)
-  {
-    if (options_pack.keep_things_sane)
-      loot.gear_attack_power = normal<uint8_t>( loot.gear_attack_power, loot.gear_attack_power / 2, 1, 24 );
-    else
-      loot.gear_attack_power = uniform<uint8_t>( 1, 100 );
-  }
-  if (options_pack.randomize_weapon_crit && loot.gear_crit_bonus > 0)
-  {
-    if (options_pack.keep_things_sane)
-      loot.gear_crit_bonus = normal<uint8_t>( loot.gear_crit_bonus, loot.gear_crit_bonus / 2, 0, 100 );
-    else
-      loot.gear_crit_bonus = uniform<uint8_t>( 1, 100 );
-  }
-  if (options_pack.randomize_weapon_damage_formula && loot.gear_damage_calc > 0)
-  {
-    loot.gear_damage_calc = getRandomFormula();
-  }
   loot.writeToBytes();
   enemy->loot_data = &loot;
   enemy->writeLootData( loot );
@@ -312,7 +286,32 @@ void randomizer_t::randomizeEnemyElementalAffinities( enemy_data_t* enemy )
 void randomizer_t::randomizeEnemyGearDrops( enemy_data_t* enemy )
 {
   enemy_loot_data_t& loot = *enemy->loot_data;
-  loot.gear_drop_chance = uniform<int>( -1, 254 );
+  if (options_pack.keep_things_sane)
+    loot.gear_ability_count_byte = uniform<uint8_t>( 0, 16 );
+  else
+    loot.gear_ability_count_byte = uniform<uint8_t>( 0, 20 );
+  if (options_pack.keep_things_sane && loot.gear_drop_chance > 0)
+    loot.gear_drop_chance = normal<uint8_t>( loot.gear_drop_chance, loot.gear_drop_chance / 2, 0, 101 );
+  else
+    loot.gear_drop_chance = uniform<uint8_t>( 0, 255 );
+  if (options_pack.randomize_weapon_attack_power && loot.gear_attack_power > 0)
+  {
+    if (options_pack.keep_things_sane)
+      loot.gear_attack_power = normal<uint8_t>( loot.gear_attack_power, loot.gear_attack_power / 2, 1, 24 );
+    else
+      loot.gear_attack_power = uniform<uint8_t>( 1, 100 );
+  }
+  if (options_pack.randomize_weapon_crit && loot.gear_crit_bonus > 0)
+  {
+    if (options_pack.keep_things_sane)
+      loot.gear_crit_bonus = normal<uint8_t>( loot.gear_crit_bonus, loot.gear_crit_bonus / 2, 0, 100 );
+    else
+      loot.gear_crit_bonus = uniform<uint8_t>( 1, 100 );
+  }
+  if (options_pack.randomize_weapon_damage_formula && loot.gear_damage_calc > 0)
+  {
+    loot.gear_damage_calc = getRandomFormula();
+  }
 
   for (int chr = 0; chr < 7; chr++)
   {

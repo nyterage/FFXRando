@@ -1330,9 +1330,10 @@ void sphere_grid_node_data_t::mapBytes()
     y_pos = y_pos_raw;
 
   unknown1 = read2Bytes( bytes, 0x04 );
-  original_content = read2Bytes( bytes, 0x06 );
+  original_content = read1Byte( bytes, 0x06 );
+  unknown2 = read1Byte( bytes, 0x07 );
   cluster = read2Bytes( bytes, 0x08 );
-  unknown2 = read2Bytes( bytes, 0x0A );
+  unknown3 = read2Bytes( bytes, 0x0A );
 }
 
 void sphere_grid_node_data_t::writeToBytes()
@@ -1340,7 +1341,8 @@ void sphere_grid_node_data_t::writeToBytes()
   //write2Bytes( bytes, 0x00, ( ( x_pos + 0x10000 ) & 0x8000 ) == 0 ? x_pos + 0x10000 : x_pos );
   //write2Bytes( bytes, 0x02, ( ( y_pos + 0x10000 ) & 0x8000 ) == 0 ? y_pos + 0x10000 : y_pos );
   //write2Bytes( bytes, 0x04, unknown1 );
-  write2Bytes( bytes, 0x06, original_content );
+  write1Byte( bytes, 0x06, original_content );
+  write1Byte( bytes, 0x07, unknown2 );
   write2Bytes( bytes, 0x08, cluster );
   write2Bytes( bytes, 0x0A, unknown2 );
 }

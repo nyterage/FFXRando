@@ -830,9 +830,10 @@ struct sphere_grid_node_data_t final : public bytes_mapper_t
   int16_t x_pos;
   int16_t y_pos;
   uint16_t unknown1;
-  uint16_t original_content;
+  uint8_t original_content;
+  uint8_t unknown2;
   uint16_t cluster;
-  uint16_t unknown2;
+  uint16_t unknown3;
 
   uint8_t content;
 
