@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cstdint>
+#include <thread>
 #include "BytesHelper.hpp"
 #include "DataEnums.hpp"
 // #define NDEBUG
@@ -954,9 +955,10 @@ struct encounter_file_t final : public bytes_mapper_t
   std::vector<chunk_t> chunks;
   formation_data_t* formation;
 
-  encounter_file_t( std::vector<char>& bytes, std::string name ) : bytes_mapper_t( bytes ), name( name ), chunks( bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 ) )
+  encounter_file_t( std::vector<char>& bytes, std::string name ) : bytes_mapper_t( bytes ), name( name ), chunks()
   {
-    formation = new formation_data_t( chunks[ 2 ] );
+    this->chunks = bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 );
+    this->formation = new formation_data_t( this->chunks[ 2 ] );
     // std::cout << name << std::endl;
     //if (name == "cdsp00_00" || name == "cdsp00_01" || name == "cdsp00_02" || name == "cdsp02_00" || name == "cdsp07_00" || name == "cdsp07_01" )
     //{
@@ -1053,6 +1055,12 @@ struct btl_data_t final : public bytes_mapper_t
   uint32_t chunk_count;
   uint32_t field_initial_offset;
   uint32_t field_data_initial_offset;
+
+  std::vector<uint16_t> repeat{};
+  std::vector<std::string> encounter_names{ "znkd08_00", "znkd08_01", "znkd09_00", "bjyt02_00", "bjyt02_01", "bjyt04_00", "bjyt04_01",
+    "cdsp07_00", "cdsp07_01", "mtgz01_10", "klyt00_05", "slik02_01" };
+  std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11", "sins07", "bsil05", "bsil07" };
+
   btl_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes ), fields(), field_data(), field_chunks(), field_battle_data(),
     chunk_count( read4Bytes( bytes, 0x00 ) ), field_initial_offset( read4Bytes( bytes, 0x04 ) ), field_data_initial_offset( read4Bytes( bytes, 0x08 ) )
   {
@@ -1078,12 +1086,16 @@ struct btl_data_t final : public bytes_mapper_t
     return chunks;
   }
 
+  void readEncounterfile( std::string encounter_name, std::vector<encounter_file_t*>& encounters )
+  {
+    std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + BTL_FOLDER + encounter_name + "/" + encounter_name + ".bin" );
+    encounter_file_t* encounter_file = new encounter_file_t( bytes, encounter_name );
+    encounters.push_back( encounter_file );
+  }
+
   void getEncounterFiles( std::vector<encounter_file_t*>& encounters )
   {
-    std::vector<uint16_t> repeat{};
-    std::vector<std::string> encounter_names{ "znkd08_00", "znkd08_01", "znkd09_00", "bjyt02_00", "bjyt02_01", "bjyt04_00", "bjyt04_01",
-      "cdsp07_00", "cdsp07_01", "mtgz01_10", "klyt00_05", "slik02_01" };
-    std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11", "sins07", "bsil05", "bsil07" };
+    std::vector<std::thread> threads;
     for (auto& field_data : field_battle_data)
     {
       std::string field_name = field_data->field;
@@ -1105,11 +1117,16 @@ struct btl_data_t final : public bytes_mapper_t
           bool encounter_found = std::find( encounter_names.begin(), encounter_names.end(), encounter_name ) != encounter_names.end();
           if (encounter_found)
             continue;
-          std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + BTL_FOLDER + encounter_name + "/" + encounter_name + ".bin" );
-          encounter_file_t* encounter_file = new encounter_file_t( bytes, encounter_name );
-          encounters.push_back( encounter_file );
+          std::thread thread( &btl_data_t::readEncounterfile, this, encounter_name, std::ref(encounters));
+          threads.push_back( std::move( thread ) );
         }
       }
+    }
+
+    for (auto& thread : threads)
+    {
+      if (thread.joinable())
+        thread.join();
     }
   }
 };
