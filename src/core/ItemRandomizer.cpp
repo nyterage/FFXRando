@@ -162,10 +162,19 @@ void randomizer_t::randomizeFieldItems()
       }
       if (rolled_key_item)
       {
-        item_t* key_item = getRandomKeyItem();
-        field_data.flag = 10;
-        field_data.type = key_item->id;
-        field_data.quantity = getRandomItemQuantity( key_item, false );
+        item_t* item = nullptr;
+        if (all_key_items.size() == 0)
+        {
+          item = getRandomItem();
+          field_data.flag = 2;
+        }
+        else
+        {
+          item = getRandomKeyItem();
+          field_data.flag = 10;
+        }
+        field_data.type = item->id;
+        field_data.quantity = getRandomItemQuantity( item, false );
         field_data.writeToBytes();
       }
     }
