@@ -82,14 +82,28 @@ void randomizer_t::getShopItems()
   }
 }
 
-item_t* randomizer_t::getRandomItemFromMap( std::unordered_map<int, item_t*>& map )
+item_t* randomizer_t::getRandomItem()
 {
   std::vector<item_t*> items;
-  for (auto& item : map)
+  for (auto& item : all_non_key_items )
     items.push_back( item.second );
 
   std::uniform_int_distribution<size_t> dist( 0, items.size() );
   int index = dist( rng );
+  return items[ index ];
+}
+
+item_t* randomizer_t::getRandomKeyItem()
+{
+  std::vector<item_t*> items;
+  for (auto& item : all_key_items)
+    items.push_back( item.second );
+
+  std::uniform_int_distribution<size_t> dist( 0, items.size() );
+  int index = dist( rng );
+
+  all_key_items.erase( items[ index ]->id );
+
   return items[ index ];
 }
 
@@ -119,37 +133,40 @@ void randomizer_t::randomizeFieldItems()
 
     if (field_data.flag != 10 || options_pack.randomize_key_items)
     {
-      int max = options_pack.randomize_key_items ? 3 : 2;
-      int rolled_type = uniform<int>( 0, max );
-      item_t* item = getRandomItemFromMap( all_non_key_items );
-      item_t* key_item = getRandomItemFromMap( all_key_items );
-      switch (rolled_type)
+      int rolled_type = uniform<int>( 0, options_pack.randomize_key_items ? 10 : 9 );
+      bool rolled_item = rolled_type < 3;
+      bool rolled_gear = rolled_type < 5 && rolled_type > 2;
+      bool rolled_gil = rolled_type < 9 && rolled_type > 5;
+      bool rolled_key_item = rolled_type < 10 && rolled_type > 8;
+
+      if (rolled_item)
       {
-        case 0:
-          field_data.flag = 0;
-          field_data.quantity = normal<uint8_t>( 15, 5, 1, 255 );
-          field_data.writeToBytes();
-          break;
-        case 1:
-          field_data.flag = 2;
-          field_data.type = item->id;
-          field_data.quantity = getRandomItemQuantity( item, false );
-          field_data.writeToBytes();
-          break;
-        case 2:
-          field_data.flag = 5;
-          field_data.quantity = 1;
-          field_data.type = uniform<uint16_t>( 0, data_pack.buki_data.size() - 1 );
-          field_data.writeToBytes();
-          break;
-        case 3:
-          field_data.flag = 10;
-          field_data.type = key_item->id;
-          field_data.quantity = getRandomItemQuantity( key_item, false );
-          field_data.writeToBytes();
-          break;
-        default:
-          break;
+        item_t* item = getRandomItem();
+        field_data.flag = 2;
+        field_data.type = item->id;
+        field_data.quantity = getRandomItemQuantity( item, false );
+        field_data.writeToBytes();
+      }
+      if (rolled_gear)
+      {
+        field_data.flag = 5;
+        field_data.type = uniform<uint16_t>( 0, data_pack.buki_data.size() - 1 );
+        field_data.quantity = 1;
+        field_data.writeToBytes();
+      }
+      if (rolled_gil)
+      {
+        field_data.flag = 0;
+        field_data.quantity = normal<uint8_t>( 15, 5, 1, 255 );
+        field_data.writeToBytes();
+      }
+      if (rolled_key_item)
+      {
+        item_t* key_item = getRandomKeyItem();
+        field_data.flag = 10;
+        field_data.type = key_item->id;
+        field_data.quantity = getRandomItemQuantity( key_item, false );
+        field_data.writeToBytes();
       }
     }
   }

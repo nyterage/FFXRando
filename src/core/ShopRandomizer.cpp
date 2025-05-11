@@ -71,7 +71,7 @@ void randomizer_t::randomizeItemShops()
       bool found = true;
       item_t* potential_item;
       do
-        potential_item = getRandomItemFromMap( all_non_key_items );
+        potential_item = getRandomItem();
       while (found = std::find( item_shop->item_indexes.begin(), item_shop->item_indexes.end(), potential_item->id ) != item_shop->item_indexes.end() && potential_item->id < 10000);
 
       item_shop->item_indexes.at( i ) = potential_item->id;

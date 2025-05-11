@@ -25,22 +25,39 @@ void randomizer_t::randomizeEnemyDrops( enemy_data_t* enemy )
     loot.ap = uniform<uint16_t>( 1, UINT16_MAX );
     loot.ap_overkill = uniform<uint16_t>( 1, UINT16_MAX );
   }
-  item_t* normal_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Normal Item Drop
+  item_t* normal_drop = getRandomItem();
   int normal_drop_quantity = getRandomItemQuantity( normal_drop );
-  item_t* rare_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Rare Item Drop
+  item_t* rare_drop = getRandomItem();
   int rare_drop_quantity = getRandomItemQuantity( rare_drop );
-  item_t* secondary_normal_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Secondary Item Drop
+  item_t* secondary_normal_drop = getRandomItem();
   int secondary_normal_drop_quantity = getRandomItemQuantity( secondary_normal_drop );
-  item_t* secondary_rare_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Secondary Rare Item Drop
+  item_t* secondary_rare_drop = getRandomItem();
   int secondary_rare_drop_quantity = getRandomItemQuantity( secondary_rare_drop );
-  item_t* normal_overkill_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Normal Overkill Drop
+  item_t* normal_overkill_drop = getRandomItem();
   int normal_overkill_drop_quantity = getRandomItemQuantity( normal_overkill_drop );
-  item_t* rare_overkill_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Rare Overkill Drop
+  item_t* rare_overkill_drop = getRandomItem();
   int rare_overkill_drop_quantity = getRandomItemQuantity( rare_overkill_drop );
-  item_t* secondary_overkill_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Secondary Overkill Drop
+  item_t* secondary_overkill_drop = getRandomItem();
   int secondary_overkill_drop_quantity = getRandomItemQuantity( secondary_overkill_drop );
-  item_t* secondary_rare_overkill_drop = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+
+  // Secondary Rare Overkill Drop
+  item_t* secondary_rare_overkill_drop = getRandomItem();
   int secondary_rare_overkill_drop_quantity = getRandomItemQuantity( secondary_rare_overkill_drop );
+
   loot.primary_normal_drop = normal_drop->id;
   loot.primary_normal_drop_rare = rare_drop->id;
   if (options_pack.keep_things_sane && loot.primary_drop_chance > 0)
@@ -73,9 +90,9 @@ void randomizer_t::randomizeEnemyDrops( enemy_data_t* enemy )
 void randomizer_t::randomizeEnemySteal( enemy_data_t* enemy )
 {
   enemy_loot_data_t& loot = *enemy->loot_data;
-  item_t* steal_item = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+  item_t* steal_item = getRandomItem();
   int steal_item_quantity = getRandomItemQuantity( steal_item );
-  item_t* rare_steal_item = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+  item_t* rare_steal_item = getRandomItem();
   int rare_steal_item_quantity = getRandomItemQuantity( rare_steal_item );
   loot.steal_chance = 255;
   loot.steal_item = steal_item->id;
@@ -97,7 +114,7 @@ void randomizer_t::randomizeEnemySteal( enemy_data_t* enemy )
 void randomizer_t::randomizeEnemyBribe( enemy_data_t* enemy )
 {
   enemy_loot_data_t& loot = *enemy->loot_data;
-  item_t* bribe_item = getRandomItemFromMap( options_pack.randomize_key_items ? all_items : all_non_key_items );
+  item_t* bribe_item = getRandomItem();
   int bribe_item_quantity = getRandomItemQuantity( bribe_item );
   loot.bribe_item = bribe_item->id;
   loot.n_bribe_item = bribe_item_quantity;

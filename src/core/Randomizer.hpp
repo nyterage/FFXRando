@@ -196,7 +196,8 @@ public:
   void getFieldItems();
   void getMonsterItems();
   void getShopItems();
-  item_t* getRandomItemFromMap( std::unordered_map<int, item_t*>& map );
+  item_t* getRandomItem();
+  item_t* getRandomKeyItem();
   int getRandomItemQuantity( item_t* item, bool is_monster = true );
   void randomizeFieldItems();
   void doFieldRandomization();
