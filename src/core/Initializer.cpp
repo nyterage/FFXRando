@@ -32,10 +32,11 @@ void initializer_t::initializeEnemyData( int i )
   std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;
   std::string monster_file = path + "/" + monster_id + ".bin";
   std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );
-  std::vector<char> other_bytes = bytes;
   monster_id.erase( 0, 1 );
   enemy_data_t enemy = enemy_data_t( monster_id, bytes );
   enemy_data.push_back( enemy );
+  enemy_data_t unmodified_copy = enemy_data_t( monster_id, bytes );
+  unmodified_enemy_data.push_back( unmodified_copy );
 }
 
 void initializer_t::initializeFieldData()
@@ -210,10 +211,6 @@ void initializer_t::initializeAllData()
     if (enemy_thread.joinable())
       enemy_thread.join();
   }
-
-  memccpy( unmodified_enemy_data.data(), enemy_data.data(), sizeof( enemy_data_t ), ENEMY_COUNT );
-  for (auto& enemy : unmodified_enemy_data)
-    enemy.mapChunks();
 }
 
 void initializer_t::runEnemyTests()
