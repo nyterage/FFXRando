@@ -69,7 +69,7 @@ struct initializer_t
     }
   }
 
-  void initializeEnemyData( int i );
+  void initializeEnemyData();
   void initializeFieldData();
   void initializeShopData( bool gear );
   void initializeBukiData();
