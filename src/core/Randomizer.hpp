@@ -45,8 +45,8 @@ private:
   std::unordered_map<uint16_t, uint16_t> paired_mosnter_ids;
 
   // Lists
-  const std::vector<uint16_t> enemy_id_whitelist{ 91, 92, 93, 94, 96, 97, 97, 48, 49, 195, 196, 225, 226, 227, 228, 222, 43, 241, 245, 246, 247, 42, 51, 53, 58 };
-  const std::vector<uint16_t> boss_id_whitelist{ 153, 103, 110, 121, 229, 128, 130, 139, 138 };
+  const std::array<uint16_t, 25> enemy_id_whitelist{ 91, 92, 93, 94, 96, 97, 97, 48, 49, 195, 196, 225, 226, 227, 228, 222, 43, 241, 245, 246, 247, 42, 51, 53, 58 };
+  const std::array<uint16_t, 9> boss_id_whitelist{ 153, 103, 110, 121, 229, 128, 130, 139, 138 };
   std::vector<uint16_t> randomized_monsters{};
 
 public:

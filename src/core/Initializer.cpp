@@ -23,28 +23,19 @@ std::vector<char> initializer_t::getDataFromFile( const std::string& filepath, b
   return bytes;
 }
 
-void initializer_t::initializeEnemyData()
+void initializer_t::initializeEnemyData( int i )
 {
-  enemy_data.reserve( ENEMY_COUNT );
-  unmodified_enemy_data.reserve( ENEMY_COUNT );
-  for (int i = 0; i < ENEMY_COUNT; i++)
-  {
-    std::string monster_id = std::to_string( i );
-    while (monster_id.size() < 3)
-      monster_id.insert( 0, "0" );
-    monster_id.insert( 0, "m" );
-    std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;
-    std::string monster_file = path + "/" + monster_id + ".bin";
-    std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );
-    std::vector<char> other_bytes = bytes;
-    monster_id.erase( 0, 1 );
-    enemy_data_t enemy = enemy_data_t( monster_id, bytes );
-    enemy_data.push_back( enemy );
-  }
-  // Copy enemy_data to unmodified_enemy_data
-  unmodified_enemy_data = enemy_data;
-  for (auto& enemy : unmodified_enemy_data)
-    enemy.mapChunks();
+  std::string monster_id = std::to_string( i );
+  while (monster_id.size() < 3)
+    monster_id.insert( 0, "0" );
+  monster_id.insert( 0, "m" );
+  std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;
+  std::string monster_file = path + "/" + monster_id + ".bin";
+  std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );
+  std::vector<char> other_bytes = bytes;
+  monster_id.erase( 0, 1 );
+  enemy_data_t enemy = enemy_data_t( monster_id, bytes );
+  enemy_data.push_back( enemy );
 }
 
 void initializer_t::initializeFieldData()
@@ -176,7 +167,16 @@ void initializer_t::initializeGUI()
 
 void initializer_t::initializeAllData()
 {
-  std::thread enemy_thread( &initializer_t::initializeEnemyData, this );
+  enemy_data.reserve( ENEMY_COUNT );
+  unmodified_enemy_data.reserve( ENEMY_COUNT );
+  std::vector<std::thread> enemy_threads( ENEMY_COUNT );
+
+  for (int i = 0; i < ENEMY_COUNT; i++)
+  {
+    std::thread enemy_thread( &initializer_t::initializeEnemyData, this, i );
+    enemy_threads.push_back( std::move( enemy_thread ) );
+  }
+
   std::thread field_thread( &initializer_t::initializeFieldData, this );
   std::thread shop_item_thread( &initializer_t::initializeShopData, this, false );
   std::thread shop_gear_thread( &initializer_t::initializeShopData, this, true );
@@ -204,7 +204,16 @@ void initializer_t::initializeAllData()
   aeon_stat_thread.join();
   sphere_grid_thread.join();
   btl_data_thread.join();
-  enemy_thread.join();
+
+  for (auto& enemy_thread : enemy_threads)
+  {
+    if (enemy_thread.joinable())
+      enemy_thread.join();
+  }
+
+  memccpy( unmodified_enemy_data.data(), enemy_data.data(), sizeof( enemy_data_t ), ENEMY_COUNT );
+  for (auto& enemy : unmodified_enemy_data)
+    enemy.mapChunks();
 }
 
 void initializer_t::runEnemyTests()
