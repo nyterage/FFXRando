@@ -80,6 +80,10 @@ void randomizer_t::shuffleSphereGridNodes()
   wakka_stats.ability_flags1.bits.dark_attack = 1;
   wakka_stats.writeToBytes();
 
+  character_stats_t& lulu_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_LULU ];
+  lulu_stats.ability_flags3.bits.thunder = 1;
+  lulu_stats.writeToBytes();
+
   for (auto& grid : data_pack.sphere_grid_data)
   {
     switch (grid->type)
@@ -140,6 +144,10 @@ void randomizer_t::randomizeSphereGrid()
   character_stats_t& wakka_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_WAKKA ];
   wakka_stats.ability_flags1.bits.dark_attack = 1;
   wakka_stats.writeToBytes();
+
+  character_stats_t& lulu_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_LULU ];
+  lulu_stats.ability_flags3.bits.thunder = 1;
+  lulu_stats.writeToBytes();
 
   for (auto& grid : data_pack.sphere_grid_data)
   {
