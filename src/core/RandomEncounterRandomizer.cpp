@@ -8,7 +8,7 @@ void randomizer_t::getRandomEncounterIDs()
     {
       if (monster == ( 0xFFFF - 0x1000 ))
         continue;
-      if (std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) == random_monster_encounter_ids.end())
+      if (std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) != random_monster_encounter_ids.end())
         continue;
       enemy_data_t& enemy = data_pack.enemy_data.at( monster );
       enemy_stat_data_t& stats = *enemy.stats_data;
