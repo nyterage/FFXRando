@@ -8,8 +8,9 @@ std::vector<char> bytes_mapper_t::fileToBytes( const std::string& filepath ) {
     std::cout << "Please be sure your extracted ffx_ps2 folder is in the input folder" << std::endl;
     return {};
   }
-
-  std::vector<char> buffer( std::istreambuf_iterator<char>( file ), {} );
+  std::vector<char> buffer;
+  buffer.reserve( file.tellg() );
+  buffer.assign( std::istreambuf_iterator<char>( file ), std::istreambuf_iterator<char>() );
   return buffer;
 }
 

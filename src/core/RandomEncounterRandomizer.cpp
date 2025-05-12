@@ -6,7 +6,7 @@ void randomizer_t::getRandomEncounterIDs()
   {
     for (auto& monster : encounter->formation->monster_ids)
     {
-      if (monster == ( 0xFFFF - 0x1000 ) )
+      if (monster == ( 0xFFFF - 0x1000 ))
         continue;
       bool found = std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) != random_monster_encounter_ids.end();
       if (found)
@@ -35,32 +35,40 @@ void randomizer_t::adjustStats()
 
     if (options_pack.scale_encounter_stats)
     {
-      float monster_stats_total = stats->str + stats->def + stats->mag + stats->mdef + stats->agi + stats->acc + stats->eva + stats->luck;
-      float new_monster_stats_total = new_stats->str + new_stats->def + new_stats->mag + new_stats->mdef + new_stats->agi + new_stats->acc + new_stats->eva + new_stats->luck;
-      if (new_monster_stats_total == 0)
-        new_stats->test();
-      if (monster_stats_total == 0)
-        stats->test();
+      float old_hp = stats->hp;
+      float new_hp = new_stats->hp;
+      float hp = std::ceil( old_hp * std::pow( std::pow( new_hp, 1 / 3.2 ) / std::pow( old_hp, 1 / 3.2 ), 1 / 3.2 ) / 25 ) * 25;
+      new_stats->hp = std::clamp( static_cast< unsigned int >( hp ), std::min( stats->hp, new_stats->hp ), std::max( stats->hp, new_stats->hp ) );
 
-      float delta = monster_stats_total / new_monster_stats_total;
+      float old_mp = stats->mp;
+      float new_mp = new_stats->mp;
+      float mp = std::ceil( stats->mp * std::sqrt( std::sqrt( new_stats->mp ) / std::sqrt( stats->mp ) ) / 5 ) * 5;
+      new_stats->mp = std::clamp( static_cast< unsigned int >( mp ), std::min( stats->mp, new_stats->mp ), std::max( stats->mp, new_stats->mp ) );
 
-      if (delta <= 0.1)
-      {
-        printf( "Original Monster stat total: %d\n", monster_stats_total );
-        printf( "New Monster stat total: %d\n", new_monster_stats_total );
-        printf( "Delta: %f\n", delta );
-      }
+      float old_str = stats->str;
+      float new_str = new_stats->str;
+      float str = std::ceil( stats->str * std::sqrt( new_stats->str ) / std::sqrt( stats->str ) );
+      new_stats->str = std::clamp( static_cast< uint8_t >( str ), std::min( stats->str, new_stats->str ), std::max( stats->str, new_stats->str ) );
 
-      new_stats->hp = std::max<uint32_t>( std::ceil( stats->hp * delta ), 150 );
-      new_stats->mp = std::max<uint32_t>( std::ceil( stats->mp * delta ), 25 );
-      new_stats->str = std::max<uint8_t>( std::ceil( stats->str * delta ), 0 );
-      new_stats->def = std::max<uint8_t>( std::ceil( stats->def * delta ), 0 );
-      new_stats->mag = std::max<uint8_t>( std::ceil( stats->mag * delta ), 0 );
-      new_stats->mdef = std::max<uint8_t>( std::ceil( stats->mdef * delta ), 0 );
-      new_stats->agi = std::max<uint8_t>( std::ceil( stats->agi * delta ), 0 );
-      new_stats->acc = std::max<uint8_t>( std::ceil( stats->acc * delta ), 0 );
-      new_stats->eva = std::max<uint8_t>( std::ceil( stats->eva * delta ), 0 );
-      new_stats->luck = std::max<uint8_t>( std::ceil( stats->luck * delta ), 0 );
+      float old_mag = stats->mag;
+      float new_mag = new_stats->mag;
+      float mag = std::ceil( stats->mag * std::sqrt( new_stats->mag ) / std::sqrt( stats->mag ) );
+      new_stats->mag = std::clamp( static_cast< uint8_t >( mag ), std::min( stats->mag, new_stats->mag ), std::max( stats->mag, new_stats->mag ) );
+
+      float old_agi = stats->agi;
+      float new_agi = new_stats->agi;
+      float agi = std::ceil( stats->agi * std::sqrt( new_stats->agi ) / std::sqrt( stats->agi ) );
+      new_stats->agi = std::clamp( static_cast< uint8_t >( agi ), std::min( stats->agi, new_stats->agi ), std::max( stats->agi, new_stats->agi ) );
+
+      float old_acc = stats->acc;
+      float new_acc = new_stats->acc;
+      float acc = std::ceil( stats->acc * std::sqrt( new_stats->acc ) / std::sqrt( stats->acc ) );
+      new_stats->acc = std::clamp( static_cast< uint8_t >( acc ), std::min( stats->acc, new_stats->acc ), std::max( stats->acc, new_stats->acc ) );
+
+      float old_luck = stats->luck;
+      float new_luck = new_stats->luck;
+      float luck = std::ceil( stats->luck * std::sqrt( new_stats->luck ) / std::sqrt( stats->luck ) );
+      new_stats->luck = std::clamp( static_cast< uint8_t >( luck ), std::min( stats->luck, new_stats->luck ), std::max( stats->luck, new_stats->luck ) );
     }
 
     if (options_pack.swap_random_stats)

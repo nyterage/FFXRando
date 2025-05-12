@@ -46,7 +46,12 @@ struct initializer_t
       MessageBox( nullptr, message, L"Error", MB_OK | MB_ICONERROR );
       return;
     }
-    initializeGUI();
+    std::thread data_thread( &initializer_t::initializeAllData, this );
+    std::thread gui_thread( &initializer_t::initializeGUI, this );
+    // TODO - Implement actual debugging tests rather than just commenting this line out :| 
+    // runTests();
+    data_thread.join();
+    gui_thread.join();
   }
 
   std::vector<chunk_t> chunkData( std::vector<char>& bytes, int size ) const;

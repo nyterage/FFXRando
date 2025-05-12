@@ -27,16 +27,19 @@ void initializer_t::initializeEnemyData()
 {
   enemy_data.reserve( ENEMY_COUNT );
   unmodified_enemy_data.reserve( ENEMY_COUNT );
-  for (int i = 0; i < ENEMY_COUNT; i++)
+  std::string monster_id;
+  monster_id.reserve( 5 );
+  std::string filename;
+  filename.reserve( 5 );
+  std::string monster_file;
+  monster_file.reserve( 15 );
+  for (const auto& file : std::filesystem::directory_iterator( INPUT_FOLDER + MONSTER_FOLDER ))
   {
-    std::string monster_id = std::to_string( i );
-    while (monster_id.size() < 3)
-      monster_id.insert( 0, "0" );
-    monster_id.insert( 0, "m" );
-    std::string path = INPUT_FOLDER + MONSTER_FOLDER + "_" + monster_id;
-    std::string monster_file = path + "/" + monster_id + ".bin";
-    std::vector<char> bytes = bytes_mapper_t::fileToBytes( monster_file );
-    std::vector<char> other_bytes = bytes;
+    filename = file.path().filename().string();
+    monster_id = filename;
+    monster_id.erase( 0, 1 );
+    monster_file = filename + "/" + monster_id + ".bin";
+    std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + MONSTER_FOLDER + monster_file );
     monster_id.erase( 0, 1 );
     enemy_data_t enemy = enemy_data_t( monster_id, bytes );
     enemy_data.push_back( enemy );
@@ -56,8 +59,8 @@ void initializer_t::initializeFieldData()
 
 void initializer_t::initializeShopData( bool gear )
 {
-  gear_shop_data.reserve( 46 );
-  item_shop_data.reserve( 46 );
+  gear_shop_data.reserve( 47 );
+  item_shop_data.reserve( 47 );
   std::string file = gear ? "arms_shop.bin" : "item_shop.bin";
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + file;
   if (gear)
@@ -68,14 +71,14 @@ void initializer_t::initializeShopData( bool gear )
 
 void initializer_t::initializeBukiData()
 {
-  buki_data.reserve( 85 );
+  buki_data.reserve( 86 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "buki_get.bin";
   genericExcelReader<gear_data_t>( path, buki_data, 16 );
 }
 
 void initializer_t::initializeWeaponData()
 {
-  weapon_data.reserve( 152 );
+  weapon_data.reserve( 153 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "weapon.bin";
   genericExcelReader<gear_data_t>( path, weapon_data, 22 );
 }
@@ -89,14 +92,14 @@ void initializer_t::initializeShopArmsData()
 
 void initializer_t::initializeItemRateData()
 {
-  item_rate_data.reserve( 111 );
+  item_rate_data.reserve( 112 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "item_rate.bin";
   genericExcelReader<item_rate_t>( path, item_rate_data, 4 );
 }
 
 void initializer_t::initializeArmsRateData()
 {
-  arms_rate_data.reserve( 134 );
+  arms_rate_data.reserve( 135 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "arms_rate.bin";
   genericExcelReader<arms_rate_t>( path, arms_rate_data, 4 );
 }
@@ -144,9 +147,6 @@ void initializer_t::initializeBtlData()
 
 void initializer_t::initializeGUI()
 {
-  initializeAllData();
-  // TODO - Implement actual debugging tests rather than just commenting this line out :| 
-  // runTests();
   data_pack = new data_pack_t(
     enemy_data,
     unmodified_enemy_data,
