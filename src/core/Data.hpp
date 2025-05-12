@@ -203,6 +203,8 @@ struct enemy_loot_data_t final : public bytes_mapper_t
   uint8_t n_gil_steal;
   uint32_t arena_price;
 
+  enemy_loot_data_t() = default;
+
   enemy_loot_data_t( const std::vector<char> bytes, size_t initial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( initial_offset ), end_offset( initial_offset + BYTE_LENGTH ), monster_id( monster_id )
   {
     mapBytes();
@@ -402,6 +404,8 @@ struct enemy_stat_data_t final : public bytes_mapper_t
 
   element_weakness_flags_t element_weakness_flags{ 0x00 };
 
+  enemy_stat_data_t() = default;
+
   enemy_stat_data_t( const std::vector<char>& bytes, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( intial_offset ), monster_id( monster_id )
   {
     this->mapBytes();
@@ -440,19 +444,6 @@ struct enemy_data_t final : public bytes_mapper_t
   void writeLootData( const enemy_loot_data_t& lootData );
   void writeStatsData( const enemy_stat_data_t& statsData );
   void test() const override;
-  enemy_stat_data_t& getStatData()
-  {
-    if (this->stats_data == nullptr)
-    {
-      this->stats_data = new enemy_stat_data_t( stats_bytes, chunks.at( 2 ).initial_offset, monster_id );
-    }
-    return *this->stats_data;
-  };
-
-  const enemy_stat_data_t& getStatData() const
-  {
-    return *this->stats_data;
-  }
 };
 
 struct field_data_t final : public bytes_mapper_t
