@@ -17,8 +17,8 @@ struct initializer_t
   btl_data_t* btl_data;
 
   // Dynamic data
-  std::vector<enemy_data_t> enemy_data;
-  std::vector<enemy_data_t> unmodified_enemy_data;
+  std::unordered_map<int, enemy_data_t> enemy_data;
+  std::unordered_map<int, enemy_data_t> unmodified_enemy_data;
   std::vector<field_data_t*> field_data;
   std::vector<item_shop_t*> item_shop_data;
   std::vector<gear_shop_t*> gear_shop_data;
@@ -74,7 +74,7 @@ struct initializer_t
     }
   }
 
-  void initializeEnemyData();
+  void initializeEnemyData( const std::string filename, std::string monster_id, const std::string monster_file );
   void initializeFieldData();
   void initializeShopData( bool gear );
   void initializeBukiData();

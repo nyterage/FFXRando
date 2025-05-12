@@ -11,7 +11,7 @@
 #define assertm(exp, msg) assert((void(msg), exp));
 
 // Constant values
-static constexpr int ENEMY_COUNT = 360;
+static constexpr int ENEMY_COUNT = 361;
 // Versioning
 static constexpr int MAJOR_VERSION = 1;
 static constexpr int MINOR_VERSION = 2;
@@ -1107,8 +1107,8 @@ struct btl_data_t final : public bytes_mapper_t
 
 struct data_pack_t
 {
-  std::vector<enemy_data_t>& enemy_data;
-  std::vector<enemy_data_t>& unmodified_enemy_data;
+  std::unordered_map<int, enemy_data_t>& enemy_data;
+  std::unordered_map<int, enemy_data_t>& unmodified_enemy_data;
   std::vector<field_data_t*>& field_data;
   std::vector<item_shop_t*>& item_shop_data;
   std::vector<gear_shop_t*>& gear_shop_data;
@@ -1127,8 +1127,8 @@ struct data_pack_t
   data_pack_t() = default;
 
   data_pack_t(
-    std::vector<enemy_data_t>& enemy_data,
-    std::vector<enemy_data_t>& unmodified_enemy_data,
+    std::unordered_map<int, enemy_data_t>& enemy_data,
+    std::unordered_map<int, enemy_data_t>& unmodified_enemy_data,
     std::vector<field_data_t*>& field_data,
     std::vector<item_shop_t*>& item_shop_data,
     std::vector<gear_shop_t*>& gear_shop_data,

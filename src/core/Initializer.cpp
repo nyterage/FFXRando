@@ -23,31 +23,13 @@ std::vector<char> initializer_t::getDataFromFile( const std::string& filepath, b
   return bytes;
 }
 
-void initializer_t::initializeEnemyData()
+void initializer_t::initializeEnemyData( const std::string filename, std::string monster_id, const std::string monster_file )
 {
-  enemy_data.reserve( ENEMY_COUNT );
-  unmodified_enemy_data.reserve( ENEMY_COUNT );
-  std::string monster_id;
-  monster_id.reserve( 5 );
-  std::string filename;
-  filename.reserve( 5 );
-  std::string monster_file;
-  monster_file.reserve( 15 );
-  for (const auto& file : std::filesystem::directory_iterator( INPUT_FOLDER + MONSTER_FOLDER ))
-  {
-    filename = file.path().filename().string();
-    monster_id = filename;
-    monster_id.erase( 0, 1 );
-    monster_file = filename + "/" + monster_id + ".bin";
-    std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + MONSTER_FOLDER + monster_file );
-    monster_id.erase( 0, 1 );
-    enemy_data_t enemy = enemy_data_t( monster_id, bytes );
-    enemy_data.push_back( enemy );
-  }
-  // Copy enemy_data to unmodified_enemy_data
-  unmodified_enemy_data = enemy_data;
-  for (auto& enemy : unmodified_enemy_data)
-    enemy.mapChunks();
+  std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + MONSTER_FOLDER + monster_file );
+  // Erase the leading m
+  monster_id.erase( 0, 1 );
+  enemy_data_t enemy = enemy_data_t( monster_id, bytes );
+  enemy_data.insert( { std::stoi( monster_id ), enemy } );
 }
 
 void initializer_t::initializeFieldData()
@@ -85,41 +67,42 @@ void initializer_t::initializeWeaponData()
 
 void initializer_t::initializeShopArmsData()
 {
-  shop_arms_data.reserve( 427 );
+  shop_arms_data.reserve( 428 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "shop_arms.bin";
   genericExcelReader<gear_data_t>( path, shop_arms_data, 22 );
 }
 
 void initializer_t::initializeItemRateData()
 {
-  item_rate_data.reserve( 112 );
+  item_rate_data.reserve( 253 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "item_rate.bin";
   genericExcelReader<item_rate_t>( path, item_rate_data, 4 );
 }
 
 void initializer_t::initializeArmsRateData()
 {
-  arms_rate_data.reserve( 135 );
+  arms_rate_data.reserve( 134 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "arms_rate.bin";
   genericExcelReader<arms_rate_t>( path, arms_rate_data, 4 );
 }
 
 void initializer_t::initializePlayerStatData()
 {
-  player_stats_data.reserve( 19 );
+  player_stats_data.reserve( 20 );
   std::string path = INPUT_FOLDER + USPC_BTL_KERN_FOLDER + "ply_save.bin";
   genericExcelReader<character_stats_t>( path, player_stats_data, 148 );
 }
 
 void initializer_t::initializeAeonScalingData()
 {
-  aeon_scaling_data.reserve( 30 );
+  aeon_scaling_data.reserve( 8 );
   std::string path = INPUT_FOLDER + USPC_BTL_KERN_FOLDER + "ply_rom.bin";
   genericExcelReader<aeon_scaling_data_t>( path, aeon_scaling_data, 44, true, 8 );
 }
 
 void initializer_t::initializeAeonStatData()
 {
+  aeon_stat_data.reserve( 20 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "sum_assure.bin";
   genericExcelReader<aeon_stat_data_t>( path, aeon_stat_data, 120 );
 }
@@ -139,6 +122,7 @@ void initializer_t::initializeSphereGridData()
 
 void initializer_t::initializeBtlData()
 {
+  encounter_file_data.reserve( 414 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "btl.bin";
   btl_data = new btl_data_t( getDataFromFile( path ) );
 
@@ -176,7 +160,28 @@ void initializer_t::initializeGUI()
 
 void initializer_t::initializeAllData()
 {
-  std::thread enemy_thread( &initializer_t::initializeEnemyData, this );
+  enemy_data.reserve( ENEMY_COUNT );
+  unmodified_enemy_data.reserve( ENEMY_COUNT );
+
+  std::vector<std::thread> enemy_threads;
+  enemy_threads.reserve( ENEMY_COUNT );
+
+  std::string monster_id;
+  monster_id.reserve( 5 );
+  std::string filename;
+  filename.reserve( 5 );
+  std::string monster_file;
+  monster_file.reserve( 15 );
+  for (const auto& file : std::filesystem::directory_iterator( INPUT_FOLDER + MONSTER_FOLDER ))
+  {
+    filename = file.path().filename().string();
+    monster_id = filename;
+    // Erase the leading underscore
+    monster_id.erase( 0, 1 );
+    monster_file = filename + "/" + monster_id + ".bin";
+    enemy_threads.push_back( std::thread( &initializer_t::initializeEnemyData, this, filename, monster_id, monster_file ) );
+  }
+
   std::thread field_thread( &initializer_t::initializeFieldData, this );
   std::thread shop_item_thread( &initializer_t::initializeShopData, this, false );
   std::thread shop_gear_thread( &initializer_t::initializeShopData, this, true );
@@ -204,13 +209,23 @@ void initializer_t::initializeAllData()
   aeon_stat_thread.join();
   sphere_grid_thread.join();
   btl_data_thread.join();
-  enemy_thread.join();
+
+  for (auto& enemy_thread : enemy_threads)
+  {
+    if (enemy_thread.joinable())
+      enemy_thread.join();
+  }
+
+  // Copy enemy_data to unmodified_enemy_data
+  unmodified_enemy_data = enemy_data;
+  for (auto& enemy : unmodified_enemy_data)
+    enemy.second.mapChunks();
 }
 
 void initializer_t::runEnemyTests()
 {
   for (auto& enemy : enemy_data)
-    enemy.test();
+    enemy.second.test();
 }
 
 void initializer_t::runFieldTests()
@@ -248,7 +263,7 @@ void initializer_t::runShopArmsTests()
 void initializer_t::runEnemyLootTests()
 {
   for (auto& loot : enemy_data)
-    loot.loot_data->test();
+    loot.second.loot_data->test();
 }
 
 void initializer_t::runItemRateTests()

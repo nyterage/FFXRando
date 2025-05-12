@@ -363,56 +363,56 @@ void randomizer_t::doEnemyRandomization()
   // Generate the enemy defensive stats pool before going into the main loop
   if (options_pack.randomize_enemy_stats_defensive || options_pack.randomize_enemy_stats_shuffle)
     for (auto& enemy : data_pack.enemy_data)
-      addEnemyDefenses( &enemy );
+      addEnemyDefenses( &enemy.second );
 
   for (auto& enemy : data_pack.enemy_data)
   {
     if (options_pack.randomize_enemy_drops)
     {
-      printf( "Randomizing Enemy Drops for monster %s\n", enemy.monster_id.c_str() );
-      randomizeEnemyDrops( &enemy );
+      printf( "Randomizing Enemy Drops for monster %s\n", enemy.second.monster_id.c_str() );
+      randomizeEnemyDrops( &enemy.second );
     }
     if (options_pack.randomize_enemy_steals)
     {
-      printf( "Randomizing Enemy Steals for monster %s\n", enemy.monster_id.c_str() );
-      randomizeEnemySteal( &enemy );
+      printf( "Randomizing Enemy Steals for monster %s\n", enemy.second.monster_id.c_str() );
+      randomizeEnemySteal( &enemy.second );
     }
     if (options_pack.randomize_enemy_bribes)
     {
-      printf( "Randomizing Enemy Bribes for monster %s\n", enemy.monster_id.c_str() );
-      randomizeEnemyBribe( &enemy );
+      printf( "Randomizing Enemy Bribes for monster %s\n", enemy.second.monster_id.c_str() );
+      randomizeEnemyBribe( &enemy.second );
     }
     if (options_pack.randomize_enemy_gear_drops)
     {
-      printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy.monster_id.c_str() );
-      randomizeEnemyGearDrops( &enemy );
+      printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy.second.monster_id.c_str() );
+      randomizeEnemyGearDrops( &enemy.second );
     }
     if (options_pack.randomize_enemy_stats)
     {
-      printf( "Randomizing Enemy Stats for monster %s\n", enemy.monster_id.c_str() );
-      randomizeEnemyStatsNormal( &enemy );
+      printf( "Randomizing Enemy Stats for monster %s\n", enemy.second.monster_id.c_str() );
+      randomizeEnemyStatsNormal( &enemy.second );
     }
     if (options_pack.randomize_enemy_stats_defensive)
     {
-      printf( "Randomizing Enemy Defensive for monster %s\n", enemy.monster_id.c_str() );
-      randomizeEnemyStatsDefensiveNormalization( &enemy );
+      printf( "Randomizing Enemy Defensive for monster %s\n", enemy.second.monster_id.c_str() );
+      randomizeEnemyStatsDefensiveNormalization( &enemy.second );
     }
     if (options_pack.randomize_enemy_stats_shuffle)
     {
-      printf( "Shuffling Enemy Stats for monster %s\n", enemy.monster_id.c_str() );
-      shuffleEnemyStats( &enemy );
+      printf( "Shuffling Enemy Stats for monster %s\n", enemy.second.monster_id.c_str() );
+      shuffleEnemyStats( &enemy.second );
     }
     if (options_pack.randomize_enemy_elemental_affinities)
     {
-      printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy.monster_id.c_str() );
-      randomizeEnemyElementalAffinities( &enemy );
+      printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy.second.monster_id.c_str() );
+      randomizeEnemyElementalAffinities( &enemy.second );
     }
 
-    printf( "Reconstructing files for for monster %s\n", enemy.monster_id.c_str() );
-    std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy.monster_id;
+    printf( "Reconstructing files for for monster %s\n", enemy.second.monster_id.c_str() );
+    std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy.second.monster_id;
     std::filesystem::path path = pathstr;
     std::filesystem::create_directories( path );
-    std::string filepath = pathstr + "/m" + enemy.monster_id + ".bin";
-    enemy.writeBytesToNewFile( enemy.bytes, filepath );
+    std::string filepath = pathstr + "/m" + enemy.second.monster_id + ".bin";
+    enemy.second.writeBytesToNewFile( enemy.second.bytes, filepath );
   }
 }

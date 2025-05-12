@@ -67,7 +67,7 @@ void randomizer_t::populateAbilityData()
   }
   for (auto& enemy : data_pack.enemy_data)
   {
-    enemy_loot_data_t& loot = *enemy.loot_data;
+    enemy_loot_data_t& loot = *enemy.second.loot_data;
     for (int chr = 0; chr < 7; chr++)
     {
       for (int i = 0; i < 8; i++)
@@ -104,7 +104,7 @@ void randomizer_t::populateWeaponFormulas()
   }
   for (auto& enemy : data_pack.enemy_data)
   {
-    enemy_loot_data_t& loot = *enemy.loot_data;
+    enemy_loot_data_t& loot = *enemy.second.loot_data;
     bool found = std::find( weapon_formulas.begin(), weapon_formulas.end(), loot.gear_damage_calc ) != weapon_formulas.end();
     if (!found)
       weapon_formulas.push_back( loot.gear_damage_calc );
