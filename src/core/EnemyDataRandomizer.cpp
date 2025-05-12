@@ -29,59 +29,61 @@ void randomizer_t::randomizeEnemyDrops( enemy_data_t* enemy )
   // Normal Item Drop
   item_t* normal_drop = getRandomItem();
   int normal_drop_quantity = getRandomItemQuantity( normal_drop );
+  loot.primary_normal_drop = normal_drop->id;
+  loot.n_primary_normal_drop = normal_drop_quantity;
 
   // Rare Item Drop
   item_t* rare_drop = getRandomItem();
   int rare_drop_quantity = getRandomItemQuantity( rare_drop );
+  loot.primary_normal_drop_rare = rare_drop->id;
+  loot.n_primary_normal_drop_rare = rare_drop_quantity;
 
   // Secondary Item Drop
   item_t* secondary_normal_drop = getRandomItem();
   int secondary_normal_drop_quantity = getRandomItemQuantity( secondary_normal_drop );
+  loot.secondary_normal_drop = secondary_normal_drop->id;
+  loot.n_secondary_normal_drop = secondary_normal_drop_quantity;
 
   // Secondary Rare Item Drop
   item_t* secondary_rare_drop = getRandomItem();
   int secondary_rare_drop_quantity = getRandomItemQuantity( secondary_rare_drop );
+  loot.secondary_normal_drop_rare = secondary_rare_drop->id;
+  loot.n_secondary_normal_drop_rare = secondary_rare_drop_quantity;
 
   // Normal Overkill Drop
   item_t* normal_overkill_drop = getRandomItem();
   int normal_overkill_drop_quantity = getRandomItemQuantity( normal_overkill_drop );
+  loot.primary_normal_drop_overkill = normal_overkill_drop->id;
+  loot.n_primary_normal_drop_overkill = normal_overkill_drop_quantity;
 
   // Rare Overkill Drop
   item_t* rare_overkill_drop = getRandomItem();
   int rare_overkill_drop_quantity = getRandomItemQuantity( rare_overkill_drop );
+  loot.primary_normal_drop_overkill_rare = rare_overkill_drop->id;
+  loot.n_primary_normal_drop_overkill_rare = rare_overkill_drop_quantity;
 
   // Secondary Overkill Drop
   item_t* secondary_overkill_drop = getRandomItem();
   int secondary_overkill_drop_quantity = getRandomItemQuantity( secondary_overkill_drop );
+  loot.secondary_normal_drop_overkill = secondary_overkill_drop->id;
+  loot.n_secondary_normal_drop_overkill = secondary_overkill_drop_quantity;
 
   // Secondary Rare Overkill Drop
   item_t* secondary_rare_overkill_drop = getRandomItem();
   int secondary_rare_overkill_drop_quantity = getRandomItemQuantity( secondary_rare_overkill_drop );
+  loot.secondary_normal_drop_overkill_rare = secondary_rare_overkill_drop->id;
+  loot.n_secondary_normal_drop_overkill_rare = secondary_rare_overkill_drop_quantity;
 
-  loot.primary_normal_drop = normal_drop->id;
-  loot.primary_normal_drop_rare = rare_drop->id;
   if (options_pack.keep_things_sane && loot.primary_drop_chance > 0)
     loot.primary_drop_chance = normal<uint8_t>( loot.primary_drop_chance, loot.primary_drop_chance / 2, 0, 255 );
   else
     loot.primary_drop_chance = uniform<uint8_t>( 0, 255 );
-  loot.secondary_normal_drop = secondary_normal_drop->id;
-  loot.secondary_normal_drop_rare = secondary_rare_drop->id;
+
   if (options_pack.keep_things_sane && loot.secondary_drop_chance > 0)
     loot.secondary_drop_chance = normal<uint8_t>( loot.secondary_drop_chance, loot.secondary_drop_chance / 2, 0, 255 );
   else
     loot.secondary_drop_chance = uniform<uint8_t>( 0, 255 );
-  loot.primary_normal_drop_overkill = normal_overkill_drop->id;
-  loot.primary_normal_drop_overkill_rare = rare_overkill_drop->id;
-  loot.secondary_normal_drop_overkill = secondary_overkill_drop->id;
-  loot.secondary_normal_drop_overkill_rare = secondary_rare_overkill_drop->id;
-  loot.n_primary_normal_drop = normal_drop_quantity;
-  loot.n_primary_normal_drop_rare = rare_drop_quantity;
-  loot.n_secondary_normal_drop = secondary_normal_drop_quantity;
-  loot.n_secondary_normal_drop_rare = secondary_rare_drop_quantity;
-  loot.n_primary_normal_drop_overkill = normal_overkill_drop_quantity;
-  loot.n_primary_normal_drop_overkill_rare = rare_overkill_drop_quantity;
-  loot.n_secondary_normal_drop_overkill = secondary_overkill_drop_quantity;
-  loot.n_secondary_normal_drop_overkill_rare = secondary_rare_overkill_drop_quantity;
+
   loot.writeToBytes();
   enemy->loot_data = &loot;
   enemy->writeLootData( loot );

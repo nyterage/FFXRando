@@ -211,15 +211,11 @@ void initializer_t::initializeAllData()
   btl_data_thread.join();
 
   for (auto& enemy_thread : enemy_threads)
-  {
     if (enemy_thread.joinable())
       enemy_thread.join();
-  }
 
-  // Copy enemy_data to unmodified_enemy_data
-  unmodified_enemy_data = enemy_data;
-  for (auto& enemy : unmodified_enemy_data)
-    enemy.second.mapChunks();
+  while (unmodified_enemy_data.size() != ENEMY_COUNT)
+    unmodified_enemy_data = enemy_data;
 }
 
 void initializer_t::runEnemyTests()

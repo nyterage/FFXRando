@@ -1072,9 +1072,8 @@ struct btl_data_t final : public bytes_mapper_t
   void getEncounterFiles( std::vector<encounter_file_t*>& encounters )
   {
     std::vector<uint16_t> repeat{};
-    std::vector<std::string> encounter_names{ "znkd08_00", "znkd08_01", "znkd09_00", "bjyt02_00", "bjyt02_01", "bjyt04_00", "bjyt04_01",
-      "cdsp07_00", "cdsp07_01", "mtgz01_10", "klyt00_05", "slik02_01" };
-    std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11", "sins07", "bsil05", "bsil07" };
+    std::vector<std::string> encounter_names{ "cdsp07_00" };
+    std::vector<std::string> field_names{ "zzzz00", "zzzz02", "zzzz03", "system", "test00", "test10", "test11", "sins07" };
     for (auto& field_data : field_battle_data)
     {
       std::string field_name = field_data->field;

@@ -88,7 +88,7 @@ item_t* randomizer_t::getRandomItem()
   for (auto& item : all_non_key_items )
     items.push_back( item.second );
 
-  std::uniform_int_distribution<size_t> dist( 0, items.size() );
+  std::uniform_int_distribution<size_t> dist( 0, items.size() - 1 );
   int index = dist( rng );
   return items[ index ];
 }
@@ -99,7 +99,7 @@ item_t* randomizer_t::getRandomKeyItem()
   for (auto& item : all_key_items)
     items.push_back( item.second );
 
-  std::uniform_int_distribution<size_t> dist( 0, items.size() );
+  std::uniform_int_distribution<size_t> dist( 0, items.size() - 1 );
   int index = dist( rng );
 
   all_key_items.erase( items[ index ]->id );
