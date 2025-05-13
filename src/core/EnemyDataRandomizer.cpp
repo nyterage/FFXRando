@@ -140,12 +140,12 @@ void randomizer_t::randomizeEnemyStatsNormal( enemy_data_t* enemy )
   stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, 99999 );
   if (options_pack.keep_things_sane)
   {
-    stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, std::min<uint8_t>( stats.str * 2, UINT8_MAX ) );
-    stats.def = normal<uint8_t>( stats.def, stats.def / 2, 0, std::min<uint8_t>( stats.def * 2, UINT8_MAX ) );
-    stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, std::min<uint8_t>( stats.mag * 2, UINT8_MAX ) );
-    stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 2, 0, std::min<uint8_t>( stats.mdef * 2, UINT8_MAX ) );
-    stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, std::min<uint8_t>( stats.agi * 2, UINT8_MAX ) );
-    stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, std::min<uint8_t>( stats.acc * 2, UINT8_MAX ) );
+    stats.str = normal<uint8_t>( stats.str, stats.str / 3, stats.str / 3, std::clamp( stats.str * 3, 0, 255 ) );
+    stats.def = normal<uint8_t>( stats.def, stats.def / 3, stats.def / 3, std::clamp( stats.def * 3, 0, 255 ) );
+    stats.mag = normal<uint8_t>( stats.mag, stats.mag / 3, stats.mag / 3, std::clamp( stats.mag * 3, 0, 255 ) );
+    stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 3, stats.mdef / 3, std::clamp( stats.mdef * 3, 0, 255 ) );
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi / 3, stats.agi / 3, std::clamp( stats.agi * 3, 0, 255 ) );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc / 3, stats.acc / 3, std::clamp( stats.acc * 3, 0, 255 ) );
   }
   else
   {
@@ -184,7 +184,6 @@ void randomizer_t::randomizeEnemyStatsDefensiveNormalization( enemy_data_t* enem
     stats.mp = normal<uint32_t>( stats.mp, stats.mp / 2, 1, 999 );
 
   stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold, stats.overkill_threshold / 2, 1, UINT32_MAX );
-  stats.str = normal<uint8_t>( stats.str, stats.str / 2, 0, UINT8_MAX );
 
   std::uniform_int_distribution<size_t> dist( 0, def_pool.size() - 1 );
   uint8_t def = def_pool[ dist( rng ) ];
@@ -222,9 +221,10 @@ void randomizer_t::randomizeEnemyStatsDefensiveNormalization( enemy_data_t* enem
   stats.hp = hp;
   if (stats.hp < 50)
     stats.hp = 50;
-  stats.mag = normal<uint8_t>( stats.mag, stats.mag / 2, 0, UINT8_MAX );
-  stats.agi = normal<uint8_t>( stats.agi, stats.agi / 2, 0, UINT8_MAX );
-  stats.acc = normal<uint8_t>( stats.acc, stats.acc / 2, 0, UINT8_MAX );
+  stats.str = normal<uint8_t>( stats.str, stats.str / 3, stats.str / 3, std::clamp( stats.str * 3, 0, 255 ) );
+  stats.mag = normal<uint8_t>( stats.mag, stats.mag / 3, stats.mag / 3, std::clamp( stats.mag * 3, 0, 255 ) );
+  stats.agi = normal<uint8_t>( stats.agi, stats.agi / 3, stats.agi / 3, std::clamp( stats.agi * 3, 0, 255 ) );
+  stats.acc = normal<uint8_t>( stats.acc, stats.acc / 3, stats.acc / 3, std::clamp( stats.acc * 3, 0, 255 ) );
   enemy->loot_data->gil /= defensive_factor;
   enemy->loot_data->ap /= defensive_factor;
   stats.writeToBytes();

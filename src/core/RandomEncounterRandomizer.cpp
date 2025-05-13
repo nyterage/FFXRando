@@ -12,12 +12,23 @@ void randomizer_t::getRandomEncounterIDs()
         continue;
       enemy_data_t& enemy = data_pack.enemy_data.at( monster );
       enemy_stat_data_t& stats = *enemy.stats_data;
-      if (stats.arena_id != 255)
+      if (stats.arena_id != 255 && ( stats.arena_id != 0 || monster == 1 ) )
+      {
         random_monster_encounter_ids.push_back( monster );
-      if (std::find( boss_id_whitelist.begin(), boss_id_whitelist.end(), monster ) != boss_id_whitelist.end())
+        continue;
+      }
+      bool in_boss_list = std::find( boss_id_whitelist.begin(), boss_id_whitelist.end(), monster ) != boss_id_whitelist.end();
+      if (in_boss_list)
+      {
         random_monster_encounter_ids.push_back( monster );
-      if (std::find( enemy_id_whitelist.begin(), enemy_id_whitelist.end(), monster ) != enemy_id_whitelist.end())
+        continue;
+      }
+      bool in_whitelist = std::find( enemy_id_whitelist.begin(), enemy_id_whitelist.end(), monster ) != enemy_id_whitelist.end();
+      if (in_whitelist)
+      {
         random_monster_encounter_ids.push_back( monster );
+        continue;
+      }
     }
   }
 }
@@ -33,6 +44,8 @@ void randomizer_t::adjustStats()
     enemy_data_t& new_monster = data_pack.enemy_data.at(pair.second);
     const enemy_stat_data_t* stats = monster.stats_data;
     enemy_stat_data_t* new_stats = new_monster.stats_data;
+    const enemy_loot_data_t* loot = monster.loot_data;
+    enemy_loot_data_t* new_loot = new_monster.loot_data;
 
     if (options_pack.scale_encounter_stats)
     {
@@ -70,6 +83,16 @@ void randomizer_t::adjustStats()
       float new_luck = new_stats->luck;
       float luck = std::ceil( stats->luck * std::sqrt( new_stats->luck ) / std::sqrt( stats->luck ) );
       new_stats->luck = std::clamp( static_cast< uint8_t >( luck ), std::min( stats->luck, new_stats->luck ), std::max( stats->luck, new_stats->luck ) );
+
+      float old_ap = loot->ap;
+      float new_ap = new_loot->ap;
+      float ap = std::ceil( loot->ap * std::pow( std::pow( new_ap, 1 / 3.2 ) / std::pow( old_ap, 1 / 3.2 ), 1 / 3.2 ) );
+      new_loot->ap = std::clamp( static_cast< uint16_t >( ap ), std::min( loot->ap, new_loot->ap ), std::max( loot->ap, new_loot->ap ) );
+
+      float old_gil = loot->gil;
+      float new_gil = new_loot->gil;
+      float gil = std::ceil( loot->gil * std::pow( std::pow( new_gil, 1 / 3.2 ) / std::pow( old_gil, 1 / 3.2 ), 1 / 3.2 ) );
+      new_loot->gil = std::clamp( static_cast< uint16_t >( gil ), std::min( loot->gil, new_loot->gil ), std::max( loot->gil, new_loot->gil ) );
     }
 
     if (options_pack.swap_random_stats)
@@ -84,6 +107,8 @@ void randomizer_t::adjustStats()
       new_stats->acc = stats->acc;
       new_stats->eva = stats->eva;
       new_stats->luck = stats->luck;
+      new_loot->ap = loot->ap;
+      new_loot->gil = loot->gil;
     }
 
     if (options_pack.swap_random_stats || options_pack.scale_encounter_stats)
@@ -91,7 +116,10 @@ void randomizer_t::adjustStats()
       new_stats->writeToBytes();
       new_monster.stats_data = new_stats;
       new_monster.writeStatsData( *new_stats );
-      // new_monster.stats_data->test();
+
+      new_loot->writeToBytes();
+      new_monster.loot_data = new_loot;
+      new_monster.writeLootData( *new_loot );
     }
   }
 }

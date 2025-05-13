@@ -24,6 +24,7 @@ enum
   ID_RANDOMIZE_ENEMY_STEALS,
   ID_RANDOMIZE_ENEMY_BRIBES,
   ID_RANDOMIZE_ENEMY_GEAR_DROPS,
+  ID_RANDOMIZE_ENEMY_STATS_NONE,
   ID_RANDOMIZE_ENEMY_STATS,
   ID_RANDOMIZE_ENEMY_STATS_DEFENSIVE,
   ID_RANDOMIZE_ENEMY_STATS_SHUFFLE,
@@ -38,22 +39,29 @@ enum
   ID_RANDOMIZE_WEAPON_CRIT,
   ID_RANDOMIZE_WEAPON_ATTACK_POWER,
   ID_RANDOMIZE_WEAPON_DAMAGE_FORMULA,
-  ID_SHUFFLE_PLAYER_STATS,
+  ID_RANDOMIZE_PLAYER_STATS_NONE,
   ID_RANDOMIZE_PLAYER_STATS,
+  ID_SHUFFLE_PLAYER_STATS,
   ID_RANDOMIZE_STARTING_OVERDRIVE_MODE,
+  ID_RANDOMIZE_AEON_STAT_SCALING_NONE,
   ID_SHUFFLE_AEON_STAT_SCALING,
   ID_RANDOMIZE_AEON_STAT_SCALING,
+  ID_RANDOMIZE_AEON_BASE_STATS_NONE,
   ID_SHUFFLE_AEON_BASE_STATS,
   ID_RANDOMIZE_AEON_BASE_STATS,
+  ID_SPHERE_GRID_NONE,
   ID_SHUFFLE_SPHERE_GRID,
   ID_RANDOMIZE_SPHERE_GRID,
+  ID_SPHERE_NODES_NONE,
   ID_UPGRADE_SPHERE_NODES,
   ID_DOWNGRADE_SPHERE_NODES,
-  ID_SWAP_RANDOM_ENCOUNTER_STATS,
-  ID_SCALE_ECOUNTER_STATS,
+  ID_NONE_GRID,
   ID_EMPTY_GRID,
   ID_FULL_GRID,
   ID_REMOVE_LOCKS,
+  ID_RANDOM_ENCOUNTER_STATS_NONE,
+  ID_SWAP_RANDOM_ENCOUNTER_STATS,
+  ID_SCALE_ECOUNTER_STATS,
   ID_BASE_WINDOW = 1000,
   ID_NOTEBOOK,
 };
@@ -182,7 +190,8 @@ public:
     SetSizeHints( GetBestSize(), GetMaxClientSize() );
     SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
     wxSize size = GetBestSize();
-    size.SetHeight( size.GetHeight() + 20 );
+    size.SetHeight( size.GetHeight() + 10 );
+    size.SetWidth( size.GetWidth() );
     SetSize( size );
   }
 
@@ -190,41 +199,58 @@ private:
   void initialize();
   void onSeedChange( wxCommandEvent& event );
   void onRandomize( wxCommandEvent& event );
+  void onPoisonIsDeadly( wxCommandEvent& event );
   void onRandomizeEnemyDrops( wxCommandEvent& event );
   void onRandomizeEnemySteals( wxCommandEvent& event );
   void onRandomizeEnemyBribes( wxCommandEvent& event );
   void onRandomizeEnemyGearDrops( wxCommandEvent& event );
+  void onRandomizeEnemyStatsNone( wxCommandEvent& event );
   void onRandomizeEnemyStats( wxCommandEvent& event );
   void onRandomizeEnemyStatsDefensive( wxCommandEvent& event );
   void onRandomizeEnemyStatsShuffle( wxCommandEvent& event );
+  void onRandomizeEnemyElementalAffinities( wxCommandEvent& event );
+
   void onRandomizeItemShops( wxCommandEvent& event );
   void onRandomizeGearShops( wxCommandEvent& event );
   void onRandomizeItemShopPrices( wxCommandEvent& event );
   void onRandomizeGearShopPrices( wxCommandEvent& event );
+
   void onRandomizeFieldItems( wxCommandEvent& event );
+
   void onRandomizeGearAbilities( wxCommandEvent& event );
   void onRandomizeWeaponCrit( wxCommandEvent& event );
   void onRandomizeWeaponAttackPower( wxCommandEvent& event );
   void onRandomizeWeaponDamageFormula( wxCommandEvent& event );
-  void onRandomizePlayerStats( wxCommandEvent& event );
-  void onRandomizeAeonStatScaling( wxCommandEvent& event );
-  void onRandomizeAeonBaseStats( wxCommandEvent& event );
-  void onShufflePlayerStats( wxCommandEvent& event );
-  void onShuffleAeonStatScaling( wxCommandEvent& event );
-  void onShuffleAeonBaseStats( wxCommandEvent& event );
-  void onPoisonIsDeadly( wxCommandEvent& event );
+
   void onRandomizeStartingOverdriveMode( wxCommandEvent& event );
-  void onRandomizeEnemyElementalAffinities( wxCommandEvent& event );
+
+  void onRandomizePlayerStatsNone( wxCommandEvent& event );
+  void onRandomizePlayerStats( wxCommandEvent& event );
+  void onShufflePlayerStats( wxCommandEvent& event );
+
+  void onRandomizeAeonStatScalingNone( wxCommandEvent& event );
+  void onRandomizeAeonStatScaling( wxCommandEvent& event );
+  void onShuffleAeonStatScaling( wxCommandEvent& event );
+
+  void onRandomizeAeonBaseStatsNone( wxCommandEvent& event );
+  void onRandomizeAeonBaseStats( wxCommandEvent& event );
+  void onShuffleAeonBaseStats( wxCommandEvent& event );
+
   void onRandomizeEncounters( wxCommandEvent& event );
-  void onShuffleSphereGrid( wxCommandEvent& event );
-  void onRandomizeSphereGrid( wxCommandEvent& event );
-  void onEmptySphereGrid( wxCommandEvent& event );
-  void onFillSphereGrid( wxCommandEvent& event );
-  void onRemoveSphereGridLocks( wxCommandEvent& event );
-  void onUpgradeSphereNodes( wxCommandEvent& event );
-  void onDowngradeSphereNodes( wxCommandEvent& event );
+  void onRandizedEncountersStatsNone( wxCommandEvent& event );
   void onSwapRandomEncounterStats( wxCommandEvent& event );
   void onScaleEncounterStats( wxCommandEvent& event );
+
+  void onRemoveSphereGridLocks( wxCommandEvent& event );
+  void onRandomizeSphereGridNone( wxCommandEvent& event );
+  void onShuffleSphereGrid( wxCommandEvent& event );
+  void onRandomizeSphereGrid( wxCommandEvent& event );
+  void onSphereNodesNone( wxCommandEvent& event );
+  void onEmptySphereGrid( wxCommandEvent& event );
+  void onFillSphereGrid( wxCommandEvent& event );
+  void onSphereGridNone( wxCommandEvent& event );
+  void onUpgradeSphereNodes( wxCommandEvent& event );
+  void onDowngradeSphereNodes( wxCommandEvent& event );
 
   void onRandomizeKeyItems( wxCommandEvent& event );
   void onKeepThingsSane( wxCommandEvent& event );
@@ -244,26 +270,16 @@ struct enemy_options_panel_t : public wxPanel
   wxCheckBox* randomizeEnemyBribesCheckbox;
   wxCheckBox* randomizeEnemyGearDropsCheckbox;
   wxCheckBox* randomizeEnemyElementalAffinitiesCheckbox;
-  wxCheckBox* randomizeEnemyStatsCheckbox;
-  wxCheckBox* randomizeEnemyStatsDefensiveCheckbox;
-  wxCheckBox* randomizeEnemyStatsShuffleCheckbox;
   wxCheckBox* randomizeEncountersCheckbox;
-  wxCheckBox* swapRandomizedStatsCheckbox;
-  wxCheckBox* normalizeEncounterStatsCheckbox;
 
-  enemy_options_panel_t( wxAuiNotebook* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+  enemy_options_panel_t( wxAuiNotebook* frame ) : wxPanel( frame, wxID_ANY, wxDefaultPosition, wxSize( 335, 350 ), wxBORDER_NONE),
     poisonIsDeadlyCheckbox( nullptr ),
     randomizeEnemyDropsCheckbox( nullptr ),
     randomizeEnemyStealsCheckbox( nullptr ),
     randomizeEnemyBribesCheckbox( nullptr ),
     randomizeEnemyGearDropsCheckbox( nullptr ),
     randomizeEnemyElementalAffinitiesCheckbox( nullptr ),
-    randomizeEnemyStatsCheckbox( nullptr ),
-    randomizeEnemyStatsDefensiveCheckbox( nullptr ),
-    randomizeEnemyStatsShuffleCheckbox( nullptr ),
-    randomizeEncountersCheckbox( nullptr ),
-    swapRandomizedStatsCheckbox( nullptr ),
-    normalizeEncounterStatsCheckbox( nullptr )
+    randomizeEncountersCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
 
@@ -278,22 +294,28 @@ struct enemy_options_panel_t : public wxPanel
     randomizeEnemyElementalAffinitiesCheckbox->SetToolTip( "If checked, enemy elemental affinities will be randomized. This includes:\n- Weaknesss \n- Resists \n- Immunities \n- Absorbs\n\nThis is slightly skewed in favor of giving an enemy a weakness if it gets an affinity." );
     randomizeEncountersCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENCOUNTERS, _T( "Randomize Random Encounters" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeEncountersCheckbox->SetToolTip( "If checked, random encounters will be randomized." );
-    swapRandomizedStatsCheckbox = new wxCheckBox( this, ID_SWAP_RANDOM_ENCOUNTER_STATS, _T( "Swap Randomized Encounter Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    swapRandomizedStatsCheckbox->SetToolTip( "If checked, randomized encounters will get the stats of their original enemy." );
-    normalizeEncounterStatsCheckbox = new wxCheckBox( this, ID_SCALE_ECOUNTER_STATS, _T( "Normalize Encounter Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    normalizeEncounterStatsCheckbox->SetToolTip( "If checked, randomized encounters will have their stats scaled based on the difference between the original and new enemies stats." );
 
-    wxStaticText* enemy_stats_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
+    wxStaticText* random_encounter_text = new wxStaticText( this, wxID_ANY, _T( "Random Encounter Stat Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    random_encounter_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+
+    wxRadioButton* swapRandomizedEncounterStatsNoneRadioBox = new wxRadioButton( this, ID_RANDOM_ENCOUNTER_STATS_NONE, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    swapRandomizedEncounterStatsNoneRadioBox->SetToolTip( "If checked, randomized encounters will have their original stats" );
+    wxRadioButton* swapRandomizedEncounterStatsRadioButton = new wxRadioButton( this, ID_SWAP_RANDOM_ENCOUNTER_STATS, _T( "Swap Randomized Encounter Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    swapRandomizedEncounterStatsRadioButton->SetToolTip( "If checked, randomized encounters will get the stats of their original enemy." );
+    wxRadioButton* scaleEncounterStatsRadioButton = new wxRadioButton( this, ID_SCALE_ECOUNTER_STATS, _T( "Normalize Encounter Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    scaleEncounterStatsRadioButton->SetToolTip( "If checked, randomized encounters will have their stats scaled based on the difference between the original and new enemies stats." );
+
+    wxStaticText* enemy_stats_text = new wxStaticText( this, wxID_ANY, _T( "Enemy Stat Randomization Options" ), wxDefaultPosition, wxDefaultSize, 0 );
     enemy_stats_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-    randomizeEnemyStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_STATS, _T( "Randomize Enemy Stats - Normal Distribution" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeEnemyStatsCheckbox->SetToolTip( "If checked, enemy stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
-
-    randomizeEnemyStatsDefensiveCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_STATS_DEFENSIVE, _T( "Shuffle Enemy Stats + Normalize Defensives" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeEnemyStatsDefensiveCheckbox->SetToolTip( "If checked, enemy defensive stats (def/magic def/evasion) will be randomly assigned to another enemies values, with some math magic to try to keep them from ending up too tanky.\n Non defensive stats are randomized with the same method as the Normal Distribution option." );
-
-    randomizeEnemyStatsShuffleCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ENEMY_STATS_SHUFFLE, _T( "Shuffle Enemy Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeEnemyStatsShuffleCheckbox->SetToolTip( "If checked, enemy defensive stats (def/magic def/evasion) will be shuffled to a different enemies defensive stats at random.\nYou may encounter a flan with penance's defensive stats" );
+    wxRadioButton* noRandomizeEnemyStats = new wxRadioButton( this, ID_RANDOMIZE_ENEMY_STATS_NONE, _T( "No Randomization" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    noRandomizeEnemyStats->SetToolTip( "If checked, enemy stats will not be randomized." );
+    wxRadioButton* randomizeEnemyStatsRadioButton = new wxRadioButton( this, ID_RANDOMIZE_ENEMY_STATS, _T( "Randomize Enemy Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeEnemyStatsRadioButton->SetToolTip( "If checked, enemy stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    wxRadioButton* randomizeEnemyStatsDefensiveRadioButton = new wxRadioButton( this, ID_RANDOMIZE_ENEMY_STATS_DEFENSIVE, _T( "Shuffle Enemy Stats + Normalize Defensives" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeEnemyStatsDefensiveRadioButton->SetToolTip( "If checked, enemy defensive stats (def/magic def/evasion) will be randomly assigned to another enemies values, with some math magic to try to keep them from ending up too tanky.\n Non defensive stats are randomized with the same method as the Normal Distribution option." );
+    wxRadioButton* randomizeEnemyStatsShuffleRadioButton = new wxRadioButton( this, ID_RANDOMIZE_ENEMY_STATS_SHUFFLE, _T( "Shuffle Enemy Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeEnemyStatsShuffleRadioButton->SetToolTip( "If checked, enemy defensive stats (def/magic def/evasion) will be shuffled to a different enemies defensive stats at random.\nYou may encounter a flan with penance's defensive stats" );
 
     sizer->Add( poisonIsDeadlyCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
@@ -303,21 +325,24 @@ struct enemy_options_panel_t : public wxPanel
     sizer->Add( randomizeEnemyGearDropsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEnemyElementalAffinitiesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeEncountersCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( swapRandomizedStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( normalizeEncounterStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
+    sizer->Add( random_encounter_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( swapRandomizedEncounterStatsNoneRadioBox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( swapRandomizedEncounterStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( scaleEncounterStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
 
     sizer->Add( enemy_stats_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeEnemyStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeEnemyStatsDefensiveCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeEnemyStatsShuffleCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( noRandomizeEnemyStats, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeEnemyStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeEnemyStatsDefensiveRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeEnemyStatsShuffleRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
 
     SetSizer( sizer );
-    SetMinSize( GetBestVirtualSize() );
-    SetSize( GetBestVirtualSize() );
   }
 };
 
@@ -445,13 +470,9 @@ struct item_options_panel_t : wxPanel
 
 struct player_stats_panel_t : public wxPanel
 {
-  wxCheckBox* randomizePlayerStatsCheckbox;
-  wxCheckBox* shufflePlayerStatsCheckbox;
   wxCheckBox* randomizeStartingOverdriveModeCheckbox;
 
   player_stats_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
-    randomizePlayerStatsCheckbox( nullptr ),
-    shufflePlayerStatsCheckbox( nullptr ),
     randomizeStartingOverdriveModeCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
@@ -459,25 +480,28 @@ struct player_stats_panel_t : public wxPanel
     wxStaticText* new_game_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
     new_game_text->SetFont( wxFont( 12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-    randomizePlayerStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_PLAYER_STATS, _T( "Randomize Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
-    shufflePlayerStatsCheckbox = new wxCheckBox( this, ID_SHUFFLE_PLAYER_STATS, _T( "Shuffle Party Member Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shufflePlayerStatsCheckbox->SetToolTip( "If checked, party member stats will be shuffled to another party members stats at random." );
+    wxRadioButton* RandomizePlayerStatsNoneRadioButton = new wxRadioButton( this, ID_RANDOMIZE_PLAYER_STATS_NONE, _T( "No Randomization" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    RandomizePlayerStatsNoneRadioButton->SetToolTip( "If checked, player stats will not be randomized." );
+    wxRadioButton* RandomizePlayerStatsRadioButton = new wxRadioButton( this, ID_RANDOMIZE_PLAYER_STATS, _T( "Randomize Player Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    RandomizePlayerStatsRadioButton->SetToolTip( "If checked, player stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    wxRadioButton* ShufflePlayerStatsRadioButton = new wxRadioButton( this, ID_SHUFFLE_PLAYER_STATS, _T( "Shuffle Player Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    ShufflePlayerStatsRadioButton->SetToolTip( "If checked, player stats will be shuffled to another party members stats at random." );
 
     randomizeStartingOverdriveModeCheckbox = new wxCheckBox( this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE, _T( "Randomize Starting Overdrive Mode" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeStartingOverdriveModeCheckbox->SetToolTip( "If checked, the starting overdrive mode for playable characters will be random." );
 
-    wxStaticText* exclusive_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
+    wxStaticText* exclusive_text = new wxStaticText( this, wxID_ANY, _T( "Player Stat Options" ), wxDefaultPosition, wxDefaultSize, 0 );
     exclusive_text->SetFont( wxFont( 10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
 
     sizer->Add( new_game_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeStartingOverdriveModeCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
 
     sizer->Add( exclusive_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shufflePlayerStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( RandomizePlayerStatsNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( RandomizePlayerStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( ShufflePlayerStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
     SetSizer( sizer );
     SetMinSize( GetBestVirtualSize() );
@@ -486,16 +510,7 @@ struct player_stats_panel_t : public wxPanel
 
 struct aeon_stats_panel_t : public wxPanel
 {
-  wxCheckBox* randomizeAeonStatScalingCheckbox;
-  wxCheckBox* randomiseAeonBaseStatsCheckbox;
-  wxCheckBox* shuffleAeonStatScalingCheckbox;
-  wxCheckBox* shuffleAeonBaseStatsCheckbox;
-
-  aeon_stats_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
-    randomizeAeonStatScalingCheckbox( nullptr ),
-    randomiseAeonBaseStatsCheckbox( nullptr ),
-    shuffleAeonStatScalingCheckbox( nullptr ),
-    shuffleAeonBaseStatsCheckbox( nullptr )
+  aeon_stats_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
 
@@ -503,32 +518,39 @@ struct aeon_stats_panel_t : public wxPanel
     wxStaticText* new_game_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
     new_game_text->SetFont( wxFont( 12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-    randomizeAeonStatScalingCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_SCALING, _T( "Randomize Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
-    randomiseAeonBaseStatsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_BASE_STATS, _T( "Randomize Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomiseAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    wxRadioButton* randomizeAeonBaseStatsNoneRadioButton = new wxRadioButton( this, ID_RANDOMIZE_AEON_BASE_STATS_NONE, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    randomizeAeonBaseStatsNoneRadioButton->SetToolTip( "If checked, aeon base stats will not be randomized." );
+    wxRadioButton* randomizeAeonBaseStatsRadioButton = new wxRadioButton( this, ID_RANDOMIZE_AEON_BASE_STATS, _T( "Randomize Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeAeonBaseStatsRadioButton->SetToolTip( "If checked, aeon base stats will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    wxRadioButton* shuffleAeonBaseStatsRadioButton = new wxRadioButton( this, ID_SHUFFLE_AEON_BASE_STATS, _T( "Shuffle Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shuffleAeonBaseStatsRadioButton->SetToolTip( "If checked, aeon base stats will be shuffled to another aeons stats at random." );
 
-    shuffleAeonStatScalingCheckbox = new wxCheckBox( this, ID_SHUFFLE_AEON_STAT_SCALING, _T( "Shuffle Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shuffleAeonStatScalingCheckbox->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be shuffled to another aeons stats at random." );
-    shuffleAeonBaseStatsCheckbox = new wxCheckBox( this, ID_SHUFFLE_AEON_BASE_STATS, _T( "Shuffle Aeon Base Stats" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shuffleAeonBaseStatsCheckbox->SetToolTip( "If checked, aeon base stats will be shuffled to another aeons stats at random." );
+    wxRadioButton* randomizeAeonStatScalingNoneRadioButton = new wxRadioButton( this, ID_RANDOMIZE_AEON_STAT_SCALING_NONE, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    randomizeAeonStatScalingNoneRadioButton->SetToolTip( "If checked, aeon stat scaling will not be randomized." );
+    wxRadioButton* randomizeAeonStatScalingRadioButton = new wxRadioButton( this, ID_RANDOMIZE_AEON_STAT_SCALING, _T( "Randomize Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeAeonStatScalingRadioButton->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be randomized using a normal distribution, centered on their original values. This keeps things close to vanilla, with some spice on occasion" );
+    wxRadioButton* shuffleAeonStatScalingRadioButton = new wxRadioButton( this, ID_SHUFFLE_AEON_STAT_SCALING, _T( "Shuffle Aeon Stat Scaling" ), wxDefaultPosition, wxDefaultSize, 0 );
+    shuffleAeonStatScalingRadioButton->SetToolTip( "If checked, aeon stat scaling (with Yunas stats) will be shuffled to another aeons stats at random." );
 
-    wxStaticText* exclusive_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
-    exclusive_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+    wxStaticText* scaling_text = new wxStaticText( this, wxID_ANY, _T( "Aeon Stat Scaling Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    scaling_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-    wxStaticText* eclusive_copy = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
-    eclusive_copy->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+    wxStaticText* stats = new wxStaticText( this, wxID_ANY, _T( "Aeon Base Stat Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    stats->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
     sizer->Add( new_game_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( exclusive_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomiseAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shuffleAeonBaseStatsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( stats, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeAeonBaseStatsNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeAeonBaseStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( shuffleAeonBaseStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
 
-    sizer->Add( eclusive_copy, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shuffleAeonStatScalingCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( scaling_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeAeonStatScalingNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeAeonStatScalingRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( shuffleAeonStatScalingRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
     SetSizer( sizer );
     SetMinSize( GetBestVirtualSize() );
@@ -537,70 +559,71 @@ struct aeon_stats_panel_t : public wxPanel
 
 struct sphere_grid_panel_t : public wxPanel
 {
-  wxCheckBox* shuffleSphereGridCheckbox;
-  wxCheckBox* randomizeSphereGridCheckbox;
-  wxCheckBox* emptySphereGridCheckbox;
-  wxCheckBox* fillSphereGridCheckbox;
   wxCheckBox* removeSphereGridLocksCheckbox;
-  wxCheckBox* upgradeSphereNodesCheckbox;
-  wxCheckBox* downgradeSphereNodesCheckbox;
 
   sphere_grid_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
-    shuffleSphereGridCheckbox( nullptr ),
-    randomizeSphereGridCheckbox( nullptr ),
-    emptySphereGridCheckbox( nullptr ),
-    fillSphereGridCheckbox( nullptr ),
-    removeSphereGridLocksCheckbox( nullptr ),
-    upgradeSphereNodesCheckbox( nullptr ),
-    downgradeSphereNodesCheckbox( nullptr )
+    removeSphereGridLocksCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
 
     wxStaticText* new_game_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
     new_game_text->SetFont( wxFont( 12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-    shuffleSphereGridCheckbox = new wxCheckBox( this, ID_SHUFFLE_SPHERE_GRID, _T( "Shuffle Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
-    shuffleSphereGridCheckbox->SetToolTip( "If checked, the sphere grid will be shuffled. This means that the nodes will be in a different order, but the same nodes will be present." );
-    randomizeSphereGridCheckbox = new wxCheckBox( this, ID_RANDOMIZE_SPHERE_GRID, _T( "Randomize Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
-    randomizeSphereGridCheckbox->SetToolTip( "If checked, the sphere grid will be randomized. This means that there is no guarentee you will get all ability spheres, and there may be duplicate ability nodes." );
-    emptySphereGridCheckbox = new wxCheckBox( this, ID_EMPTY_GRID, _T( "Empty Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
-    emptySphereGridCheckbox->SetToolTip( "If checked, the sphere grid will be empty aside from Ability nodes. You have to find all the spheres yourself." );
-    fillSphereGridCheckbox = new wxCheckBox( this, ID_FULL_GRID, _T( "Full Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
-    fillSphereGridCheckbox->SetToolTip( "If checked, the sphere grid will have no empty nodes. Any slot that would be empty will be filled with a random stat node instead." );
+    wxRadioButton* RandomizeSphereGridNoneRadioButton = new wxRadioButton( this, ID_SPHERE_GRID_NONE, _T( "No Randomization" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    RandomizeSphereGridNoneRadioButton->SetToolTip( "If checked, sphere grid will not be randomized." );
+    wxRadioButton* ShuffleSphereGridRadioButton = new wxRadioButton( this, ID_SHUFFLE_SPHERE_GRID, _T( "Shuffle Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    ShuffleSphereGridRadioButton->SetToolTip( "If checked, sphere grid will be shuffled. This means that the nodes will be in a different order, but the same nodes will be present." );
+    wxRadioButton* RandomizeSphereGridRadioButton = new wxRadioButton( this, ID_RANDOMIZE_SPHERE_GRID, _T( "Randomize Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    RandomizeSphereGridRadioButton->SetToolTip( "If checked, sphere grid will be randomized. This means that there is no guarentee you will get all ability spheres, and there may be duplicate ability nodes." );
+
+    wxRadioButton* sphereNodesNoneRadioButton = new wxRadioButton( this, ID_SPHERE_NODES_NONE, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    sphereNodesNoneRadioButton->SetToolTip( "If checked, sphere nodes will not be scaled up or down" );
+    wxRadioButton* upgradeSphereNodesRadioButton = new wxRadioButton( this, ID_UPGRADE_SPHERE_NODES, _T( "Upgrade Sphere Nodes" ), wxDefaultPosition, wxDefaultSize, 0 );
+    upgradeSphereNodesRadioButton->SetToolTip( "If checked, sphere nodes will be upgraded to their maximum value." );
+    wxRadioButton* downgradeSphereNodesRadioButton = new wxRadioButton( this, ID_DOWNGRADE_SPHERE_NODES, _T( "Downgrade Sphere Nodes" ), wxDefaultPosition, wxDefaultSize, 0 );
+    downgradeSphereNodesRadioButton->SetToolTip( "If checked, sphere nodes will be downgraded to their minimum value." );
+
+    wxRadioButton* sphereGridNoneRadioButton = new wxRadioButton( this, ID_NONE_GRID, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    sphereGridNoneRadioButton->SetToolTip( "If checked, the sphere grid nodes will be the same as normal." );
+    wxRadioButton* emptySphereGridRadioButton = new wxRadioButton( this, ID_EMPTY_GRID, _T( "Empty Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    emptySphereGridRadioButton->SetToolTip( "If checked, the sphere grid will be empty aside from Ability nodes. You have to find all the spheres yourself." );
+    wxRadioButton* fillSphereGridRadioButton = new wxRadioButton( this, ID_FULL_GRID, _T( "Full Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
+    fillSphereGridRadioButton->SetToolTip( "If checked, the sphere grid will have no empty nodes. Any slot that would be empty will be filled with a random stat node instead." );
+
     removeSphereGridLocksCheckbox = new wxCheckBox( this, ID_REMOVE_LOCKS, _T( "Remove Sphere Grid Locks" ), wxDefaultPosition, wxDefaultSize, 0 );
     removeSphereGridLocksCheckbox->SetToolTip( "If checked, the sphere grid will have no key nodes, giving you freedom to go anywhere and get anything." );
-    upgradeSphereNodesCheckbox = new wxCheckBox( this, ID_UPGRADE_SPHERE_NODES, _T( "Upgrade Sphere Nodes" ), wxDefaultPosition, wxDefaultSize, 0 );
-    upgradeSphereNodesCheckbox->SetToolTip( "If checked, all stat nodes in the sphere grid will be upgraded to their maximum value." );
-    downgradeSphereNodesCheckbox = new wxCheckBox( this, ID_DOWNGRADE_SPHERE_NODES, _T( "Downgrade Sphere Nodes" ), wxDefaultPosition, wxDefaultSize, 0 );
-    downgradeSphereNodesCheckbox->SetToolTip( "If checked, all stat nodes in the sphere grid will be downgraded to their minimum value." );
 
-    wxStaticText* exclusive_text = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
-    exclusive_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+    wxStaticText* sphere_grid_text = new wxStaticText( this, wxID_ANY, _T( "Sphere Grid Randomization Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    sphere_grid_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-    wxStaticText* eclusive_copy = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
-    eclusive_copy->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+    wxStaticText* node_text = new wxStaticText( this, wxID_ANY, _T( "Sphere Grid Node Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    node_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
-    wxStaticText* eclusive_copy2 = new wxStaticText( this, wxID_ANY, _T( "These Options are mutually exclusive, only pick one." ), wxDefaultPosition, wxDefaultSize, 0 );
-    eclusive_copy2->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+    wxStaticText* grid_text = new wxStaticText( this, wxID_ANY, _T( "Sphere Grid Modifier Options" ), wxDefaultPosition, wxDefaultSize, 0 );
+    grid_text->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
     sizer->Add( new_game_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( removeSphereGridLocksCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
 
-    sizer->Add( eclusive_copy, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( emptySphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( fillSphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
+    sizer->Add( sphere_grid_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( RandomizeSphereGridNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( ShuffleSphereGridRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( RandomizeSphereGridRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
-    sizer->Add( eclusive_copy2, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( upgradeSphereNodesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( downgradeSphereNodesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
 
-    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
+    sizer->Add( node_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( sphereNodesNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( upgradeSphereNodesRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( downgradeSphereNodesRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
-    sizer->Add( exclusive_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( shuffleSphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
-    sizer->Add( randomizeSphereGridCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
+
+    sizer->Add( grid_text, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( sphereGridNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( emptySphereGridRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( fillSphereGridRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
     SetSizer( sizer );

@@ -24,6 +24,10 @@ void randomizer_t::poplateGearLists()
   for (auto& gear : data_pack.buki_data)
   {
     gear_data_t* armor = gear;
+    if (gear->is_brotherhood && !options_pack.randomize_brotherhood)
+      continue;
+    if (armor->is_celestial && !options_pack.randomize_celestials)
+      continue;
     if (armor->is_armor)
       all_armor.push_back( armor );
     else

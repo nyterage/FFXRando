@@ -85,7 +85,7 @@ void randomizer_t::getShopItems()
 item_t* randomizer_t::getRandomItem()
 {
   std::vector<item_t*> items;
-  for (auto& item : all_non_key_items )
+  for (auto& item : all_non_key_items)
     items.push_back( item.second );
 
   std::uniform_int_distribution<size_t> dist( 0, items.size() - 1 );
@@ -113,8 +113,10 @@ int randomizer_t::getRandomItemQuantity( item_t* item, bool is_monster )
   {
     if (is_monster)
       return uniform<uint8_t>( 1, 4 );
-    if (item->getAverageQuantity() > 2)
+    if (item->getAverageQuantity() > 10)
       return normal<uint8_t>( std::min<uint8_t>( item->getMinQuantity() * 5, 7 ), std::min<uint8_t>( item->getMinQuantity() * 5, 7 ) / 5, std::min<uint8_t>( item->getMinQuantity(), 1 ), 99 );
+    if (item->getAverageQuantity() < 10)
+      return normal<uint8_t>( item->getAverageQuantity(), item->getStandardDeviation(), item->getMinQuantity(), item->getMaxQuantity() );
     else
       return item->getMinQuantity();
   }
@@ -125,6 +127,21 @@ int randomizer_t::getRandomItemQuantity( item_t* item, bool is_monster )
 void randomizer_t::randomizeFieldItems()
 {
   std::vector<int> blacklist = { 177, 203 };
+  if (!options_pack.randomize_celestials)
+  {
+    blacklist.push_back( 5 );
+    blacklist.push_back( 93 );
+    blacklist.push_back( 99 );
+    blacklist.push_back( 113 );
+    blacklist.push_back( 114 );
+    blacklist.push_back( 188 );
+    blacklist.push_back( 214 );
+  }
+  if (!options_pack.randomize_brotherhood)
+  {
+    blacklist.push_back( 207 );
+    blacklist.push_back( 208 );
+  }
   for (auto& field : data_pack.field_data)
   {
     field_data_t& field_data = *field;

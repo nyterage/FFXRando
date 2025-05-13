@@ -16,7 +16,7 @@ void frame_t::initialize()
 {
   wxBoxSizer* main_vertical_sizer = new wxBoxSizer( wxVERTICAL );
 
-  notebook = new wxAuiNotebook( this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxNB_DEFAULT );
+  notebook = new wxAuiNotebook( this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxNB_FIXEDWIDTH );
   notebook->SetAutoLayout( true );
   notebook->SetThemeEnabled( true );
   wxColor notebook_color = wxSystemSettings::GetColour( wxSYS_COLOUR_MENU );
@@ -39,36 +39,53 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemySteals, this, ID_RANDOMIZE_ENEMY_STEALS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyBribes, this, ID_RANDOMIZE_ENEMY_BRIBES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyGearDrops, this, ID_RANDOMIZE_ENEMY_GEAR_DROPS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyStats, this, ID_RANDOMIZE_ENEMY_STATS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyStatsDefensive, this, ID_RANDOMIZE_ENEMY_STATS_DEFENSIVE );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyStatsShuffle, this, ID_RANDOMIZE_ENEMY_STATS_SHUFFLE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeEnemyStatsNone, this, ID_RANDOMIZE_ENEMY_STATS_NONE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeEnemyStats, this, ID_RANDOMIZE_ENEMY_STATS );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeEnemyStatsDefensive, this, ID_RANDOMIZE_ENEMY_STATS_DEFENSIVE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeEnemyStatsShuffle, this, ID_RANDOMIZE_ENEMY_STATS_SHUFFLE );
+
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeItemShops, this, ID_RANDOMIZE_ITEM_SHOPS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearShops, this, ID_RANDOMIZE_GEAR_SHOPS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeItemShopPrices, this, ID_RANDOMIZE_ITEM_SHOP_PRICES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearShopPrices, this, ID_RANDOMIZE_GEAR_SHOP_PRICES );
+
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeFieldItems, this, ID_RANDOMIZE_FIELD_ITEMS );
+
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearAbilities, this, ID_RANDOMIZE_GEAR_ABILITIES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponCrit, this, ID_RANDOMIZE_WEAPON_CRIT );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponAttackPower, this, ID_RANDOMIZE_WEAPON_ATTACK_POWER );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponDamageFormula, this, ID_RANDOMIZE_WEAPON_DAMAGE_FORMULA );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonStatScaling, this, ID_RANDOMIZE_AEON_STAT_SCALING );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonBaseStats, this, ID_RANDOMIZE_AEON_BASE_STATS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onShufflePlayerStats, this, ID_SHUFFLE_PLAYER_STATS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonStatScaling, this, ID_SHUFFLE_AEON_STAT_SCALING );
-  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
+
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizePlayerStatsNone, this, ID_RANDOMIZE_PLAYER_STATS_NONE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onShufflePlayerStats, this, ID_SHUFFLE_PLAYER_STATS );
+
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeAeonStatScalingNone, this, ID_RANDOMIZE_AEON_STAT_SCALING_NONE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeAeonStatScaling, this, ID_RANDOMIZE_AEON_STAT_SCALING );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onShuffleAeonStatScaling, this, ID_SHUFFLE_AEON_STAT_SCALING );
+
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeAeonBaseStatsNone, this, ID_RANDOMIZE_AEON_BASE_STATS_NONE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeAeonBaseStats, this, ID_RANDOMIZE_AEON_BASE_STATS );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
+
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeStartingOverdriveMode, this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyElementalAffinities, this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEncounters, this, ID_RANDOMIZE_ENCOUNTERS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onShuffleSphereGrid, this, ID_SHUFFLE_SPHERE_GRID );
-  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeSphereGrid, this, ID_RANDOMIZE_SPHERE_GRID );
-  Bind( wxEVT_CHECKBOX, &frame_t::onEmptySphereGrid, this, ID_EMPTY_GRID );
-  Bind( wxEVT_CHECKBOX, &frame_t::onFillSphereGrid, this, ID_FULL_GRID );
+
   Bind( wxEVT_CHECKBOX, &frame_t::onRemoveSphereGridLocks, this, ID_REMOVE_LOCKS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onUpgradeSphereNodes, this, ID_UPGRADE_SPHERE_NODES );
-  Bind( wxEVT_CHECKBOX, &frame_t::onDowngradeSphereNodes, this, ID_DOWNGRADE_SPHERE_NODES );
-  Bind( wxEVT_CHECKBOX, &frame_t::onSwapRandomEncounterStats, this, ID_SWAP_RANDOM_ENCOUNTER_STATS );
-  Bind( wxEVT_CHECKBOX, &frame_t::onScaleEncounterStats, this, ID_SCALE_ECOUNTER_STATS );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeSphereGridNone, this, ID_SPHERE_GRID_NONE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onShuffleSphereGrid, this, ID_SHUFFLE_SPHERE_GRID );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeSphereGrid, this, ID_RANDOMIZE_SPHERE_GRID );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onSphereNodesNone, this, ID_SPHERE_NODES_NONE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onEmptySphereGrid, this, ID_EMPTY_GRID );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onFillSphereGrid, this, ID_FULL_GRID );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onSphereGridNone, this, ID_NONE_GRID );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onUpgradeSphereNodes, this, ID_UPGRADE_SPHERE_NODES );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onDowngradeSphereNodes, this, ID_DOWNGRADE_SPHERE_NODES );
+
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandizedEncountersStatsNone, this, ID_RANDOM_ENCOUNTER_STATS_NONE );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onSwapRandomEncounterStats, this, ID_SWAP_RANDOM_ENCOUNTER_STATS );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onScaleEncounterStats, this, ID_SCALE_ECOUNTER_STATS );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onKeepThingsSane, this, ID_KEEP_THINGS_SANE );
   Bind( wxEVT_CHECKBOX, &frame_t::onFahrenheit, this, ID_FAHRENHEIT );
@@ -219,21 +236,45 @@ void frame_t::onRandomizeEnemyGearDrops( wxCommandEvent& event )
   printf( "Randomize Enemy Gear Drops: %d\n", randomize_enemy_gear_drops );
 }
 
+void frame_t::onRandomizeEnemyStatsNone( wxCommandEvent& event )
+{
+  randomize_enemy_stats = false;
+  randomize_enemy_stats_defensive = false;
+  randomize_enemy_stats_shuffle = false;
+  printf( "Randomize Enemy Stats None: %d\n", randomize_enemy_stats );
+}
+
 void frame_t::onRandomizeEnemyStats( wxCommandEvent& event )
 {
   randomize_enemy_stats = !randomize_enemy_stats;
+  if (randomize_enemy_stats)
+  {
+    randomize_enemy_stats_defensive = false;
+    randomize_enemy_stats_shuffle = false;
+  }
   printf( "Randomize Enemy Stats Normal Distribution: %d\n", randomize_enemy_stats );
 }
 
 void frame_t::onRandomizeEnemyStatsDefensive( wxCommandEvent& event )
 {
   randomize_enemy_stats_defensive = !randomize_enemy_stats_defensive;
+  if (randomize_enemy_stats_defensive)
+  {
+    randomize_enemy_stats = false;
+    randomize_enemy_stats_shuffle = false;
+  }
+
   printf( "Randomize Enemy Stats Defensive: %d\n", randomize_enemy_stats_defensive );
 }
 
 void frame_t::onRandomizeEnemyStatsShuffle( wxCommandEvent& event )
 {
   randomize_enemy_stats_shuffle = !randomize_enemy_stats_shuffle;
+  if (randomize_enemy_stats_shuffle)
+  {
+    randomize_enemy_stats = false;
+    randomize_enemy_stats_defensive = false;
+  }
   printf( "Randomize Enemy Stats Shuffle: %d\n", randomize_enemy_stats_shuffle );
 }
 
@@ -291,39 +332,72 @@ void frame_t::onRandomizeWeaponDamageFormula( wxCommandEvent& event )
   printf( "Randomize Weapon Damage Formula: %d\n", randomize_weapon_damage_formula );
 }
 
+void frame_t::onRandomizePlayerStatsNone( wxCommandEvent& event )
+{
+  randomize_player_stats = false;
+  shuffle_player_stats = false;
+  printf( "Randomize Player Stats None: %d\n", randomize_player_stats );
+}
+
 void frame_t::onRandomizePlayerStats( wxCommandEvent& event )
 {
   randomize_player_stats = !randomize_player_stats;
+  if (randomize_player_stats)
+    shuffle_player_stats = false;
   printf( "Randomize Player Stats: %d\n", randomize_player_stats );
-}
-
-void frame_t::onRandomizeAeonStatScaling( wxCommandEvent& event )
-{
-  randomize_aeon_stat_scaling = !randomize_aeon_stat_scaling;
-  printf( "Randomize Aeon Stats: %d\n", randomize_aeon_stat_scaling );
-}
-
-void frame_t::onRandomizeAeonBaseStats( wxCommandEvent& event )
-{
-  randomize_aeon_base_stats = !randomize_aeon_base_stats;
-  printf( "Randomize Aeon Base Stats: %d\n", randomize_aeon_base_stats );
 }
 
 void frame_t::onShufflePlayerStats( wxCommandEvent& event )
 {
   shuffle_player_stats = !shuffle_player_stats;
+  if (shuffle_player_stats)
+    randomize_player_stats = false;
   printf( "Shuffle Player Stats: %d\n", shuffle_player_stats );
+}
+
+void frame_t::onRandomizeAeonStatScalingNone( wxCommandEvent& event )
+{
+  randomize_aeon_stat_scaling = false;
+  shuffle_aeon_stat_scaling = false;
+  printf( "Randomize Aeon Stat Scaling None: %d\n", randomize_aeon_stat_scaling );
 }
 
 void frame_t::onShuffleAeonStatScaling( wxCommandEvent& event )
 {
   shuffle_aeon_stat_scaling = !shuffle_aeon_stat_scaling;
+  if (shuffle_aeon_stat_scaling)
+    randomize_aeon_stat_scaling = false;
   printf( "Shuffle Aeon Stats: %d\n", shuffle_aeon_stat_scaling );
+}
+
+void frame_t::onRandomizeAeonStatScaling( wxCommandEvent& event )
+{
+  randomize_aeon_stat_scaling = !randomize_aeon_stat_scaling;
+  if (randomize_aeon_stat_scaling)
+    shuffle_aeon_stat_scaling = false;
+  printf( "Randomize Aeon Stats: %d\n", randomize_aeon_stat_scaling );
+}
+
+void frame_t::onRandomizeAeonBaseStatsNone( wxCommandEvent& event )
+{
+  randomize_aeon_base_stats = false;
+  shuffle_aeon_base_stats = false;
+  printf( "Randomize Aeon Base Stats None: %d\n", randomize_aeon_base_stats );
+}
+
+void frame_t::onRandomizeAeonBaseStats( wxCommandEvent& event )
+{
+  randomize_aeon_base_stats = !randomize_aeon_base_stats;
+  if (randomize_aeon_base_stats)
+    shuffle_aeon_base_stats = false;
+  printf( "Randomize Aeon Base Stats: %d\n", randomize_aeon_base_stats );
 }
 
 void frame_t::onShuffleAeonBaseStats( wxCommandEvent& event )
 {
   shuffle_aeon_base_stats = !shuffle_aeon_base_stats;
+  if (shuffle_aeon_base_stats)
+    randomize_aeon_base_stats = false;
   printf( "Shuffle Aeon Base Stats: %d\n", shuffle_aeon_base_stats );
 }
 
@@ -345,27 +419,49 @@ void frame_t::onRandomizeEncounters( wxCommandEvent& event )
   printf( "Randomize Encounters: %d\n", randomize_encounters );
 }
 
+void frame_t::onRandomizeSphereGridNone( wxCommandEvent& event )
+{
+  randomize_sphere_grid = false;
+  shuffle_sphere_grid = false;
+  printf( "Randomize Sphere Grid None: %d\n", randomize_sphere_grid );
+}
+
 void frame_t::onShuffleSphereGrid( wxCommandEvent& event )
 {
   shuffle_sphere_grid = !shuffle_sphere_grid;
+  if (shuffle_sphere_grid)
+    randomize_sphere_grid = false;
   printf( "Shuffle Sphere Grid: %d\n", shuffle_sphere_grid );
 }
 
 void frame_t::onRandomizeSphereGrid( wxCommandEvent& event )
 {
   randomize_sphere_grid = !randomize_sphere_grid;
+  if (randomize_sphere_grid)
+    shuffle_sphere_grid = false;
   printf( "Randomize Sphere Grid: %d\n", randomize_sphere_grid );
 }
 
 void frame_t::onEmptySphereGrid( wxCommandEvent& event )
 {
   empty_sphere_grid = !empty_sphere_grid;
+  if (empty_sphere_grid)
+    fill_sphere_grid = false;
   printf( "Empty Sphere Grid: %d\n", empty_sphere_grid );
+}
+
+void frame_t::onSphereGridNone( wxCommandEvent& event )
+{
+  empty_sphere_grid = false;
+  fill_sphere_grid = false;
+  printf( "Sphere Grid None: %d\n", empty_sphere_grid );
 }
 
 void frame_t::onFillSphereGrid( wxCommandEvent& event )
 {
   fill_sphere_grid = !fill_sphere_grid;
+  if (fill_sphere_grid)
+    empty_sphere_grid = false;
   printf( "Fill Sphere Grid: %d\n", fill_sphere_grid );
 }
 
@@ -375,27 +471,50 @@ void frame_t::onRemoveSphereGridLocks( wxCommandEvent& event )
   printf( "Remove Sphere Grid Locks: %d\n", remove_sphere_grid_locks );
 }
 
+void frame_t::onSphereNodesNone( wxCommandEvent& event )
+{
+  upgrade_sphere_nodes = false;
+  downgrade_sphere_nodes = false;
+  printf( "Sphere Nodes None: %d\n", upgrade_sphere_nodes );
+}
+
 void frame_t::onUpgradeSphereNodes( wxCommandEvent& event )
 {
   upgrade_sphere_nodes = !upgrade_sphere_nodes;
+  if (upgrade_sphere_nodes)
+    downgrade_sphere_nodes = false;
   printf( "Upgrade Sphere Nodes: %d\n", upgrade_sphere_nodes );
 }
 
 void frame_t::onDowngradeSphereNodes( wxCommandEvent& event )
 {
   downgrade_sphere_nodes = !downgrade_sphere_nodes;
+  if (downgrade_sphere_nodes)
+    upgrade_sphere_nodes = false;
   printf( "Downgrade Sphere Nodes: %d\n", downgrade_sphere_nodes );
+}
+
+void frame_t::onRandizedEncountersStatsNone( wxCommandEvent& event )
+{
+  swap_random_stats = false;
+  scale_encounter_stats = false;
+  printf( "Randomized Encounters Stats None: %d\n", swap_random_stats );
 }
 
 void frame_t::onSwapRandomEncounterStats( wxCommandEvent& event )
 {
   swap_random_stats = !swap_random_stats;
+  if (swap_random_stats)
+    scale_encounter_stats = false;
+
   printf( "Swap Random Encounter Stats: %d\n", swap_random_stats );
 }
 
 void frame_t::onScaleEncounterStats( wxCommandEvent& event )
 {
   scale_encounter_stats = !scale_encounter_stats;
+  if (scale_encounter_stats)
+    swap_random_stats = false;
   printf( "Scale Encounter Stats: %d\n", scale_encounter_stats );
 }
 
