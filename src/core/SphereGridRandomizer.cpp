@@ -65,9 +65,9 @@ void randomizer_t::getSphereGridNodeIds()
   }
 }
 
-void randomizer_t::shuffleSphereGridNodes()
+void randomizer_t::setRequiredAbilities()
 {
-  // Force Lancet and Use to be on Riku and Kimari to prevent softlocks
+  // Force abilities used by tutorials to be learned to prevent softlocks
   character_stats_t& riku_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_RIKU ];
   riku_stats.ability_flags1.bits.use = 1;
   riku_stats.writeToBytes();
@@ -83,6 +83,11 @@ void randomizer_t::shuffleSphereGridNodes()
   character_stats_t& lulu_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_LULU ];
   lulu_stats.ability_flags3.bits.thunder = 1;
   lulu_stats.writeToBytes();
+}
+
+void randomizer_t::shuffleSphereGridNodes()
+{
+  setRequiredAbilities();
 
   for (auto& grid : data_pack.sphere_grid_data)
   {
@@ -130,24 +135,9 @@ void randomizer_t::shuffleSphereGridNodes()
   }
 }
 
-void randomizer_t::randomizeSphereGrid()
+void randomizer_t::randomizeSphereGridTrue()
 {
-  // Force Lancet and Use to be on Riku and Kimari to prevent softlocks
-  character_stats_t& riku_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_RIKU ];
-  riku_stats.ability_flags1.bits.use = 1;
-  riku_stats.writeToBytes();
-
-  character_stats_t& kimari_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_KIMAHRI ];
-  kimari_stats.ability_flags2.bits.lancet = 1;
-  kimari_stats.writeToBytes();
-
-  character_stats_t& wakka_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_WAKKA ];
-  wakka_stats.ability_flags1.bits.dark_attack = 1;
-  wakka_stats.writeToBytes();
-
-  character_stats_t& lulu_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_LULU ];
-  lulu_stats.ability_flags3.bits.thunder = 1;
-  lulu_stats.writeToBytes();
+  setRequiredAbilities();
 
   for (auto& grid : data_pack.sphere_grid_data)
   {
@@ -155,8 +145,46 @@ void randomizer_t::randomizeSphereGrid()
     for (auto& node_data : sphere_grid.nodes)
     {
       sphere_grid_node_data_t& node = *node_data;
-      std::vector<uint16_t> blacklist = { 0x3B, 0xFF };
       uint8_t new_content = uniform<uint8_t>( 0, 0x7F );
+      node.content = new_content;
+      node.writeToBytes();
+    }
+    sphere_grid.writeToBytes();
+  }
+}
+
+void randomizer_t::randomizeSphereGrid()
+{
+  setRequiredAbilities();
+
+  for (auto& grid : data_pack.sphere_grid_data)
+  {
+    std::vector<uint8_t> abilities;
+    abilities.reserve( 84 );
+    for (int i = 0x2A; i <= 0x7E; i++)
+      abilities.push_back( i );
+
+    std::vector<sphere_grid_node_data_t*> already_used_nodes;
+    already_used_nodes.reserve( abilities.size() );
+    sphere_grid_data_t& sphere_grid = *grid;
+
+    for (int i = 0; i < abilities.size(); i++)
+    {
+      uint8_t new_content = abilities[ i ];
+      int random_node_index = uniform<int>( 0, sphere_grid.nodes.size() - 1 );
+      sphere_grid_node_data_t* node = sphere_grid.nodes[ random_node_index ];
+      node->content = new_content;
+      node->writeToBytes();
+      already_used_nodes.push_back( node );
+    }
+
+    for (auto& node_data : sphere_grid.nodes)
+    {
+      bool found = std::find( already_used_nodes.begin(), already_used_nodes.end(), node_data ) != already_used_nodes.end();
+      if (found)
+        continue;
+      sphere_grid_node_data_t& node = *node_data;
+      uint8_t new_content = uniform<uint8_t>( 0, options_pack.remove_sphere_grid_locks ? 0x26 : 0x29 );
       node.content = new_content;
       node.writeToBytes();
     }
@@ -172,7 +200,7 @@ void randomizer_t::emptySphereGrid()
     for (auto& node_data : sphere_grid.nodes)
     {
       sphere_grid_node_data_t& node = *node_data;
-      std::vector<uint16_t> blacklist = { 0x3B, 0xFF };
+      std::vector<uint16_t> blacklist = { 0xFF };
       if (std::find( blacklist.begin(), blacklist.end(), node.original_content ) != blacklist.end())
         continue;
       if (node.content <= 0x29)
@@ -352,15 +380,21 @@ void randomizer_t::downgradeSphereGridNodes()
 
 void randomizer_t::doSphereGridRandomization()
 {
-  if (!options_pack.shuffle_sphere_grid && !options_pack.randomize_sphere_grid && !options_pack.empty_sphere_grid &&
-       !options_pack.fill_sphere_grid && !options_pack.upgrade_sphere_nodes && !options_pack.downgrade_sphere_nodes &&
-       !options_pack.remove_sphere_grid_locks)
+  if (!options_pack.shuffle_sphere_grid && !options_pack.randomize_sphere_grid_true && !options_pack.randomize_sphere_grid &&
+       !options_pack.empty_sphere_grid && !options_pack.fill_sphere_grid && !options_pack.upgrade_sphere_nodes && 
+       !options_pack.downgrade_sphere_nodes && !options_pack.remove_sphere_grid_locks)
     return;
 
   if (options_pack.shuffle_sphere_grid)
   {
-    printf( "Randomizing Sphere Grid...\n" );
+    printf( "Shuffling Sphere Grid...\n" );
     shuffleSphereGridNodes();
+  }
+
+  if (options_pack.randomize_sphere_grid_true)
+  {
+    printf( "Randomizing Sphere Grid...\n" );
+    randomizeSphereGridTrue();
   }
 
   if (options_pack.randomize_sphere_grid)

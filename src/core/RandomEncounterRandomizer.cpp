@@ -40,6 +40,8 @@ void randomizer_t::adjustStats()
 
   for (auto& pair : paired_mosnter_ids)
   {
+    if (pair.second == 211)
+      continue;
     const enemy_data_t& monster = data_pack.unmodified_enemy_data.at(pair.first);
     enemy_data_t& new_monster = data_pack.enemy_data.at(pair.second);
     const enemy_stat_data_t* stats = monster.stats_data;
@@ -89,6 +91,11 @@ void randomizer_t::adjustStats()
       float ap = std::ceil( loot->ap * std::pow( std::pow( new_ap, 1 / 3.2 ) / std::pow( old_ap, 1 / 3.2 ), 1 / 3.2 ) );
       new_loot->ap = std::clamp( static_cast< uint16_t >( ap ), std::min( loot->ap, new_loot->ap ), std::max( loot->ap, new_loot->ap ) );
 
+      float old_overkill_ap = loot->ap_overkill;
+      float new_overkill_ap = new_loot->ap_overkill;
+      float overkill_ap = std::ceil( loot->ap_overkill * std::pow( std::pow( new_overkill_ap, 1 / 3.2 ) / std::pow( old_overkill_ap, 1 / 3.2 ), 1 / 3.2 ) );
+      new_loot->ap_overkill = std::clamp( static_cast< uint16_t >( overkill_ap ), std::min( loot->ap_overkill, new_loot->ap_overkill ), std::max( loot->ap_overkill, new_loot->ap_overkill ) );
+
       float old_gil = loot->gil;
       float new_gil = new_loot->gil;
       float gil = std::ceil( loot->gil * std::pow( std::pow( new_gil, 1 / 3.2 ) / std::pow( old_gil, 1 / 3.2 ), 1 / 3.2 ) );
@@ -108,6 +115,7 @@ void randomizer_t::adjustStats()
       new_stats->eva = stats->eva;
       new_stats->luck = stats->luck;
       new_loot->ap = loot->ap;
+      new_loot->ap_overkill = loot->ap_overkill;
       new_loot->gil = loot->gil;
     }
 

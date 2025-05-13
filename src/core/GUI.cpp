@@ -75,6 +75,7 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRemoveSphereGridLocks, this, ID_REMOVE_LOCKS );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeSphereGridNone, this, ID_SPHERE_GRID_NONE );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onShuffleSphereGrid, this, ID_SHUFFLE_SPHERE_GRID );
+  Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeSphereGridTrue, this, ID_RANDOMIZE_SPHERE_GRID_TRUE );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeSphereGrid, this, ID_RANDOMIZE_SPHERE_GRID );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onSphereNodesNone, this, ID_SPHERE_NODES_NONE );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onEmptySphereGrid, this, ID_EMPTY_GRID );
@@ -129,36 +130,6 @@ void frame_t::initialize()
 
 void frame_t::onRandomize( wxCommandEvent& event )
 {
-  if (randomize_enemy_stats && randomize_enemy_stats_defensive || randomize_enemy_stats && randomize_enemy_stats_shuffle || randomize_enemy_stats_shuffle && randomize_enemy_stats_defensive)
-  {
-    wxLogMessage( "You can only pick one of the enemy stat randomization options" );
-    return;
-  }
-
-  if (randomize_player_stats && shuffle_player_stats || randomize_aeon_base_stats && shuffle_aeon_base_stats || randomize_aeon_stat_scaling && shuffle_aeon_stat_scaling)
-  {
-    wxLogMessage( "You can only pick one of the player or aeon stat randomization options at a time!\nFor Aeons, base and scaling can both be picked though!" );
-    return;
-  }
-
-  if (randomize_sphere_grid && shuffle_sphere_grid)
-  {
-    wxLogMessage( "You can only pick one of the sphere grid randomization options" );
-    return;
-  }
-
-  if (upgrade_sphere_nodes && downgrade_sphere_nodes)
-  {
-    wxLogMessage( "You can only pick one of the sphere grid node upgrade options" );
-    return;
-  }
-
-  if (empty_sphere_grid && fill_sphere_grid)
-  {
-    wxLogMessage( "You can only pick one of the sphere grid empty/fill options" );
-    return;
-  }
-
   options = new options_pack_t( randomize_enemy_drops,
                                 randomize_enemy_steals,
                                 randomize_enemy_bribes,
@@ -186,6 +157,7 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                 randomize_enemy_elemental_affinities,
                                 randomize_encounters,
                                 shuffle_sphere_grid,
+                                randomize_sphere_grid_true,
                                 randomize_sphere_grid,
                                 empty_sphere_grid,
                                 fill_sphere_grid,
@@ -421,24 +393,41 @@ void frame_t::onRandomizeEncounters( wxCommandEvent& event )
 
 void frame_t::onRandomizeSphereGridNone( wxCommandEvent& event )
 {
-  randomize_sphere_grid = false;
+  randomize_sphere_grid_true = false;
   shuffle_sphere_grid = false;
-  printf( "Randomize Sphere Grid None: %d\n", randomize_sphere_grid );
+  printf( "Randomize Sphere Grid None: %d\n", randomize_sphere_grid_true );
 }
 
 void frame_t::onShuffleSphereGrid( wxCommandEvent& event )
 {
   shuffle_sphere_grid = !shuffle_sphere_grid;
   if (shuffle_sphere_grid)
+  {
+    randomize_sphere_grid_true = false;
     randomize_sphere_grid = false;
+  }
   printf( "Shuffle Sphere Grid: %d\n", shuffle_sphere_grid );
+}
+
+void frame_t::onRandomizeSphereGridTrue( wxCommandEvent& event )
+{
+  randomize_sphere_grid_true = !randomize_sphere_grid_true;
+  if (randomize_sphere_grid_true)
+  {
+    randomize_sphere_grid = false;
+    shuffle_sphere_grid = false;
+  }
+  printf( "Truly Randomize Sphere Grid: %d\n", randomize_sphere_grid_true );
 }
 
 void frame_t::onRandomizeSphereGrid( wxCommandEvent& event )
 {
   randomize_sphere_grid = !randomize_sphere_grid;
   if (randomize_sphere_grid)
+  {
+    randomize_sphere_grid_true = false;
     shuffle_sphere_grid = false;
+  }
   printf( "Randomize Sphere Grid: %d\n", randomize_sphere_grid );
 }
 

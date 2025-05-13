@@ -52,6 +52,7 @@ enum
   ID_SPHERE_GRID_NONE,
   ID_SHUFFLE_SPHERE_GRID,
   ID_RANDOMIZE_SPHERE_GRID,
+  ID_RANDOMIZE_SPHERE_GRID_TRUE,
   ID_SPHERE_NODES_NONE,
   ID_UPGRADE_SPHERE_NODES,
   ID_DOWNGRADE_SPHERE_NODES,
@@ -113,6 +114,7 @@ private:
   bool randomize_encounters;
 
   bool shuffle_sphere_grid;
+  bool randomize_sphere_grid_true;
   bool randomize_sphere_grid;
   bool empty_sphere_grid;
   bool fill_sphere_grid;
@@ -165,6 +167,7 @@ public:
     randomize_enemy_elemental_affinities( false ),
     randomize_encounters( false ),
     shuffle_sphere_grid( false ),
+    randomize_sphere_grid_true( false ),
     randomize_sphere_grid( false ),
     empty_sphere_grid( false ),
     fill_sphere_grid( false ),
@@ -244,6 +247,7 @@ private:
   void onRemoveSphereGridLocks( wxCommandEvent& event );
   void onRandomizeSphereGridNone( wxCommandEvent& event );
   void onShuffleSphereGrid( wxCommandEvent& event );
+  void onRandomizeSphereGridTrue( wxCommandEvent& event );
   void onRandomizeSphereGrid( wxCommandEvent& event );
   void onSphereNodesNone( wxCommandEvent& event );
   void onEmptySphereGrid( wxCommandEvent& event );
@@ -573,8 +577,10 @@ struct sphere_grid_panel_t : public wxPanel
     RandomizeSphereGridNoneRadioButton->SetToolTip( "If checked, sphere grid will not be randomized." );
     wxRadioButton* ShuffleSphereGridRadioButton = new wxRadioButton( this, ID_SHUFFLE_SPHERE_GRID, _T( "Shuffle Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
     ShuffleSphereGridRadioButton->SetToolTip( "If checked, sphere grid will be shuffled. This means that the nodes will be in a different order, but the same nodes will be present." );
-    wxRadioButton* RandomizeSphereGridRadioButton = new wxRadioButton( this, ID_RANDOMIZE_SPHERE_GRID, _T( "Randomize Sphere Grid" ), wxDefaultPosition, wxDefaultSize, 0 );
-    RandomizeSphereGridRadioButton->SetToolTip( "If checked, sphere grid will be randomized. This means that there is no guarentee you will get all ability spheres, and there may be duplicate ability nodes." );
+    wxRadioButton* RandomizeSphereGridRadioButton = new wxRadioButton( this, ID_RANDOMIZE_SPHERE_GRID_TRUE, _T( "Randomize Sphere Grid - True Randomization" ), wxDefaultPosition, wxDefaultSize, 0 );
+    RandomizeSphereGridRadioButton->SetToolTip( "If checked, sphere grid will be truly randomized. This means that there is no guarentee you will get all ability nodes, and there may be duplicate ability nodes." );
+    wxRadioButton* RandomizeSphereGridRadioButton2 = new wxRadioButton( this, ID_RANDOMIZE_SPHERE_GRID, _T( "Randomize Sphere Grid - Normal Randomization" ), wxDefaultPosition, wxDefaultSize, 0 );
+    RandomizeSphereGridRadioButton2->SetToolTip( "If checked, sphere grid will be randomized, but will be guarenteed to have 1 of every ability node." );
 
     wxRadioButton* sphereNodesNoneRadioButton = new wxRadioButton( this, ID_SPHERE_NODES_NONE, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
     sphereNodesNoneRadioButton->SetToolTip( "If checked, sphere nodes will not be scaled up or down" );
@@ -610,6 +616,7 @@ struct sphere_grid_panel_t : public wxPanel
     sizer->Add( RandomizeSphereGridNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( ShuffleSphereGridRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( RandomizeSphereGridRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( RandomizeSphereGridRadioButton2, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
 
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
 

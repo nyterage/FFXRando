@@ -204,7 +204,7 @@ void randomizer_t::doPlayerStatRandomization()
 {
   if (!options_pack.randomize_player_stats && !options_pack.randomize_aeon_stat_scaling && !options_pack.shuffle_player_stats &&
        !options_pack.shuffle_aeon_stat_scaling && !options_pack.poison_is_deadly && !options_pack.randomize_starting_overdrive_mode &&
-       !options_pack.shuffle_sphere_grid && !options_pack.randomize_sphere_grid)
+       !options_pack.shuffle_sphere_grid && !options_pack.randomize_sphere_grid_true)
     return;
 
   if (options_pack.randomize_player_stats)

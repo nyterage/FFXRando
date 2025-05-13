@@ -150,51 +150,69 @@ void randomizer_t::randomizeFieldItems()
 
     if (field_data.flag != 10 || options_pack.randomize_key_items)
     {
-      int rolled_type = uniform<int>( 0, options_pack.randomize_key_items ? 10 : 9 );
-      bool rolled_item = rolled_type < 3;
-      bool rolled_gear = rolled_type < 5 && rolled_type > 2;
-      bool rolled_gil = rolled_type < 9 && rolled_type > 5;
-      bool rolled_key_item = rolled_type < 10 && rolled_type > 8;
+      int roll;
+      if( options_pack.randomize_key_items )
+        roll = std::discrete_distribution<int>( { 0.4, 0.3, 0.2, 0.1 } )( rng );
+      else
+        roll = std::discrete_distribution<int>( { 0.5, 0.3, 0.2 } )( rng );
 
-      if (rolled_item)
+      item_t* item = nullptr;
+      switch (roll)
       {
-        item_t* item = getRandomItem();
-        field_data.flag = 2;
-        field_data.type = item->id;
-        field_data.quantity = getRandomItemQuantity( item, false );
-        field_data.writeToBytes();
-      }
-      if (rolled_gear)
-      {
-        field_data.flag = 5;
-        field_data.type = uniform<uint16_t>( 0, data_pack.buki_data.size() - 1 );
-        field_data.quantity = 1;
-        field_data.writeToBytes();
-      }
-      if (rolled_gil)
-      {
-        field_data.flag = 0;
-        field_data.quantity = normal<uint8_t>( 15, 5, 1, 255 );
-        field_data.writeToBytes();
-      }
-      if (rolled_key_item)
-      {
-        item_t* item = nullptr;
-        if (all_key_items.size() == 0)
-        {
+        case 0:
           item = getRandomItem();
           field_data.flag = 2;
-        }
-        else
-        {
-          item = getRandomKeyItem();
-          field_data.flag = 10;
-        }
-        field_data.type = item->id;
-        field_data.quantity = getRandomItemQuantity( item, false );
-        field_data.writeToBytes();
+          field_data.type = item->id;
+          field_data.quantity = getRandomItemQuantity( item, false );
+          field_data.writeToBytes();
+          break;
+        case 1:
+          field_data.flag = 5;
+          field_data.type = uniform<uint16_t>( 0, data_pack.buki_data.size() - 1 );
+          field_data.quantity = 1;
+          field_data.writeToBytes();
+          break;
+        case 2:
+          field_data.flag = 0;
+          field_data.quantity = normal<uint8_t>( 15, 5, 1, 255 );
+          field_data.writeToBytes();
+          break;
+        case 3:
+          if (all_key_items.size() == 0)
+          {
+            item = getRandomItem();
+            field_data.flag = 2;
+          }
+          else
+          {
+            item = getRandomKeyItem();
+            field_data.flag = 10;
+          }
+          field_data.type = item->id;
+          field_data.quantity = getRandomItemQuantity( item, false );
+          field_data.writeToBytes();
+          break;
+        default:
+          break;
       }
     }
+  }
+
+  // Ensure all key items are in the pool
+  while (all_key_items.size() > 0 && options_pack.randomize_key_items)
+  {
+    int random_field_index = uniform<int>( 0, data_pack.field_data.size() - 1 );
+    field_data_t& field_data = *data_pack.field_data.at( random_field_index );
+    if (field_data.flag == 10)
+      continue;
+    if (std::find( blacklist.begin(), blacklist.end(), field_data.index ) != blacklist.end())
+      continue;
+
+    item_t* item = getRandomKeyItem();
+    field_data.flag = 10;
+    field_data.type = item->id;
+    field_data.quantity = getRandomItemQuantity( item, false );
+    field_data.writeToBytes();
   }
 }
 

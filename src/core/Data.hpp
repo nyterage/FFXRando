@@ -74,18 +74,20 @@ struct item_t
 
   uint8_t getMinQuantity() const { return min_quantity; }
   uint8_t getMaxQuantity() const { return max_quantity; }
-  double getAverageQuantity() const { return getTotalQuantities() / quantities.size(); }
+  double getAverageQuantity() const { return std::round( getTotalQuantities() / quantities.size() ); }
   double getStandardDeviation() const {
     if (quantities.size() == 0)
       return 0;
+    if (quantities.size() == 1)
+      return getAverageQuantity();
     double mean = getAverageQuantity();
     double sum = 0;
     for (auto& quantity : quantities)
       sum += ( quantity - mean ) * ( quantity - mean );
-    return std::sqrt( sum / ( quantities.size() - 1 ) );
+    return std::ceil( std::sqrt( sum / ( quantities.size() - 1 ) ) );
   }
-  int getTotalQuantities() const {
-    int total = 0;
+  double getTotalQuantities() const {
+    double total = 0;
     for (auto& quantity : quantities)
       total += quantity;
     return total;
@@ -101,7 +103,7 @@ struct item_t
     printf( "Average Quantity: %f\n", getAverageQuantity() );
     printf( "Standard Deviation: %f\n", getStandardDeviation() );
     printf( "Instances: %zu\n", quantities.size() );
-    printf( "Total Count: %d\n", getTotalQuantities() );
+    printf( "Total Count: %f\n", getTotalQuantities() );
   }
 };
 
@@ -1192,6 +1194,7 @@ struct options_pack_t
   bool randomize_encounters;
 
   bool shuffle_sphere_grid;
+  bool randomize_sphere_grid_true;
   bool randomize_sphere_grid;
   bool empty_sphere_grid;
   bool fill_sphere_grid;
@@ -1239,6 +1242,7 @@ struct options_pack_t
     bool randomize_enemy_elemental_affinities,
     bool randomize_encounters,
     bool shuffle_sphere_grid,
+    bool randomize_sphere_grid_true,
     bool randomize_sphere_grid,
     bool empty_sphere_grid,
     bool fill_sphere_grid,
@@ -1282,6 +1286,7 @@ struct options_pack_t
     randomize_enemy_elemental_affinities( randomize_enemy_elemental_affinities ),
     randomize_encounters( randomize_encounters ),
     shuffle_sphere_grid( shuffle_sphere_grid ),
+    randomize_sphere_grid_true( randomize_sphere_grid_true ),
     randomize_sphere_grid( randomize_sphere_grid ),
     empty_sphere_grid( empty_sphere_grid ),
     fill_sphere_grid( fill_sphere_grid ),
