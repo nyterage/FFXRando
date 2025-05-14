@@ -63,6 +63,8 @@ enum
   ID_RANDOM_ENCOUNTER_STATS_NONE,
   ID_SWAP_RANDOM_ENCOUNTER_STATS,
   ID_SCALE_ECOUNTER_STATS,
+  ID_RANDOMIZE_CUSTOMIZATION_ITEMS,
+  ID_RANDOMIZE_AEON_STAT_ITEMS,
   ID_BASE_WINDOW = 1000,
   ID_NOTEBOOK,
 };
@@ -71,9 +73,10 @@ struct gui_t : public wxApp
 {
 private:
   data_pack_t& dp;
+  wxFrame* frame;
 
 public:
-  gui_t( data_pack_t& data_pack ) : dp( data_pack ) {}
+  gui_t( data_pack_t& data_pack ) : dp( data_pack ), frame( nullptr ) {}
 
   virtual bool OnInit();
 };
@@ -129,6 +132,9 @@ private:
   bool keep_things_sane;
   bool randomize_celestials;
   bool randomize_brotherhood;
+  bool randomize_customization_items;
+  bool randomize_aeon_stat_items;
+
   wxButton* randomize_button;
   int32_t seed;
   wxTextCtrl* seed_text;
@@ -140,6 +146,9 @@ private:
 public:
   frame_t( data_pack_t& data )
     : wxFrame( NULL, ID_BASE_WINDOW, "FFX Randomizer", wxDefaultPosition, wxSize( 840, 720 ) ),
+    dp( data ),
+    options( nullptr ),
+    randomizer( nullptr ),
     randomize_enemy_drops( false ),
     randomize_enemy_steals( false ),
     randomize_enemy_bribes( false ),
@@ -178,12 +187,11 @@ public:
     scale_encounter_stats( false ),
     randomize_key_items( false ),
     keep_things_sane( true ),
-    randomizer( nullptr ),
     randomize_celestials( false ),
     randomize_brotherhood( false ),
+    randomize_customization_items( false ),
+    randomize_aeon_stat_items( false ),
     randomize_button( nullptr ),
-    dp( data ),
-    options( nullptr ),
     seed( std::chrono::system_clock::now().time_since_epoch().count() ),
     seed_text( nullptr ),
     fahrenheit( false ),
@@ -224,6 +232,7 @@ private:
   void onRandomizeWeaponCrit( wxCommandEvent& event );
   void onRandomizeWeaponAttackPower( wxCommandEvent& event );
   void onRandomizeWeaponDamageFormula( wxCommandEvent& event );
+  void onRandomizeCustomizationItems( wxCommandEvent& event );
 
   void onRandomizeStartingOverdriveMode( wxCommandEvent& event );
 
@@ -238,6 +247,8 @@ private:
   void onRandomizeAeonBaseStatsNone( wxCommandEvent& event );
   void onRandomizeAeonBaseStats( wxCommandEvent& event );
   void onShuffleAeonBaseStats( wxCommandEvent& event );
+
+  void onRandomizeAeonStatItems( wxCommandEvent& event );
 
   void onRandomizeEncounters( wxCommandEvent& event );
   void onRandizedEncountersStatsNone( wxCommandEvent& event );
@@ -386,6 +397,7 @@ struct gear_options_panel_t : public wxPanel
   wxCheckBox* randomizeWeaponDamageFormulaCheckbox;
   wxCheckBox* randomizeGearShopsCheckbox;
   wxCheckBox* randomizeGearPricesCheckbox;
+  wxCheckBox* randomizeCustomizationItemsCheckbox;
 
   gear_options_panel_t( wxAuiNotebook* book ) : wxPanel( book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     randomizeCelestialsCheckbox( nullptr ),
@@ -395,7 +407,8 @@ struct gear_options_panel_t : public wxPanel
     randomizeWeaponAttackPowerCheckbox( nullptr ),
     randomizeWeaponDamageFormulaCheckbox( nullptr ),
     randomizeGearShopsCheckbox( nullptr ),
-    randomizeGearPricesCheckbox( nullptr )
+    randomizeGearPricesCheckbox( nullptr ),
+    randomizeCustomizationItemsCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
     randomizeCelestialsCheckbox = new wxCheckBox( this, ID_ALLOW_RANDOMIZE_CELESTIALS, _T( "Include Celestial Items in Pool" ), wxDefaultPosition, wxDefaultSize, 0 );
@@ -422,6 +435,9 @@ struct gear_options_panel_t : public wxPanel
     randomizeGearPricesCheckbox = new wxCheckBox( this, ID_RANDOMIZE_GEAR_SHOP_PRICES, _T( "Randomize Gear Shop Prices" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeGearPricesCheckbox->SetToolTip( "If checked, gear shop prices will be randomized." );
 
+    randomizeCustomizationItemsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_CUSTOMIZATION_ITEMS, _T( "Randomize Customization Items" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeCustomizationItemsCheckbox->SetToolTip( "If checked, customization items will be randomized. This includes:\n- The item required to apply an auto ability to an item\n- The number of items required" );
+
     sizer->Add( randomizeCelestialsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeBrotherhoodCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeGearAbilitiesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
@@ -430,6 +446,7 @@ struct gear_options_panel_t : public wxPanel
     sizer->Add( randomizeWeaponDamageFormulaCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeGearShopsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeGearPricesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeCustomizationItemsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
     SetSizer( sizer );
 
@@ -514,13 +531,18 @@ struct player_stats_panel_t : public wxPanel
 
 struct aeon_stats_panel_t : public wxPanel
 {
-  aeon_stats_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE )
+  wxCheckBox* randomizeAeonStatCustomizationItemsCheckbox;
+
+  aeon_stats_panel_t( wxAuiNotebook* panel ) : wxPanel( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
+    randomizeAeonStatCustomizationItemsCheckbox( nullptr )
   {
     wxBoxSizer* sizer = new wxBoxSizer( wxVERTICAL );
 
-
     wxStaticText* new_game_text = new wxStaticText( this, wxID_ANY, _T( "These Options only affect new save files!" ), wxDefaultPosition, wxDefaultSize, 0 );
     new_game_text->SetFont( wxFont( 12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
+
+    randomizeAeonStatCustomizationItemsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_AEON_STAT_ITEMS, _T( "Randomize Customization Items" ), wxDefaultPosition, wxDefaultSize, 0 );
+    randomizeAeonStatCustomizationItemsCheckbox->SetToolTip( "If checked, items to increase aeon stats, and teach new abilities will be randomized. This includes:\n- The item required \n- The number of items required" );
 
     wxRadioButton* randomizeAeonBaseStatsNoneRadioButton = new wxRadioButton( this, ID_RANDOMIZE_AEON_BASE_STATS_NONE, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
     randomizeAeonBaseStatsNoneRadioButton->SetToolTip( "If checked, aeon base stats will not be randomized." );
@@ -543,6 +565,10 @@ struct aeon_stats_panel_t : public wxPanel
     stats->SetFont( wxFont( 9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 
     sizer->Add( new_game_text, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( randomizeAeonStatCustomizationItemsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+
+    sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 10 ) );
+
     sizer->Add( stats, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeAeonBaseStatsNoneRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeAeonBaseStatsRadioButton, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );

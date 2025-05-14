@@ -7,7 +7,7 @@ bool gui_t::OnInit()
   SetAppName( "FFX Randomizer" );
   SetVendorName( "FFX Randomizer" );
   SetUseBestVisual( true, true );
-  frame_t* frame = new frame_t( dp );
+  frame = new frame_t( dp );
   frame->Show( true );
   return true;
 }
@@ -55,6 +55,7 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponCrit, this, ID_RANDOMIZE_WEAPON_CRIT );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponAttackPower, this, ID_RANDOMIZE_WEAPON_ATTACK_POWER );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeWeaponDamageFormula, this, ID_RANDOMIZE_WEAPON_DAMAGE_FORMULA );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeCustomizationItems, this, ID_RANDOMIZE_CUSTOMIZATION_ITEMS );
 
   Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizePlayerStatsNone, this, ID_RANDOMIZE_PLAYER_STATS_NONE );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizePlayerStats, this, ID_RANDOMIZE_PLAYER_STATS );
@@ -67,6 +68,7 @@ void frame_t::initialize()
   Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeAeonBaseStatsNone, this, ID_RANDOMIZE_AEON_BASE_STATS_NONE );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onRandomizeAeonBaseStats, this, ID_RANDOMIZE_AEON_BASE_STATS );
   Bind( wxEVT_RADIOBUTTON, &frame_t::onShuffleAeonBaseStats, this, ID_SHUFFLE_AEON_BASE_STATS );
+  Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeAeonStatItems, this, ID_RANDOMIZE_AEON_STAT_ITEMS );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeStartingOverdriveMode, this, ID_RANDOMIZE_STARTING_OVERDRIVE_MODE );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeEnemyElementalAffinities, this, ID_RANDOMIZE_ENEMY_ELEMENTAl_AFFINITIES );
@@ -169,13 +171,15 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                 randomize_key_items,
                                 randomize_celestials,
                                 randomize_brotherhood,
+                                randomize_customization_items,
+                                randomize_aeon_stat_items,
                                 keep_things_sane,
                                 seed,
                                 seed_text->GetValue().ToStdString(),
                                 fahrenheit );
 
-  wxLogMessage( "Finished Randomizing" );
   randomizer = new randomizer_t( *options, dp );
+  wxLogMessage( "Finished Randomizing" );
 }
 
 void frame_t::onPoisonIsDeadly( wxCommandEvent& event )
@@ -304,6 +308,12 @@ void frame_t::onRandomizeWeaponDamageFormula( wxCommandEvent& event )
   printf( "Randomize Weapon Damage Formula: %d\n", randomize_weapon_damage_formula );
 }
 
+void frame_t::onRandomizeCustomizationItems( wxCommandEvent& event )
+{
+  randomize_customization_items = !randomize_customization_items;
+  printf( "Randomize Customization Items: %d\n", randomize_customization_items );
+}
+
 void frame_t::onRandomizePlayerStatsNone( wxCommandEvent& event )
 {
   randomize_player_stats = false;
@@ -371,6 +381,12 @@ void frame_t::onShuffleAeonBaseStats( wxCommandEvent& event )
   if (shuffle_aeon_base_stats)
     randomize_aeon_base_stats = false;
   printf( "Shuffle Aeon Base Stats: %d\n", shuffle_aeon_base_stats );
+}
+
+void frame_t::onRandomizeAeonStatItems( wxCommandEvent& event )
+{
+  randomize_aeon_stat_items = !randomize_aeon_stat_items;
+  printf( "Randomize Aeon Stat Items: %d\n", randomize_aeon_stat_items );
 }
 
 void frame_t::onRandomizeStartingOverdriveMode( wxCommandEvent& event )

@@ -59,6 +59,7 @@ public:
   randomizer_t( const options_pack_t& options_pack,
                 const data_pack_t& data_pack )
     :
+    rng(),
     data_pack( data_pack ),
     options_pack( options_pack ),
     all_items(),
@@ -81,6 +82,10 @@ public:
     shuffled_standard_sphere_grid_node_ids(),
     shuffled_expert_sphere_grid_node_ids(),
     shuffled_random_monster_encounter_ids(),
+    paired_mosnter_ids(),
+    enemy_id_whitelist(),
+    boss_id_whitelist(),
+    randomized_monsters(),
     prefix( options_pack.fahrenheit ? FAHRENHEIT_PREFIX : "" ),
     btl_kernel_input( INPUT_FOLDER + BATTLE_KERNEL_FOLDER ),
     btl_kernel_output( OUTPUT_FOLDER + prefix + BATTLE_KERNEL_FOLDER ),
@@ -208,6 +213,7 @@ public:
   void reconstructBukiData();
   void reconstructWeaponData();
   void reconstructShopArmsData();
+  void reconstructKaizouData();
   void poplateGearLists();
   uint16_t getRandomAbility();
   void populateAbilityData();
@@ -220,6 +226,7 @@ public:
   void randomizeWeaponCrit();
   void randomizeWeaponAttackPower();
   void randomizeWeaponDamageFormula();
+  void randomizeCustomizeItems();
   void doGearRandomization();
 
   // Enemy Data
@@ -244,12 +251,14 @@ public:
   void reconstructPlayerStatsData();
   void reconstructAeonScalingData();
   void reconstructAeonStatData();
+  void reconstructSumGrowData();
   void randomizePlayerStats();
   void shuffleCharacterStats();
   void randomizeAeonStatScaling();
   void randomizeAeonBaseStats();
   void shuffleAeonStatScaling();
   void shuffleAeonBaseStats();
+  void randomizeSumGrow();
   void doPlayerStatRandomization();
 
   // Shops

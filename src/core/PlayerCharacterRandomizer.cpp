@@ -63,6 +63,12 @@ void randomizer_t::reconstructAeonStatData()
   bytes_mapper_t::writeBytesToNewFile( original_bytes, file );
 }
 
+void randomizer_t::reconstructSumGrowData()
+{
+  std::string name = "sum_grow.bin";
+  genericReconstructor( btl_kernel_input, btl_kernel_output, name, data_pack.aeon_customize_data, true );
+}
+
 void randomizer_t::randomizePlayerStats()
 {
   for (int i = 0; i < 7; i++)
@@ -200,11 +206,33 @@ void randomizer_t::shuffleAeonBaseStats()
   }
 }
 
+void randomizer_t::randomizeSumGrow()
+{
+  for (auto& aeon : data_pack.aeon_customize_data)
+  {
+    customize_data_t& customize = *aeon;
+    item_t* item = getRandomItem();
+    customize.item = item->id;
+    uint8_t quantity = 1;
+    if (customize.ability > 10)
+    {
+      if (options_pack.keep_things_sane)
+        quantity = normal<uint8_t>( 16, 10, 1, 99 );
+      else
+        quantity = uniform<uint8_t>( 1, 99 );
+    }
+
+    customize.item_quantity = quantity;
+    customize.writeToBytes();
+  }
+}
+
 void randomizer_t::doPlayerStatRandomization()
 {
   if (!options_pack.randomize_player_stats && !options_pack.randomize_aeon_stat_scaling && !options_pack.shuffle_player_stats &&
        !options_pack.shuffle_aeon_stat_scaling && !options_pack.poison_is_deadly && !options_pack.randomize_starting_overdrive_mode &&
-       !options_pack.shuffle_sphere_grid && !options_pack.randomize_sphere_grid_true)
+       !options_pack.shuffle_sphere_grid && !options_pack.randomize_sphere_grid_true && !options_pack.randomize_sphere_grid && 
+       !options_pack.randomize_aeon_stat_items )
     return;
 
   if (options_pack.randomize_player_stats)
@@ -337,6 +365,12 @@ void randomizer_t::doPlayerStatRandomization()
       stats.writeToBytes();
       // stats.test();
     }
+  }
+
+  if (options_pack.randomize_aeon_stat_items)
+  {
+    randomizeSumGrow();
+    reconstructSumGrowData();
   }
 
   printf( "Reconstructing ply_save.bin...\n" );

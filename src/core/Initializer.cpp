@@ -28,8 +28,10 @@ void initializer_t::initializeEnemyData( const std::string filename, std::string
   std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + MONSTER_FOLDER + monster_file );
   // Erase the leading m
   monster_id.erase( 0, 1 );
-  enemy_data_t enemy = enemy_data_t( monster_id, bytes );
+  enemy_data_t* enemy = new enemy_data_t( monster_id, bytes );
   enemy_data.insert( { std::stoi( monster_id ), enemy } );
+  enemy_data_t* unmodified = new enemy_data_t( monster_id, bytes );
+  unmodified_enemy_data.insert( { std::stoi( monster_id ), unmodified } );
 }
 
 void initializer_t::initializeFieldData()
@@ -124,31 +126,27 @@ void initializer_t::initializeBtlData()
 {
   encounter_file_data.reserve( 414 );
   std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "btl.bin";
-  btl_data = new btl_data_t( getDataFromFile( path ) );
+  btl_data_t btl_data = btl_data_t( getDataFromFile( path ) );
 
-  btl_data->getEncounterFiles( encounter_file_data );
+  btl_data.getEncounterFiles( encounter_file_data );
+}
+
+void initializer_t::initializeGearCustomizeData()
+{
+  gear_customize_data.reserve( 20 );
+  std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "kaizou.bin";
+  genericExcelReader<customize_data_t>( path, gear_customize_data, 8 );
+}
+
+void initializer_t::initializeAeonStatCustomizeData()
+{
+  aeon_stat_customize_data.reserve( 20 );
+  std::string path = INPUT_FOLDER + BATTLE_KERNEL_FOLDER + "sum_grow.bin";
+  genericExcelReader<customize_data_t>( path, aeon_stat_customize_data, 8 );
 }
 
 void initializer_t::initializeGUI()
 {
-  data_pack = new data_pack_t(
-    enemy_data,
-    unmodified_enemy_data,
-    field_data,
-    item_shop_data,
-    gear_shop_data,
-    buki_data,
-    weapon_data,
-    shop_arms_data,
-    item_rate_data,
-    arms_rate_data,
-    player_stats_data,
-    aeon_scaling_data,
-    aeon_stat_data,
-    sphere_grid_data,
-    btl_data,
-    encounter_file_data );
-
   gui = new gui_t( *data_pack );
   wxApp::SetInstance( gui );
   wxEntryStart( 0, nullptr );
@@ -182,6 +180,7 @@ void initializer_t::initializeAllData()
     enemy_threads.push_back( std::thread( &initializer_t::initializeEnemyData, this, filename, monster_id, monster_file ) );
   }
 
+  std::thread btl_data_thread( &initializer_t::initializeBtlData, this );
   std::thread field_thread( &initializer_t::initializeFieldData, this );
   std::thread shop_item_thread( &initializer_t::initializeShopData, this, false );
   std::thread shop_gear_thread( &initializer_t::initializeShopData, this, true );
@@ -194,7 +193,8 @@ void initializer_t::initializeAllData()
   std::thread aeon_scaling_thread( &initializer_t::initializeAeonScalingData, this );
   std::thread aeon_stat_thread( &initializer_t::initializeAeonStatData, this );
   std::thread sphere_grid_thread( &initializer_t::initializeSphereGridData, this );
-  std::thread btl_data_thread( &initializer_t::initializeBtlData, this );
+  std::thread gear_customize_thread( &initializer_t::initializeGearCustomizeData, this );
+  std::thread aeon_stat_customize_thread( &initializer_t::initializeAeonStatCustomizeData, this );
 
   field_thread.join();
   shop_item_thread.join();
@@ -208,20 +208,19 @@ void initializer_t::initializeAllData()
   aeon_scaling_thread.join();
   aeon_stat_thread.join();
   sphere_grid_thread.join();
+  gear_customize_thread.join();
+  aeon_stat_customize_thread.join();
   btl_data_thread.join();
 
   for (auto& enemy_thread : enemy_threads)
     if (enemy_thread.joinable())
       enemy_thread.join();
-
-  while (unmodified_enemy_data.size() != ENEMY_COUNT)
-    unmodified_enemy_data = enemy_data;
 }
 
 void initializer_t::runEnemyTests()
 {
   for (auto& enemy : enemy_data)
-    enemy.second.test();
+    enemy.second->test();
 }
 
 void initializer_t::runFieldTests()
@@ -259,7 +258,7 @@ void initializer_t::runShopArmsTests()
 void initializer_t::runEnemyLootTests()
 {
   for (auto& loot : enemy_data)
-    loot.second.loot_data->test();
+    loot.second->loot_data->test();
 }
 
 void initializer_t::runItemRateTests()

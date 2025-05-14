@@ -10,7 +10,7 @@ void randomizer_t::getRandomEncounterIDs()
         continue;
       if (std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) != random_monster_encounter_ids.end())
         continue;
-      enemy_data_t& enemy = data_pack.enemy_data.at( monster );
+      enemy_data_t& enemy = *data_pack.enemy_data.at( monster );
       enemy_stat_data_t& stats = *enemy.stats_data;
       if (stats.arena_id != 255 && ( stats.arena_id != 0 || monster == 1 ) )
       {
@@ -42,8 +42,8 @@ void randomizer_t::adjustStats()
   {
     if (pair.second == 211)
       continue;
-    const enemy_data_t& monster = data_pack.unmodified_enemy_data.at(pair.first);
-    enemy_data_t& new_monster = data_pack.enemy_data.at(pair.second);
+    const enemy_data_t& monster = *data_pack.unmodified_enemy_data.at(pair.first);
+    enemy_data_t& new_monster = *data_pack.enemy_data.at(pair.second);
     const enemy_stat_data_t* stats = monster.stats_data;
     enemy_stat_data_t* new_stats = new_monster.stats_data;
     const enemy_loot_data_t* loot = monster.loot_data;

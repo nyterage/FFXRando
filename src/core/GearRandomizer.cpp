@@ -18,6 +18,11 @@ void randomizer_t::reconstructShopArmsData()
   genericReconstructor( btl_kernel_input, btl_kernel_output, name, data_pack.shop_arms_data, true );
 }
 
+void randomizer_t::reconstructKaizouData()
+{
+  std::string name = "kaizou.bin";
+  genericReconstructor( btl_kernel_input, btl_kernel_output, name, data_pack.customize_data, true );
+}
 
 void randomizer_t::poplateGearLists()
 {
@@ -71,7 +76,7 @@ void randomizer_t::populateAbilityData()
   }
   for (auto& enemy : data_pack.enemy_data)
   {
-    enemy_loot_data_t& loot = *enemy.second.loot_data;
+    enemy_loot_data_t& loot = *enemy.second->loot_data;
     for (int chr = 0; chr < 7; chr++)
     {
       for (int i = 0; i < 8; i++)
@@ -108,7 +113,7 @@ void randomizer_t::populateWeaponFormulas()
   }
   for (auto& enemy : data_pack.enemy_data)
   {
-    enemy_loot_data_t& loot = *enemy.second.loot_data;
+    enemy_loot_data_t& loot = *enemy.second->loot_data;
     bool found = std::find( weapon_formulas.begin(), weapon_formulas.end(), loot.gear_damage_calc ) != weapon_formulas.end();
     if (!found)
       weapon_formulas.push_back( loot.gear_damage_calc );
@@ -120,7 +125,8 @@ void randomizer_t::writeGearData( gear_data_t& gear )
   if (( gear.is_celestial && !options_pack.randomize_celestials ) || ( gear.is_brotherhood && !options_pack.randomize_brotherhood ))
     return;
 
-  uint8_t n_abilities = uniform<uint8_t>( 0, 3 );
+  uint8_t n_slots = std::discrete_distribution<int>( { 0.4, 0.3, 0.2, 0.1 } )( rng );
+  uint8_t n_abilities = uniform<uint8_t>( 0, n_slots );
 
   std::vector<uint16_t> abilities;
 
@@ -134,7 +140,7 @@ void randomizer_t::writeGearData( gear_data_t& gear )
     abilities.push_back( getRandomAbility() );
   }
 
-  gear.slots = n_abilities;
+  gear.slots = n_slots;
   gear.ability_slot1 = abilities.at( 0 );
   gear.ability_slot2 = abilities.at( 1 );
   gear.ability_slot3 = abilities.at( 2 );
@@ -178,7 +184,7 @@ void randomizer_t::randomizeWeaponCrit()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.crit_bonus = normal<uint8_t>( gear_data.crit_bonus, gear_data.crit_bonus / 2, 1, 100 );
+      gear_data.crit_bonus = normal<uint8_t>( gear_data.crit_bonus, 1, 1, 8 );
     else
       gear_data.crit_bonus = uniform<uint8_t>( 0, 100 );
     gear_data.writeToBytes();
@@ -189,7 +195,7 @@ void randomizer_t::randomizeWeaponCrit()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.crit_bonus = normal<uint8_t>( gear_data.crit_bonus, gear_data.crit_bonus / 2, 1, 100 );
+      gear_data.crit_bonus = normal<uint8_t>( gear_data.crit_bonus, 1, 1, 8 );
     else
       gear_data.crit_bonus = uniform<uint8_t>( 0, 100 );
     gear_data.writeToBytes();
@@ -200,7 +206,7 @@ void randomizer_t::randomizeWeaponCrit()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.crit_bonus = normal<uint8_t>( gear_data.crit_bonus, gear_data.crit_bonus / 2, 1, 100 );
+      gear_data.crit_bonus = normal<uint8_t>( gear_data.crit_bonus, 1, 1, 8 );
     else
       gear_data.crit_bonus = uniform<uint8_t>( 0, 100 );
     gear_data.writeToBytes();
@@ -215,7 +221,7 @@ void randomizer_t::randomizeWeaponAttackPower()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, gear_data.attack_power / 2, 1, 24 );
+      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, 3, 10, 24 );
     else
       gear_data.attack_power = uniform<uint8_t>( 0, 100 );
 
@@ -227,7 +233,7 @@ void randomizer_t::randomizeWeaponAttackPower()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, gear_data.attack_power / 2, 1, 24 );
+      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, 3, 10, 24 );
     else
       gear_data.attack_power = uniform<uint8_t>( 0, 100 );
     gear_data.writeToBytes();
@@ -238,7 +244,7 @@ void randomizer_t::randomizeWeaponAttackPower()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, gear_data.attack_power / 2, 1, 24 );
+      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, 3, 10, 24 );
     else
       gear_data.attack_power = uniform<uint8_t>( 0, 100 );
     gear_data.writeToBytes();
@@ -276,10 +282,27 @@ void randomizer_t::randomizeWeaponDamageFormula()
   }
 }
 
+void randomizer_t::randomizeCustomizeItems()
+{
+  for (auto& customization : data_pack.customize_data)
+  {
+    customize_data_t& customize = *customization;
+    item_t* item = getRandomItem();
+    customize.item = item->id;
+    uint8_t item_quantity = 1;
+    if (options_pack.keep_things_sane)
+      item_quantity = normal<uint8_t>( 20, 10, 1, 99 );
+    else
+      item_quantity = uniform<uint8_t>( 1, 99 );
+    customize.item_quantity = item_quantity;
+    customize.writeToBytes();
+  }
+}
+
 void randomizer_t::doGearRandomization()
 {
   if (!options_pack.randomize_gear_abilities && !options_pack.randomize_weapon_attack_power && !options_pack.randomize_weapon_crit &&
-       !options_pack.randomize_weapon_damage_formula)
+       !options_pack.randomize_weapon_damage_formula && !options_pack.randomize_customization_items )
     return;
 
   if (options_pack.randomize_gear_abilities)
@@ -312,6 +335,13 @@ void randomizer_t::doGearRandomization()
   {
     printf( "Randomizing weapon.bin Damage Formula...\n" );
     randomizeWeaponDamageFormula();
+  }
+
+  if (options_pack.randomize_customization_items)
+  {
+    printf( "Randomizing customization items...\n" );
+    randomizeCustomizeItems();
+    reconstructKaizouData();
   }
 
   printf( "Reconstructing shop_arms.bin...\n" );

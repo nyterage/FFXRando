@@ -68,7 +68,8 @@ struct item_t
   uint8_t max_quantity = 0;
   std::vector<int> quantities;
 
-  item_t( uint16_t id, uint8_t min_quantity, uint8_t max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ), quantities() {
+  item_t( uint16_t id, uint8_t min_quantity, uint8_t max_quantity ) : id( id ), min_quantity( min_quantity ), max_quantity( max_quantity ), quantities() 
+  {
     //test();
   }
 
@@ -136,7 +137,12 @@ struct gear_data_t final : public bytes_mapper_t
   bool is_brotherhood;
   bool is_unknown_flag;
 
-  gear_data_t( chunk_t& data ) : bytes_mapper_t( data.data ) {
+  gear_data_t( chunk_t& data ) : bytes_mapper_t( data.data ),
+    is_buki_get( false ), byte00_name_id_maybe(), byte01_name_id_maybe(), byte02_exists_maybe(), byte03_constant_zero(),
+    model_id(), misc_flags(), character_id(), armor_byte(), byte06_equipper_maybe(), byte07_equipper_maybe(),
+    damage_calc(), attack_power(), crit_bonus(), slots(), ability_slot1(), ability_slot2(), ability_slot3(),
+    ability_slot4(), is_armor(), is_flag1(), is_hidden_in_menu(), is_celestial(), is_brotherhood(), is_unknown_flag()
+  {
     is_buki_get = ( bytes.size() == 16 );
     if (is_buki_get)
       mapBytesBukiGet();
@@ -205,9 +211,17 @@ struct enemy_loot_data_t final : public bytes_mapper_t
   uint8_t n_gil_steal;
   uint32_t arena_price;
 
-  enemy_loot_data_t() = default;
-
-  enemy_loot_data_t( const std::vector<char> bytes, size_t initial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( initial_offset ), end_offset( initial_offset + BYTE_LENGTH ), monster_id( monster_id )
+  enemy_loot_data_t( const std::vector<char> bytes, size_t initial_offset, std::string monster_id ) : bytes_mapper_t( bytes ),
+    monster_id( monster_id ), initial_offset( initial_offset ), end_offset( initial_offset + BYTE_LENGTH ), gil(), ap(),
+    ap_overkill(), ronso_rage(), primary_drop_chance(), secondary_drop_chance(), steal_chance(), gear_drop_chance(),
+    primary_normal_drop(), primary_normal_drop_rare(), secondary_normal_drop(), secondary_normal_drop_rare(),
+    n_primary_normal_drop(), n_primary_normal_drop_rare(), n_secondary_normal_drop(), n_secondary_normal_drop_rare(),
+    primary_normal_drop_overkill(), primary_normal_drop_overkill_rare(), secondary_normal_drop_overkill(),
+    secondary_normal_drop_overkill_rare(), n_primary_normal_drop_overkill(), n_primary_normal_drop_overkill_rare(),
+    n_secondary_normal_drop_overkill(), n_secondary_normal_drop_overkill_rare(), steal_item(), steal_item_rare(),
+    n_steal_item(), n_steal_item_rare(), bribe_item(), n_bribe_item(), gear_slot_count_byte(), gear_damage_calc(),
+    gear_crit_bonus(), gear_attack_power(), gear_ability_count_byte(), weapon_abilities_by_char(), gear_abilities_by_char(),
+    zanmato_level_byte(), n_gil_steal(), arena_price()
   {
     mapBytes();
     // test();
@@ -406,9 +420,17 @@ struct enemy_stat_data_t final : public bytes_mapper_t
 
   element_weakness_flags_t element_weakness_flags{ 0x00 };
 
-  enemy_stat_data_t() = default;
-
-  enemy_stat_data_t( const std::vector<char>& bytes, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), initial_offset( intial_offset ), monster_id( monster_id )
+  enemy_stat_data_t( const std::vector<char>& bytes, size_t intial_offset, std::string monster_id ) : bytes_mapper_t( bytes ), 
+    monster_id( monster_id ), initial_offset( intial_offset ), name_offset(), name_key(), sensor_text_offset(), sensor_text_key(), 
+    unused_str_offset(), unused_str_key(), scan_text_offset(), scan_text_key(), unused_str2_offset(), unused_str2_key(),
+    hp(), mp(), overkill_threshold(), str(), def(), mag(), mdef(), agi(), luck(), eva(), acc(), flag_map1(), flag_map2(),
+    poison_damage(), element_absorb(), element_immune(), element_resist(), element_weakness(), death_resist(), zombie_resist(),
+    petrify_resist(), poison_resist(), pwr_break_resist(), mag_break_resist(), armor_break_resist(), mental_break_resist(),
+    confuse_resist(), berserk_resist(), provoke_resist(), threaten_chance(), sleep_resist(), silence_resist(), darkness_resist(),
+    shell_resist(), protect_resist(), reflect_resist(), nul_tide_resist(), nul_blaze_resist(), nul_shock_resist(),
+    nul_frost_resist(), regen_resist(), haste_resist(), slow_resist(), auto_statuses(), auto_statuses_temporal(),
+    auto_statuses_extra(), extra_status_immunities(), abilities(), forced_action(), index(), model_id(), icon_type(),
+    doom_count(), arena_id(), model_id_other(), always_zero1(), always_zero2(), always_zero3(), always_zero4()
   {
     this->mapBytes();
     this->mapFlags();
@@ -435,7 +457,8 @@ struct enemy_data_t final : public bytes_mapper_t
   enemy_stat_data_t* stats_data;
 
   enemy_data_t( std::string id, const std::vector<char>& bytes )
-    : bytes_mapper_t( bytes ), monster_id( id ), chunks(), loot_data( nullptr ), stats_data( nullptr )
+    : bytes_mapper_t( bytes ), monster_id( id ), chunks(), script(), mapping_bytes(), stats_bytes(), 
+    chunk_3_bytes(), loot_bytes(),audio_bytes(), text_bytes(), loot_data( nullptr ), stats_data( nullptr )
   {
     this->chunks = bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 );
     this->mapChunks();
@@ -455,7 +478,8 @@ struct field_data_t final : public bytes_mapper_t
   uint8_t quantity;
   uint16_t type;
 
-  field_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), index( data.index )
+  field_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), index( data.index ),
+    flag(), quantity(), type()
   {
     mapBytes();
     // test();
@@ -471,7 +495,8 @@ struct shop_data_t : public bytes_mapper_t
   uint16_t pricesUnused;
   std::vector<uint16_t> item_indexes;
 
-  shop_data_t( chunk_t& data ) : bytes_mapper_t( data.data )
+  shop_data_t( chunk_t& data ) : bytes_mapper_t( data.data ),
+    pricesUnused(), item_indexes()
   {
     mapBytes();
     // test();
@@ -742,7 +767,15 @@ struct character_stats_t final : public bytes_mapper_t
 
   ability_flags_3_t ability_flags3{ 0x00000000 };
 
-  character_stats_t( chunk_t& data ) : bytes_mapper_t( data.data )
+  character_stats_t( chunk_t& data ) : bytes_mapper_t( data.data ),
+    name_offset(), name_key(), base_hp(), base_mp(), base_str(), base_def(), base_mag(), base_mdef(),
+    base_agi(), base_luck(), base_eva(), base_acc(), current_ap(), current_hp(), current_mp(),
+    max_hp(), max_mp(), unknown1(), unknown2(), flags(), current_weapon_id(), current_armor_id(),
+    str(), def(), mag(), mdef(), agi(), luck(), eva(), acc(),poison_damage(), overdrive_mode(),
+    overdrive_current(), overdrive_max(), sphere_level(), sphere_level_used(),unknown3(),
+    ability_field1(), ability_field2(), ability_field3(), encounter_count(), kill_count(),
+    unknown4(), unknown5(), overdrive_mode_counters(), overdrive_mode_flags(), unknown6(),
+    unknown7()
   {
     mapBytes();
     mapFlags();
@@ -783,7 +816,11 @@ struct aeon_scaling_data_t final : public bytes_mapper_t
   uint8_t acc_coef2;
   uint16_t unknown;
 
-  aeon_scaling_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), is_yuna_summon( false )
+  aeon_scaling_data_t( chunk_t& data ) : bytes_mapper_t( data.data ),
+    is_yuna_summon( false ), genre_byte(), ap_req_coef1(), ap_req_coef2(), ap_req_coef3(), ap_req_max(),
+    hp_coef1(), hp_coef2(), mp_coef1(), mp_coef2(), str_coef1(), str_coef2(), def_coef1(), def_coef2(),
+    mag_coef1(), mag_coef2(), mdef_coef1(), mdef_coef2(), agi_coef1(), agi_coef2(), eva_coef1(), eva_coef2(),
+    acc_coef1(), acc_coef2(), unknown()
   {
     mapBytes();
     //test();
@@ -807,7 +844,8 @@ struct aeon_stat_data_t final : public bytes_mapper_t
   uint8_t acc;
   uint8_t luck;
 
-  aeon_stat_data_t( chunk_t& data ) : bytes_mapper_t( data.data )
+  aeon_stat_data_t( chunk_t& data ) : bytes_mapper_t( data.data ),
+    hp(), mp(), str(), def(), mag(), mdef(), agi(), eva(), acc(), luck()
   {
     mapBytes();
     // test();
@@ -830,7 +868,8 @@ struct sphere_grid_node_data_t final : public bytes_mapper_t
 
   uint8_t content;
 
-  sphere_grid_node_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes )
+  sphere_grid_node_data_t( const std::vector<char>& bytes ) : bytes_mapper_t( bytes ),
+    x_pos(), y_pos(), unknown1(), original_content(), unknown2(), cluster(), unknown3(), content()
   {
     mapBytes();
     // test();
@@ -863,7 +902,9 @@ struct sphere_grid_data_t final : public bytes_mapper_t
 
   std::vector<sphere_grid_node_data_t*> nodes;
 
-  sphere_grid_data_t( const std::vector<char>& bytes, sphere_grid_type_e type ) : bytes_mapper_t( bytes ), type( type )
+  sphere_grid_data_t( const std::vector<char>& bytes, sphere_grid_type_e type ) : bytes_mapper_t( bytes ), 
+    type( type ), full_content_bytes(), chunked_content_bytes(), unknown1(), cluster_count(), node_count(), 
+    link_count(), unknown2(), unknown3(), unknown4(), unknown5(), nodes()
   {
     mapBytes();
     // test();
@@ -891,7 +932,9 @@ struct formation_data_t final : public bytes_mapper_t
   uint8_t always_zero8;
   std::vector<uint16_t> monster_ids;
 
-  formation_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), data( data )
+  formation_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), data( data ),
+    voice(), unknown1(), unknown2(), in_water(), always_zero1(), always_zero2(), always_zero3(),
+    always_zero4(), always_zero5(), always_zero6(), always_zero7(), always_zero8(), monster_ids()
   {
     voice = read1Byte( bytes, 0x00 );
     unknown1 = read1Byte( bytes, 0x01 );
@@ -947,7 +990,8 @@ struct encounter_file_t final : public bytes_mapper_t
   std::vector<chunk_t> chunks;
   formation_data_t* formation;
 
-  encounter_file_t( std::vector<char>& bytes, std::string name ) : bytes_mapper_t( bytes ), name( name ), chunks( bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 ) )
+  encounter_file_t( std::vector<char>& bytes, std::string name ) : bytes_mapper_t( bytes ), 
+    name( name ), chunks( bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 ) ), formation( nullptr )
   {
     formation = new formation_data_t( chunks[ 2 ] );
     // std::cout << name << std::endl;
@@ -1015,7 +1059,8 @@ struct field_encounter_data_t final : public bytes_mapper_t
   uint8_t group_count;
   std::vector<field_group_data_t*> groups;
 
-  field_encounter_data_t( chunk_t& data, const std::vector<char>& field_data ) : bytes_mapper_t( data.data ), groups()
+  field_encounter_data_t( chunk_t& data, const std::vector<char>& field_data ) : bytes_mapper_t( data.data ), 
+    id(), data_offset(), formation_offset(), field(), unknown(), total_formation_count(), group_count(), groups()
   {
     id = read2Bytes( bytes, 0x00 );
     data_offset = read2Bytes( bytes, 0x02 );
@@ -1106,10 +1151,52 @@ struct btl_data_t final : public bytes_mapper_t
   }
 };
 
+struct customize_data_t : public bytes_mapper_t
+{
+  uint16_t target;
+  uint16_t ability;
+  uint16_t item;
+  uint8_t item_quantity;
+  uint8_t item_quantity_base;
+
+  customize_data_t( chunk_t& data ) : bytes_mapper_t( data.data ), target(), ability(), item(),
+    item_quantity(), item_quantity_base()
+  {
+    mapBytes();
+  }
+
+  void mapBytes()
+  {
+    target = read2Bytes( bytes, 0x00 );
+    ability = read2Bytes( bytes, 0x02 );
+    item = read2Bytes( bytes, 0x04 );
+    item_quantity = read1Byte( bytes, 0x06 );
+    item_quantity_base = read1Byte( bytes, 0x07 );
+  }
+
+  void writeToBytes()
+  {
+    write2Bytes( bytes, 0x00, target );
+    write2Bytes( bytes, 0x02, ability );
+    write2Bytes( bytes, 0x04, item );
+    write1Byte( bytes, 0x06, item_quantity );
+    write1Byte( bytes, 0x07, item_quantity_base );
+  }
+
+  void test() const override
+  {
+    printf( "Target: %d\n", target );
+    printf( "Ability: %d\n", ability );
+    printf( "Item: %d\n", item );
+    printf( "Item Quantity: %d\n", item_quantity );
+    printf( "Item Quantity Base: %d\n", item_quantity_base );
+  }
+};
+
 struct data_pack_t
 {
-  std::unordered_map<int, enemy_data_t>& enemy_data;
-  std::unordered_map<int, enemy_data_t>& unmodified_enemy_data;
+  std::unordered_map<int, enemy_data_t*>& enemy_data;
+  std::unordered_map<int, enemy_data_t*>& unmodified_enemy_data;
   std::vector<field_data_t*>& field_data;
   std::vector<item_shop_t*>& item_shop_data;
   std::vector<gear_shop_t*>& gear_shop_data;
@@ -1122,14 +1209,13 @@ struct data_pack_t
   std::vector<aeon_scaling_data_t*>& aeon_scaling_data;
   std::vector<aeon_stat_data_t*>& aeon_stat_data;
   std::vector<sphere_grid_data_t*>& sphere_grid_data;
-  btl_data_t* btl_data;
   std::vector<encounter_file_t*>& encounter_files;
-
-  data_pack_t() = default;
+  std::vector<customize_data_t*>& customize_data;
+  std::vector<customize_data_t*>& aeon_customize_data;
 
   data_pack_t(
-    std::unordered_map<int, enemy_data_t>& enemy_data,
-    std::unordered_map<int, enemy_data_t>& unmodified_enemy_data,
+    std::unordered_map<int, enemy_data_t*>& enemy_data,
+    std::unordered_map<int, enemy_data_t*>& unmodified_enemy_data,
     std::vector<field_data_t*>& field_data,
     std::vector<item_shop_t*>& item_shop_data,
     std::vector<gear_shop_t*>& gear_shop_data,
@@ -1142,8 +1228,9 @@ struct data_pack_t
     std::vector<aeon_scaling_data_t*>& aeon_scaling_data,
     std::vector<aeon_stat_data_t*>& aeon_stat_data,
     std::vector<sphere_grid_data_t*>& sphere_grid_data,
-    btl_data_t* btl_data,
-    std::vector<encounter_file_t*>& encounter_files
+    std::vector<encounter_file_t*>& encounter_files,
+    std::vector<customize_data_t*>& customize_data,
+    std::vector<customize_data_t*>& aeon_customize_data
   ) :
     enemy_data( enemy_data ),
     unmodified_enemy_data( unmodified_enemy_data ),
@@ -1159,8 +1246,9 @@ struct data_pack_t
     aeon_scaling_data( aeon_scaling_data ),
     aeon_stat_data( aeon_stat_data ),
     sphere_grid_data( sphere_grid_data ),
-    btl_data( btl_data ),
-    encounter_files( encounter_files )
+    encounter_files( encounter_files ),
+    customize_data( customize_data ),
+    aeon_customize_data( aeon_customize_data )
   {}
 };
 
@@ -1208,6 +1296,9 @@ struct options_pack_t
   bool randomize_key_items;
   bool randomize_celestials;
   bool randomize_brotherhood;
+  bool randomize_customization_items;
+  bool randomize_aeon_stat_items;
+
   bool keep_things_sane;
   int32_t seed;
   std::string seed_text;
@@ -1254,6 +1345,8 @@ struct options_pack_t
     bool randomize_key_items,
     bool randomize_celestials,
     bool randomize_brotherhood,
+    bool randomize_customization_items,
+    bool randomize_aeon_stat_items,
     bool keep_things_sane,
     int32_t seed,
     std::string seed_text,
@@ -1298,6 +1391,8 @@ struct options_pack_t
     randomize_key_items( randomize_key_items ),
     randomize_celestials( randomize_celestials ),
     randomize_brotherhood( randomize_brotherhood ),
+    randomize_customization_items( randomize_customization_items ),
+    randomize_aeon_stat_items( randomize_aeon_stat_items ),
     keep_things_sane( keep_things_sane ),
     seed( seed ),
     seed_text( seed_text ),

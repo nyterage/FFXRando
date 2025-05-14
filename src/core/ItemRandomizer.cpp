@@ -54,7 +54,7 @@ void randomizer_t::getMonsterItems()
 {
   for (auto& enemy : data_pack.enemy_data)
   {
-    enemy_loot_data_t& loot = *enemy.second.loot_data;
+    enemy_loot_data_t& loot = *enemy.second->loot_data;
     checkItemList( loot.primary_normal_drop, loot.n_primary_normal_drop );
     checkItemList( loot.primary_normal_drop_rare, loot.n_primary_normal_drop_rare );
     checkItemList( loot.secondary_normal_drop, loot.n_secondary_normal_drop );

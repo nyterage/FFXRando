@@ -11,14 +11,10 @@
 struct initializer_t
 {
   gui_t* gui;
-  data_pack_t* data_pack;
-
-  // Static Data
-  btl_data_t* btl_data;
 
   // Dynamic data
-  std::unordered_map<int, enemy_data_t> enemy_data;
-  std::unordered_map<int, enemy_data_t> unmodified_enemy_data;
+  std::unordered_map<int, enemy_data_t*> enemy_data;
+  std::unordered_map<int, enemy_data_t*> unmodified_enemy_data;
   std::vector<field_data_t*> field_data;
   std::vector<item_shop_t*> item_shop_data;
   std::vector<gear_shop_t*> gear_shop_data;
@@ -32,13 +28,18 @@ struct initializer_t
   std::vector<aeon_stat_data_t*> aeon_stat_data;
   std::vector<sphere_grid_data_t*> sphere_grid_data;
   std::vector<encounter_file_t*> encounter_file_data;
+  std::vector<customize_data_t*> gear_customize_data;
+  std::vector<customize_data_t*> aeon_stat_customize_data;
 
-  initializer_t() : gui( nullptr ), data_pack( nullptr ), btl_data( nullptr ),
+  data_pack_t* data_pack;
+
+  initializer_t() : gui( nullptr ),
     enemy_data(), unmodified_enemy_data(),
     field_data(), item_shop_data(), gear_shop_data(),
     buki_data(), weapon_data(), shop_arms_data(), item_rate_data(),
     arms_rate_data(), player_stats_data(), aeon_scaling_data(),
-    aeon_stat_data(), sphere_grid_data(), encounter_file_data()
+    aeon_stat_data(), sphere_grid_data(), encounter_file_data(),
+    gear_customize_data(), aeon_stat_customize_data(), data_pack( nullptr )
   {
     if (!std::filesystem::exists( INPUT_FOLDER + JPPC_FOLDER ))
     {
@@ -46,13 +47,37 @@ struct initializer_t
       MessageBox( nullptr, message, L"Error", MB_OK | MB_ICONERROR );
       return;
     }
+
+    data_pack = new data_pack_t(
+      enemy_data,
+      unmodified_enemy_data,
+      field_data,
+      item_shop_data,
+      gear_shop_data,
+      buki_data,
+      weapon_data,
+      shop_arms_data,
+      item_rate_data,
+      arms_rate_data,
+      player_stats_data,
+      aeon_scaling_data,
+      aeon_stat_data,
+      sphere_grid_data,
+      encounter_file_data,
+      gear_customize_data,
+      aeon_stat_customize_data
+      );
+
     std::thread data_thread( &initializer_t::initializeAllData, this );
     std::thread gui_thread( &initializer_t::initializeGUI, this );
-    // TODO - Implement actual debugging tests rather than just commenting this line out :| 
-    // runTests();
+
     data_thread.join();
     gui_thread.join();
   }
+
+  ~initializer_t()
+  {
+  };
 
   std::vector<chunk_t> chunkData( std::vector<char>& bytes, int size ) const;
   std::vector<char> getDataFromFile( const std::string& filepath, bool skip_header = false ) const;
@@ -87,6 +112,8 @@ struct initializer_t
   void initializeAeonStatData();
   void initializeSphereGridData();
   void initializeBtlData();
+  void initializeGearCustomizeData();
+  void initializeAeonStatCustomizeData();
   void initializeGUI();
   void initializeAllData();
 

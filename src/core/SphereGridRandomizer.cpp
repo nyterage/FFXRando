@@ -70,6 +70,7 @@ void randomizer_t::setRequiredAbilities()
   // Force abilities used by tutorials to be learned to prevent softlocks
   character_stats_t& riku_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_RIKU ];
   riku_stats.ability_flags1.bits.use = 1;
+  riku_stats.ability_flags1.bits.steal = 1;
   riku_stats.writeToBytes();
 
   character_stats_t& kimari_stats = *data_pack.player_stats_data[ ply_save_e::CHARACTER_KIMAHRI ];

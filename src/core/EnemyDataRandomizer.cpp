@@ -140,12 +140,13 @@ void randomizer_t::randomizeEnemyStatsNormal( enemy_data_t* enemy )
   stats.overkill_threshold = normal<uint32_t>( stats.overkill_threshold / 2, stats.overkill_threshold, 1, 99999 );
   if (options_pack.keep_things_sane)
   {
-    stats.str = normal<uint8_t>( stats.str, stats.str / 3, stats.str / 3, std::clamp( stats.str * 3, 0, 255 ) );
-    stats.def = normal<uint8_t>( stats.def, stats.def / 3, stats.def / 3, std::clamp( stats.def * 3, 0, 255 ) );
-    stats.mag = normal<uint8_t>( stats.mag, stats.mag / 3, stats.mag / 3, std::clamp( stats.mag * 3, 0, 255 ) );
-    stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 3, stats.mdef / 3, std::clamp( stats.mdef * 3, 0, 255 ) );
-    stats.agi = normal<uint8_t>( stats.agi, stats.agi / 3, stats.agi / 3, std::clamp( stats.agi * 3, 0, 255 ) );
-    stats.acc = normal<uint8_t>( stats.acc, stats.acc / 3, stats.acc / 3, std::clamp( stats.acc * 3, 0, 255 ) );
+    double mult = 5 / 3;
+    stats.str = normal<uint8_t>( stats.str, stats.str / 3, stats.str / 3, std::clamp( static_cast< int >( std::round( stats.str * mult ) ), 0, 255 ) );
+    stats.def = normal<uint8_t>( stats.def, stats.def / 3, stats.def / 3, std::clamp( static_cast< int >( std::round( stats.def * mult ) ), 0, 255 ) );
+    stats.mag = normal<uint8_t>( stats.mag, stats.mag / 3, stats.mag / 3, std::clamp( static_cast< int >( std::round( stats.mag * mult ) ), 0, 255 ) );
+    stats.mdef = normal<uint8_t>( stats.mdef, stats.mdef / 3, stats.mdef / 3, std::clamp( static_cast< int >( std::round( stats.mdef * mult ) ), 0, 255 ) );
+    stats.agi = normal<uint8_t>( stats.agi, stats.agi / 3, stats.agi / 3, std::clamp( static_cast< int >( std::round( stats.agi * mult ) ), 0, 255 ) );
+    stats.acc = normal<uint8_t>( stats.acc, stats.acc / 3, stats.acc / 3, std::clamp( static_cast< int >( std::round( stats.acc * mult ) ), 0, 255 ) );
   }
   else
   {
@@ -221,10 +222,11 @@ void randomizer_t::randomizeEnemyStatsDefensiveNormalization( enemy_data_t* enem
   stats.hp = hp;
   if (stats.hp < 50)
     stats.hp = 50;
-  stats.str = normal<uint8_t>( stats.str, stats.str / 3, stats.str / 3, std::clamp( stats.str * 3, 0, 255 ) );
-  stats.mag = normal<uint8_t>( stats.mag, stats.mag / 3, stats.mag / 3, std::clamp( stats.mag * 3, 0, 255 ) );
-  stats.agi = normal<uint8_t>( stats.agi, stats.agi / 3, stats.agi / 3, std::clamp( stats.agi * 3, 0, 255 ) );
-  stats.acc = normal<uint8_t>( stats.acc, stats.acc / 3, stats.acc / 3, std::clamp( stats.acc * 3, 0, 255 ) );
+  double mult = 5 / 3;
+  stats.str = normal<uint8_t>( stats.str, stats.str / 3, stats.str / 3, std::clamp( static_cast< int >( std::round( stats.str * mult ) ), 0, 255 ) );
+  stats.mag = normal<uint8_t>( stats.mag, stats.mag / 3, stats.mag / 3, std::clamp( static_cast< int >( std::round( stats.mag * mult ) ), 0, 255 ) );
+  stats.agi = normal<uint8_t>( stats.agi, stats.agi / 3, stats.agi / 3, std::clamp( static_cast< int >( std::round( stats.agi * mult ) ), 0, 255 ) );
+  stats.acc = normal<uint8_t>( stats.acc, stats.acc / 3, stats.acc / 3, std::clamp( static_cast< int >( std::round( stats.acc * mult ) ), 0, 255 ) );
   enemy->loot_data->gil /= defensive_factor;
   enemy->loot_data->ap /= defensive_factor;
   stats.writeToBytes();
@@ -306,9 +308,16 @@ void randomizer_t::randomizeEnemyGearDrops( enemy_data_t* enemy )
 {
   enemy_loot_data_t& loot = *enemy->loot_data;
   if (options_pack.keep_things_sane)
+  {
+    loot.gear_slot_count_byte = uniform<uint8_t>( 0, 16 );
     loot.gear_ability_count_byte = uniform<uint8_t>( 0, 16 );
+  }
   else
+  {
+    loot.gear_slot_count_byte = uniform<uint8_t>( 0, 20 );
     loot.gear_ability_count_byte = uniform<uint8_t>( 0, 20 );
+  }
+
   if (options_pack.keep_things_sane && loot.gear_drop_chance > 0)
     loot.gear_drop_chance = normal<uint8_t>( loot.gear_drop_chance, loot.gear_drop_chance / 2, 0, 101 );
   else
@@ -365,56 +374,56 @@ void randomizer_t::doEnemyRandomization()
   // Generate the enemy defensive stats pool before going into the main loop
   if (options_pack.randomize_enemy_stats_defensive || options_pack.randomize_enemy_stats_shuffle)
     for (auto& enemy : data_pack.enemy_data)
-      addEnemyDefenses( &enemy.second );
+      addEnemyDefenses( enemy.second );
 
   for (auto& enemy : data_pack.enemy_data)
   {
     if (options_pack.randomize_enemy_drops)
     {
-      printf( "Randomizing Enemy Drops for monster %s\n", enemy.second.monster_id.c_str() );
-      randomizeEnemyDrops( &enemy.second );
+      printf( "Randomizing Enemy Drops for monster %s\n", enemy.second->monster_id.c_str() );
+      randomizeEnemyDrops( enemy.second );
     }
     if (options_pack.randomize_enemy_steals)
     {
-      printf( "Randomizing Enemy Steals for monster %s\n", enemy.second.monster_id.c_str() );
-      randomizeEnemySteal( &enemy.second );
+      printf( "Randomizing Enemy Steals for monster %s\n", enemy.second->monster_id.c_str() );
+      randomizeEnemySteal( enemy.second );
     }
     if (options_pack.randomize_enemy_bribes)
     {
-      printf( "Randomizing Enemy Bribes for monster %s\n", enemy.second.monster_id.c_str() );
-      randomizeEnemyBribe( &enemy.second );
+      printf( "Randomizing Enemy Bribes for monster %s\n", enemy.second->monster_id.c_str() );
+      randomizeEnemyBribe( enemy.second );
     }
     if (options_pack.randomize_enemy_gear_drops)
     {
-      printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy.second.monster_id.c_str() );
-      randomizeEnemyGearDrops( &enemy.second );
+      printf( "Randomizing Enemy Gear Drops for monster %s\n", enemy.second->monster_id.c_str() );
+      randomizeEnemyGearDrops( enemy.second );
     }
     if (options_pack.randomize_enemy_stats)
     {
-      printf( "Randomizing Enemy Stats for monster %s\n", enemy.second.monster_id.c_str() );
-      randomizeEnemyStatsNormal( &enemy.second );
+      printf( "Randomizing Enemy Stats for monster %s\n", enemy.second->monster_id.c_str() );
+      randomizeEnemyStatsNormal( enemy.second );
     }
     if (options_pack.randomize_enemy_stats_defensive)
     {
-      printf( "Randomizing Enemy Defensive for monster %s\n", enemy.second.monster_id.c_str() );
-      randomizeEnemyStatsDefensiveNormalization( &enemy.second );
+      printf( "Randomizing Enemy Defensive for monster %s\n", enemy.second->monster_id.c_str() );
+      randomizeEnemyStatsDefensiveNormalization( enemy.second );
     }
     if (options_pack.randomize_enemy_stats_shuffle)
     {
-      printf( "Shuffling Enemy Stats for monster %s\n", enemy.second.monster_id.c_str() );
-      shuffleEnemyStats( &enemy.second );
+      printf( "Shuffling Enemy Stats for monster %s\n", enemy.second->monster_id.c_str() );
+      shuffleEnemyStats( enemy.second );
     }
     if (options_pack.randomize_enemy_elemental_affinities)
     {
-      printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy.second.monster_id.c_str() );
-      randomizeEnemyElementalAffinities( &enemy.second );
+      printf( "Randomizing Enemy Elemental Affinities for monster %s\n", enemy.second->monster_id.c_str() );
+      randomizeEnemyElementalAffinities( enemy.second );
     }
 
-    printf( "Reconstructing files for for monster %s\n", enemy.second.monster_id.c_str() );
-    std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy.second.monster_id;
+    printf( "Reconstructing files for for monster %s\n", enemy.second->monster_id.c_str() );
+    std::string pathstr = OUTPUT_FOLDER + prefix + MONSTER_FOLDER + "_m" + enemy.second->monster_id;
     std::filesystem::path path = pathstr;
     std::filesystem::create_directories( path );
-    std::string filepath = pathstr + "/m" + enemy.second.monster_id + ".bin";
-    enemy.second.writeBytesToNewFile( enemy.second.bytes, filepath );
+    std::string filepath = pathstr + "/m" + enemy.second->monster_id + ".bin";
+    enemy.second->writeBytesToNewFile( enemy.second->bytes, filepath );
   }
 }
