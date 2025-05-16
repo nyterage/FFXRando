@@ -32,6 +32,7 @@ enum
   ID_RANDOMIZE_ENCOUNTERS,
   ID_RANDOMIZE_ITEM_SHOPS,
   ID_RANDOMIZE_ITEM_SHOP_PRICES,
+  ID_ENSURE_SHOPS_SELL_SPHERES,
   ID_RANDOMIZE_FIELD_ITEMS,
   ID_RANDOMIZE_GEAR_SHOPS,
   ID_RANDOMIZE_GEAR_SHOP_PRICES,
@@ -100,6 +101,7 @@ private:
   bool randomize_gear_shops;
   bool randomize_item_shop_prices;
   bool randomize_gear_shop_prices;
+  bool ensure_shops_sell_spheres;
   bool randomize_field_items;
   bool randomize_gear_abilities;
   bool randomize_weapon_crit;
@@ -160,6 +162,7 @@ public:
     randomize_gear_shops( false ),
     randomize_item_shop_prices( false ),
     randomize_gear_shop_prices( false ),
+    ensure_shops_sell_spheres( false ),
     randomize_field_items( false ),
     randomize_gear_abilities( false ),
     randomize_weapon_crit( false ),
@@ -225,6 +228,7 @@ private:
   void onRandomizeGearShops( wxCommandEvent& event );
   void onRandomizeItemShopPrices( wxCommandEvent& event );
   void onRandomizeGearShopPrices( wxCommandEvent& event );
+  void onEnsureShopsSellSpheres( wxCommandEvent& event );
 
   void onRandomizeFieldItems( wxCommandEvent& event );
 
@@ -460,6 +464,7 @@ struct item_options_panel_t : wxPanel
   wxCheckBox* randomizeShopsCheckbox;
   wxCheckBox* randomizeShopPricesCheckbox;
   wxCheckBox* randomizeFieldItemsCheckbox;
+  wxCheckBox* ensureShopsSellSpheresCheckbox;
 
   item_options_panel_t( wxAuiNotebook* book ) : wxPanel( book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE ),
     randomizeKeyItemsCheckbox( nullptr ),
@@ -472,8 +477,11 @@ struct item_options_panel_t : wxPanel
     randomizeKeyItemsCheckbox = new wxCheckBox( this, ID_ALLOW_RANDOMIZE_KEY_ITEMS, _T( "Include Key Items in Pool" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeKeyItemsCheckbox->SetToolTip( "If checked, key items will be included in the randomization pool. This might break progression, use it with caution." );
 
+
     randomizeShopsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ITEM_SHOPS, _T( "Randomize Shops" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeShopsCheckbox->SetToolTip( "If checked, shops will be randomized. This includes:\n- The number of items offered\n- The items offered" );
+    ensureShopsSellSpheresCheckbox = new wxCheckBox( this, ID_ENSURE_SHOPS_SELL_SPHERES, _T( "Ensure Randomized Shops Sell Spheres" ), wxDefaultPosition, wxDefaultSize, 0 );
+    ensureShopsSellSpheresCheckbox->SetToolTip( "If checked, randomized shops will always sell the basic types of spheres. This includes:\n- Power Spheres \n- Mana Spheres \n- Agility Spheres \n- Ability Spheres " );
     randomizeShopPricesCheckbox = new wxCheckBox( this, ID_RANDOMIZE_ITEM_SHOP_PRICES, _T( "Randomize Shop Prices" ), wxDefaultPosition, wxDefaultSize, 0 );
     randomizeShopPricesCheckbox->SetToolTip( "If checked, shop prices will be randomized. This includes:\n- The prices of the items" );
     randomizeFieldItemsCheckbox = new wxCheckBox( this, ID_RANDOMIZE_FIELD_ITEMS, _T( "Randomize Field Items" ), wxDefaultPosition, wxDefaultSize, 0 );
@@ -481,6 +489,7 @@ struct item_options_panel_t : wxPanel
 
     sizer->Add( randomizeKeyItemsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeShopsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
+    sizer->Add( ensureShopsSellSpheresCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeShopPricesCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->Add( randomizeFieldItemsCheckbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, FromDIP( 5 ) );
     sizer->InsertSpacer( sizer->GetItemCount(), FromDIP( 5 ) );
@@ -605,8 +614,8 @@ struct sphere_grid_panel_t : public wxPanel
     ShuffleSphereGridRadioButton->SetToolTip( "If checked, sphere grid will be shuffled. This means that the nodes will be in a different order, but the same nodes will be present." );
     wxRadioButton* RandomizeSphereGridRadioButton = new wxRadioButton( this, ID_RANDOMIZE_SPHERE_GRID_TRUE, _T( "Randomize Sphere Grid - True Randomization" ), wxDefaultPosition, wxDefaultSize, 0 );
     RandomizeSphereGridRadioButton->SetToolTip( "If checked, sphere grid will be truly randomized. This means that there is no guarentee you will get all ability nodes, and there may be duplicate ability nodes." );
-    wxRadioButton* RandomizeSphereGridRadioButton2 = new wxRadioButton( this, ID_RANDOMIZE_SPHERE_GRID, _T( "Randomize Sphere Grid - Normal Randomization" ), wxDefaultPosition, wxDefaultSize, 0 );
-    RandomizeSphereGridRadioButton2->SetToolTip( "If checked, sphere grid will be randomized, but will be guarenteed to have 1 of every ability node." );
+    wxRadioButton* RandomizeSphereGridRadioButton2 = new wxRadioButton( this, ID_RANDOMIZE_SPHERE_GRID, _T( "Randomize Sphere Grid - Controlled Randomization" ), wxDefaultPosition, wxDefaultSize, 0 );
+    RandomizeSphereGridRadioButton2->SetToolTip( "If checked, every node in the sphere grid will be replaced by a random node, not constrained by what was present originally, but will be guarenteed to have 1 of every ability node." );
 
     wxRadioButton* sphereNodesNoneRadioButton = new wxRadioButton( this, ID_SPHERE_NODES_NONE, _T( "None" ), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
     sphereNodesNoneRadioButton->SetToolTip( "If checked, sphere nodes will not be scaled up or down" );

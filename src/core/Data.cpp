@@ -291,65 +291,65 @@ void enemy_loot_data_t::writeToBytes()
 void enemy_loot_data_t::test() const
 {
   bytes_mapper_t::test();
-  std::cout << "Monster ID: " << monster_id << std::endl;
-  std::cout << "Gil: " << gil << std::endl;
-  std::cout << "AP: " << ap << std::endl;
-  std::cout << "AP Overkill: " << ap_overkill << std::endl;
-  std::cout << "Ronso Rage: " << ronso_rage << std::endl;
-  std::cout << "Primary Drop Chance: " << primary_drop_chance << std::endl;
-  std::cout << "Secondary Drop Chance: " << secondary_drop_chance << std::endl;
-  std::cout << "Steal Chance: " << steal_chance << std::endl;
-  std::cout << "Gear Drop Chance: " << gear_drop_chance << std::endl;
-  std::cout << "Primary Normal Drop: " << primary_normal_drop << std::endl;
-  std::cout << "Primary Normal Drop Rare: " << primary_normal_drop_rare << std::endl;
-  std::cout << "Secondary Normal Drop: " << secondary_normal_drop << std::endl;
-  std::cout << "Secondary Normal Drop Rare: " << secondary_normal_drop_rare << std::endl;
-  std::cout << "N Primary Normal Drop: " << n_primary_normal_drop << std::endl;
-  std::cout << "N Primary Normal Drop Rare: " << n_primary_normal_drop_rare << std::endl;
-  std::cout << "N Secondary Normal Drop: " << n_secondary_normal_drop << std::endl;
-  std::cout << "N Secondary Normal Drop Rare: " << n_secondary_normal_drop_rare << std::endl;
-  std::cout << "Primary Normal Drop Overkill: " << primary_normal_drop_overkill << std::endl;
-  std::cout << "Primary Normal Drop Overkill Rare: " << primary_normal_drop_overkill_rare << std::endl;
-  std::cout << "Secondary Normal Drop Overkill: " << secondary_normal_drop_overkill << std::endl;
-  std::cout << "Secondary Normal Drop Overkill Rare: " << secondary_normal_drop_overkill_rare << std::endl;
-  std::cout << "N Primary Normal Drop Overkill: " << n_primary_normal_drop_overkill << std::endl;
-  std::cout << "N Primary Normal Drop Overkill Rare: " << n_primary_normal_drop_overkill_rare << std::endl;
-  std::cout << "N Secondary Normal Drop Overkill: " << n_secondary_normal_drop_overkill << std::endl;
-  std::cout << "N Secondary Normal Drop Overkill Rare: " << n_secondary_normal_drop_overkill_rare << std::endl;
-  std::cout << "Steal Item: " << steal_item << std::endl;
-  std::cout << "Steal Item Rare: " << steal_item_rare << std::endl;
-  std::cout << "N Steal Item: " << n_steal_item << std::endl;
-  std::cout << "N Steal Item Rare: " << n_steal_item_rare << std::endl;
-  std::cout << "Bribe Item: " << bribe_item << std::endl;
-  std::cout << "N Bribe Item: " << n_bribe_item << std::endl;
-  std::cout << "Gear Slot Count Byte: " << gear_slot_count_byte << std::endl;
-  std::cout << "Gear Damage Calc: " << gear_damage_calc << std::endl;
-  std::cout << "Gear Crit Bonus: " << gear_crit_bonus << std::endl;
-  std::cout << "Gear Attack Power: " << gear_attack_power << std::endl;
-  std::cout << "Gear Ability Count Byte: " << gear_ability_count_byte << std::endl;
-  std::cout << "Weapon Abilities by Char: " << std::endl;
+  printf( "Monster ID: %s\n", monster_id.c_str() );
+  printf( "Gil: %d\n", gil );
+  printf( "AP: %d\n", ap );
+  printf( "AP Overkill: %d\n", ap_overkill );
+  printf( "Ronso Rage: %d\n", ronso_rage );
+  printf( "Primary Drop Chance: %d\n", primary_drop_chance );
+  printf( "Secondary Drop Chance: %d\n", secondary_drop_chance );
+  printf( "Steal Chance: %d\n", steal_chance );
+  printf( "Gear Drop Chance: %d\n", gear_drop_chance );
+  printf( "Primary Normal Drop: %d\n", primary_normal_drop );
+  printf( "Primary Normal Drop Rare: %d\n", primary_normal_drop_rare );
+  printf( "Secondary Normal Drop: %d\n", secondary_normal_drop );
+  printf( "Secondary Normal Drop Rare: %d\n", secondary_normal_drop_rare );
+  printf( "N Primary Normal Drop: %d\n", n_primary_normal_drop );
+  printf( "N Primary Normal Drop Rare: %d\n", n_primary_normal_drop_rare );
+  printf( "N Secondary Normal Drop: %d\n", n_secondary_normal_drop );
+  printf( "N Secondary Normal Drop Rare: %d\n", n_secondary_normal_drop_rare );
+  printf( "Primary Normal Drop Overkill: %d\n", primary_normal_drop_overkill );
+  printf( "Primary Normal Drop Overkill Rare: %d\n", primary_normal_drop_overkill_rare );
+  printf( "Secondary Normal Drop Overkill: %d\n", secondary_normal_drop_overkill );
+  printf( "Secondary Normal Drop Overkill Rare: %d\n", secondary_normal_drop_overkill_rare );
+  printf( "N Primary Normal Drop Overkill: %d\n", n_primary_normal_drop_overkill );
+  printf( "N Primary Normal Drop Overkill Rare: %d\n", n_primary_normal_drop_overkill_rare );
+  printf( "N Secondary Normal Drop Overkill: %d\n", n_secondary_normal_drop_overkill );
+  printf( "N Secondary Normal Drop Overkill Rare: %d\n", n_secondary_normal_drop_overkill_rare );
+  printf( "Steal Item: %d\n", steal_item );
+  printf( "Steal Item Rare: %d\n", steal_item_rare );
+  printf( "N Steal Item: %d\n", n_steal_item );
+  printf( "N Steal Item Rare: %d\n", n_steal_item_rare );
+  printf( "Bribe Item: %d\n", bribe_item );
+  printf( "N Bribe Item: %d\n", n_bribe_item );
+  printf( "Gear Slot Count Byte: %d\n", gear_slot_count_byte );
+  printf( "Gear Damage Calc: %d\n", gear_damage_calc );
+  printf( "Gear Crit Bonus: %d\n", gear_crit_bonus );
+  printf( "Gear Attack Power: %d\n", gear_attack_power );
+  printf( "Gear Ability Count Byte: %d\n", gear_ability_count_byte );
+  printf( "Weapon Abilities by Char:\n" );
   for (int chr = 0; chr < 7; chr++)
   {
-    std::cout << "Character " << chr << ": ";
+    printf( "Character %d: ", chr );
     for (int i = 0; i < 8; i++)
     {
-      std::cout << weapon_abilities_by_char.at( chr ) << " ";
+      printf( "%d ", weapon_abilities_by_char.at( chr ) );
     }
-    std::cout << std::endl;
+    printf( "\n" );
   }
-  std::cout << "Gear Abilities by Char: " << std::endl;
+  printf( "Gear Abilities by Char:\n" );
   for (int chr = 0; chr < 7; chr++)
   {
-    std::cout << "Character " << chr << ": ";
+    printf( "Character %d: ", chr );
     for (int i = 0; i < 8; i++)
     {
-      std::cout << gear_abilities_by_char.at( chr ) << " ";
+      printf( "%d ", gear_abilities_by_char.at( chr ) );
     }
-    std::cout << std::endl;
+    printf( "\n" );
   }
-  std::cout << "Zanmato Level Byte: " << zanmato_level_byte << std::endl;
-  std::cout << "N Gil Steal: " << n_gil_steal << std::endl;
-  std::cout << "Arena Price: " << arena_price << std::endl;
+  printf( "Zanmato Level Byte: %d\n", zanmato_level_byte );
+  printf( "N Gil Steal: %d\n", n_gil_steal );
+  printf( "Arena Price: %u\n", arena_price );
 }
 
 void enemy_stat_data_t::mapBytes()

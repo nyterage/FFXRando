@@ -48,6 +48,7 @@ void frame_t::initialize()
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearShops, this, ID_RANDOMIZE_GEAR_SHOPS );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeItemShopPrices, this, ID_RANDOMIZE_ITEM_SHOP_PRICES );
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeGearShopPrices, this, ID_RANDOMIZE_GEAR_SHOP_PRICES );
+  Bind( wxEVT_CHECKBOX, &frame_t::onEnsureShopsSellSpheres, this, ID_ENSURE_SHOPS_SELL_SPHERES );
 
   Bind( wxEVT_CHECKBOX, &frame_t::onRandomizeFieldItems, this, ID_RANDOMIZE_FIELD_ITEMS );
 
@@ -143,6 +144,7 @@ void frame_t::onRandomize( wxCommandEvent& event )
                                 randomize_gear_shops,
                                 randomize_item_shop_prices,
                                 randomize_gear_shop_prices,
+                                ensure_shops_sell_spheres,
                                 randomize_field_items,
                                 randomize_gear_abilities,
                                 randomize_weapon_crit,
@@ -276,6 +278,12 @@ void frame_t::onRandomizeGearShopPrices( wxCommandEvent& event )
 {
   randomize_gear_shop_prices = !randomize_gear_shop_prices;
   printf( "Randomize Gear Shop Prices: %d\n", randomize_gear_shop_prices );
+}
+
+void frame_t::onEnsureShopsSellSpheres( wxCommandEvent& event )
+{
+  ensure_shops_sell_spheres = !ensure_shops_sell_spheres;
+  printf( "Ensure Shops Sell Spheres: %d\n", ensure_shops_sell_spheres );
 }
 
 void frame_t::onRandomizeFieldItems( wxCommandEvent& event )

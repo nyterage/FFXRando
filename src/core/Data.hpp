@@ -1265,6 +1265,7 @@ struct options_pack_t
   bool randomize_gear_shops;
   bool randomize_item_shop_prices;
   bool randomize_gear_shop_prices;
+  bool ensure_shops_sell_spheres;
   bool randomize_field_items;
   bool randomize_gear_abilities;
   bool randomize_weapon_crit;
@@ -1317,6 +1318,7 @@ struct options_pack_t
     bool randomize_gear_shops,
     bool randomize_item_shop_prices,
     bool randomize_gear_shop_prices,
+    bool ensure_shops_sell_spheres,
     bool randomize_field_items,
     bool randomize_gear_abilities,
     bool randomize_weapon_crit,
@@ -1363,6 +1365,7 @@ struct options_pack_t
     randomize_gear_shops( randomize_gear_shops ),
     randomize_item_shop_prices( randomize_item_shop_prices ),
     randomize_gear_shop_prices( randomize_gear_shop_prices ),
+    ensure_shops_sell_spheres( ensure_shops_sell_spheres ),
     randomize_field_items( randomize_field_items ),
     randomize_gear_abilities( randomize_gear_abilities ),
     randomize_weapon_crit( randomize_weapon_crit ),

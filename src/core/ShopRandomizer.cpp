@@ -47,7 +47,7 @@ void randomizer_t::randomizeItemPrices()
     else if (item_rate.rate == 2 && options_pack.keep_things_sane)
       // Spheres normally cost 2 gil in data, since they are never sold by vendors. 
       // Since this can happen with randomization, bump the price to something more reasonable. 
-      item_rate.rate = normal<uint32_t>( 500, 250, 1, UINT16_MAX );
+      item_rate.rate = normal<uint32_t>( 1000, 500, 250, UINT16_MAX );
     else
       item_rate.rate = uniform<uint32_t>( 1, UINT16_MAX );
     item_rate.writeToBytes();
@@ -59,13 +59,34 @@ void randomizer_t::randomizeItemShops()
   for (auto& shop : data_pack.item_shop_data)
   {
     shop_data_t* item_shop = shop;
-    int n_items = uniform<int>( 1, 16 );
+    int n_items = uniform<int>( options_pack.ensure_shops_sell_spheres ? 4 : 1, 16 );
     for (int i = 0; i < 16; i++)
     {
       if (i >= n_items)
       {
         item_shop->item_indexes.at( i ) = 0;
         continue;
+      }
+
+      if (options_pack.ensure_shops_sell_spheres)
+      {
+        switch (i)
+        {
+          case 0:
+            item_shop->item_indexes.at( i ) = ITEM_POWER_SPHERE;
+            continue;
+          case 1:
+            item_shop->item_indexes.at( i ) = ITEM_MANA_SPHERE;
+            continue;
+          case 2:
+            item_shop->item_indexes.at( i ) = ITEM_SPEED_SPHERE;
+            continue;
+          case 3:
+            item_shop->item_indexes.at( i ) = ITEM_ABILITY_SPHERE;
+            continue;
+          default:
+            break;
+        }
       }
 
       bool found = true;
