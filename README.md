@@ -20,9 +20,9 @@ Randomizer for many elements of the game Final Fantasy 10
 7. Starting overdrive mode Randomization
 8. Enemy Elemental Affinity Randomization
 9. Sphere Grid Randomization
-
-# Planned Future Additons
-1. Random Encounters
+10. Random Encounter Randomization
+11. Gear customization item Randomization
+12. Aeon Stat increase/ability learning item randomization
 
 # Maybe Future Additions
 1. Enemy Ability randomization??
