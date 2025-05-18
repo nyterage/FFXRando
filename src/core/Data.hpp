@@ -14,7 +14,7 @@
 static constexpr int ENEMY_COUNT = 361;
 // Versioning
 static constexpr int MAJOR_VERSION = 1;
-static constexpr int MINOR_VERSION = 2;
+static constexpr int MINOR_VERSION = 3;
 static constexpr int PATCH_VERSION = 0;
 // Information
 static const std::string VERSION = "v" + std::to_string( MAJOR_VERSION ) + "." + std::to_string( MINOR_VERSION ) + "." + std::to_string( PATCH_VERSION );
@@ -99,12 +99,14 @@ struct item_t
   void test()
   {
     printf( "Item ID: %d\n", id );
+    printf( "Item ID (Hex): 0x%04X\n", id );
     printf( "Min Quantity: %d\n", min_quantity );
     printf( "Max Quantity: %d\n", max_quantity );
     printf( "Average Quantity: %f\n", getAverageQuantity() );
     printf( "Standard Deviation: %f\n", getStandardDeviation() );
     printf( "Instances: %zu\n", quantities.size() );
     printf( "Total Count: %f\n", getTotalQuantities() );
+    printf( "_____________________\n" );
   }
 };
 

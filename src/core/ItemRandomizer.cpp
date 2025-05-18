@@ -218,6 +218,10 @@ void randomizer_t::randomizeFieldItems()
 
 void randomizer_t::doFieldRandomization()
 {
+  for (auto& item : all_non_key_items)
+  {
+    item.second->test();
+  }
   if (!options_pack.randomize_field_items)
     return;
 

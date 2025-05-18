@@ -6,7 +6,7 @@ void randomizer_t::getRandomEncounterIDs()
   {
     for (auto& monster : encounter->formation->monster_ids)
     {
-      if (monster == ( 0xFFFF - 0x1000 ))
+      if (monster == ( 0xFFFF - 0x1000 ) || monster == 188 )
         continue;
       if (std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) != random_monster_encounter_ids.end())
         continue;
@@ -54,12 +54,12 @@ void randomizer_t::adjustStats()
       float old_hp = stats->hp;
       float new_hp = new_stats->hp;
       float hp = std::ceil( old_hp * std::pow( std::pow( new_hp, 1 / 3.2 ) / std::pow( old_hp, 1 / 3.2 ), 1 / 3.2 ) / 25 ) * 25;
-      new_stats->hp = std::clamp( static_cast< unsigned int >( hp ), std::min( stats->hp, new_stats->hp ), std::max( stats->hp, new_stats->hp ) );
+      new_stats->hp = std::clamp( static_cast< uint32_t >( hp ), std::min( stats->hp, new_stats->hp ), std::max( stats->hp, new_stats->hp ) );
 
       float old_mp = stats->mp;
       float new_mp = new_stats->mp;
       float mp = std::ceil( stats->mp * std::sqrt( std::sqrt( new_stats->mp ) / std::sqrt( stats->mp ) ) / 5 ) * 5;
-      new_stats->mp = std::clamp( static_cast< unsigned int >( mp ), std::min( stats->mp, new_stats->mp ), std::max( stats->mp, new_stats->mp ) );
+      new_stats->mp = std::clamp( static_cast< uint32_t >( mp ), std::min( stats->mp, new_stats->mp ), std::max( stats->mp, new_stats->mp ) );
 
       float old_str = stats->str;
       float new_str = new_stats->str;
