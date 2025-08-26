@@ -6,13 +6,14 @@ void randomizer_t::getRandomEncounterIDs()
   {
     for (auto& monster : encounter->formation->monster_ids)
     {
-      if (monster == ( 0xFFFF - 0x1000 ) || monster == 188 )
+      if (monster == ( 0xFFFF - 0x1000 ) || monster == MON_BELIAL_01 || monster == MON_SANDWORM_01 || monster == MON_SANDWORM_02 || 
+           monster == MON_S_SANDWORM_01 || monster == MON_MAKI_SANDWORM_02)
         continue;
       if (std::find( random_monster_encounter_ids.begin(), random_monster_encounter_ids.end(), monster ) != random_monster_encounter_ids.end())
         continue;
       enemy_data_t& enemy = *data_pack.enemy_data.at( monster );
       enemy_stat_data_t& stats = *enemy.stats_data;
-      if (stats.arena_id != 255 && ( stats.arena_id != 0 || monster == 1 ) )
+      if (stats.arena_id != 255 && ( stats.arena_id != 0 || monster == 1 ))
       {
         random_monster_encounter_ids.push_back( monster );
         continue;
@@ -38,7 +39,7 @@ void randomizer_t::adjustStats()
   if (!options_pack.swap_random_stats && !options_pack.scale_encounter_stats)
     return;
 
-  for (auto& pair : paired_mosnter_ids)
+  for (auto& pair : paired_monster_ids)
   {
     if (pair.second == 211)
       continue;
@@ -137,8 +138,8 @@ void randomizer_t::randomizeEncounters( encounter_file_t& encounter )
   formation_data_t& formation_data = *encounter.formation;
   for (auto& mon : formation_data.monster_ids)
   {
-    std::unordered_map<uint16_t, uint16_t>::iterator it = paired_mosnter_ids.find( mon );
-    bool found = it != paired_mosnter_ids.end();
+    std::unordered_map<uint16_t, uint16_t>::iterator it = paired_monster_ids.find( mon );
+    bool found = it != paired_monster_ids.end();
     if (!found)
       continue;
 
@@ -157,7 +158,7 @@ void randomizer_t::doRandomEcnounterRandomization()
 
   for (int i = 0; i < random_monster_encounter_ids.size(); i++)
   {
-    paired_mosnter_ids.insert( std::make_pair( random_monster_encounter_ids[ i ], shuffled_random_monster_encounter_ids[ i ] ) );
+    paired_monster_ids.insert( std::make_pair( random_monster_encounter_ids[ i ], shuffled_random_monster_encounter_ids[ i ] ) );
   }
   printf( "Adjusting Random Ecnounter Stats...\n" );
   adjustStats();

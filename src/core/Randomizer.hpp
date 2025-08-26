@@ -25,7 +25,6 @@ private:
   std::vector<gear_data_t*> all_armor;
   std::vector<gear_data_t*> all_weapons;
   std::vector<uint16_t> abilities;
-  std::vector<uint8_t> weapon_formulas;
   std::vector<uint8_t> def_pool;
   std::vector<uint8_t> mdef_pool;
   std::vector<uint8_t> eva_pool;
@@ -42,7 +41,7 @@ private:
   std::vector<uint8_t> shuffled_standard_sphere_grid_node_ids;
   std::vector<uint8_t> shuffled_expert_sphere_grid_node_ids;
   std::vector<uint16_t> shuffled_random_monster_encounter_ids;
-  std::unordered_map<uint16_t, uint16_t> paired_mosnter_ids;
+  std::unordered_map<uint16_t, uint16_t> paired_monster_ids;
 
   // Lists
   const std::vector<uint16_t> enemy_id_whitelist{ 91, 92, 93, 94, 96, 97, 97, 48, 49, 195, 196, 225, 226, 227, 228, 222, 43, 241, 245, 246, 247, 42, 51, 53, 58, 68, 69, 70, 71, 72, 73, 74, 75, 76, 211 };
@@ -82,7 +81,7 @@ public:
     shuffled_standard_sphere_grid_node_ids(),
     shuffled_expert_sphere_grid_node_ids(),
     shuffled_random_monster_encounter_ids(),
-    paired_mosnter_ids(),
+    paired_monster_ids(),
     enemy_id_whitelist(),
     boss_id_whitelist(),
     randomized_monsters(),
@@ -115,7 +114,6 @@ public:
 
     poplateGearLists();
     populateAbilityData();
-    populateWeaponFormulas();
     randomize();
   }
 
@@ -217,8 +215,7 @@ public:
   void poplateGearLists();
   uint16_t getRandomAbility();
   void populateAbilityData();
-  uint8_t getRandomFormula();
-  void populateWeaponFormulas();
+  weapon_formula_e getRandomFormula();
   void writeGearData( gear_data_t& gear );
   void randomizeShopArmsAbilities();
   void randomizeBukiAbilities();

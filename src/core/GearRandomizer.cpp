@@ -98,26 +98,34 @@ void randomizer_t::populateAbilityData()
   }
 }
 
-uint8_t randomizer_t::getRandomFormula()
+weapon_formula_e randomizer_t::getRandomFormula()
 {
-  std::uniform_int_distribution<size_t> dist( 0, weapon_formulas.size() - 1 );
-  return weapon_formulas[ dist( rng ) ];
-}
-
-void randomizer_t::populateWeaponFormulas()
-{
-  for (auto& gear : all_weapons)
-  {
-    gear_data_t& weapon = *gear;
-    weapon.mapFormulas( weapon_formulas );
-  }
-  for (auto& enemy : data_pack.enemy_data)
-  {
-    enemy_loot_data_t& loot = *enemy.second->loot_data;
-    bool found = std::find( weapon_formulas.begin(), weapon_formulas.end(), loot.gear_damage_calc ) != weapon_formulas.end();
-    if (!found)
-      weapon_formulas.push_back( loot.gear_damage_calc );
-  }
+  static const std::vector<weapon_formula_e> weapon_formulas = {
+  WEAPON_FORMULA_STR_VS_DEF,
+  WEAPON_FORMULA_STR_IGNORE_DEF,
+  WEAPON_FORMULA_MAG_VS_MDEF,
+  WEAPON_FORMULA_MAG_IGNORE_MDEF,
+  WEAPON_FORMULA_CURRENT_STATISTIC,
+  WEAPON_FORMULA_MULTIPLE_OF_50,
+  WEAPON_FORMULA_HEALING,
+  WEAPON_FORMULA_TARGET_MAX_HP,
+  WEAPON_FORMULA_MULTIPLE_OF_50_VARIABLE,
+  WEAPON_FORMULA_TARGET_MAX_MP,
+  WEAPON_FORMULA_TARGET_MAX_CTB,
+  WEAPON_FORMULA_TARGET_CURRENT_MP,
+  WEAPON_FORMULA_TARGET_CURRENT_CTB,
+  WEAPON_FORMULA_STR_NO_CHEER,
+  WEAPON_FORMULA_SPECIAL,
+  WEAPON_FORMULA_PLAYER_MAX_HP_TENTHS,
+  WEAPON_FORMULA_CELESTIAL_HIGH_HP,
+  WEAPON_FORMULA_CELESTIAL_HIGH_MP,
+  WEAPON_FORMULA_CELESTIAL_LOW_HP,
+  WEAPON_FORMULA_MAG_NO_CHEER,
+  WEAPON_FORMULA_KILLS,
+  WEAPON_FORMULA_MULTIPLE_OF_9999
+  };
+  weapon_formula_e formula = weapon_formulas.at( uniform<size_t>( 0, weapon_formulas.size() - 1 ) );
+  return formula;
 }
 
 void randomizer_t::writeGearData( gear_data_t& gear )
@@ -221,9 +229,9 @@ void randomizer_t::randomizeWeaponAttackPower()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, 3, 10, 24 );
+      gear_data.attack_power = normal<uint8_t>( 16, 3, 10, 24 );
     else
-      gear_data.attack_power = uniform<uint8_t>( 0, 100 );
+      gear_data.attack_power = uniform<uint8_t>( 1, 100 );
 
     gear_data.writeToBytes();
   }
@@ -233,9 +241,9 @@ void randomizer_t::randomizeWeaponAttackPower()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, 3, 10, 24 );
+      gear_data.attack_power = normal<uint8_t>( 16, 3, 10, 24 );
     else
-      gear_data.attack_power = uniform<uint8_t>( 0, 100 );
+      gear_data.attack_power = uniform<uint8_t>( 1, 100 );
     gear_data.writeToBytes();
   }
   for (auto& gear : data_pack.weapon_data)
@@ -244,9 +252,9 @@ void randomizer_t::randomizeWeaponAttackPower()
     if (gear_data.is_armor || ( gear_data.is_celestial && !options_pack.randomize_celestials ) || ( gear_data.is_brotherhood && !options_pack.randomize_brotherhood ))
       continue;
     if (options_pack.keep_things_sane)
-      gear_data.attack_power = normal<uint8_t>( gear_data.attack_power, 3, 10, 24 );
+      gear_data.attack_power = normal<uint8_t>( 16, 3, 10, 24 );
     else
-      gear_data.attack_power = uniform<uint8_t>( 0, 100 );
+      gear_data.attack_power = uniform<uint8_t>( 1, 100 );
     gear_data.writeToBytes();
   }
 }
@@ -302,7 +310,7 @@ void randomizer_t::randomizeCustomizeItems()
 void randomizer_t::doGearRandomization()
 {
   if (!options_pack.randomize_gear_abilities && !options_pack.randomize_weapon_attack_power && !options_pack.randomize_weapon_crit &&
-       !options_pack.randomize_weapon_damage_formula && !options_pack.randomize_customization_items )
+       !options_pack.randomize_weapon_damage_formula && !options_pack.randomize_customization_items)
     return;
 
   if (options_pack.randomize_gear_abilities)

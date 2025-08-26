@@ -113,6 +113,9 @@ void randomizer_t::shuffleSphereGridNodes()
     for (size_t i = 0; i < grid->nodes.size(); i++)
     {
       sphere_grid_node_data_t& node = *grid->nodes[ i ];
+      if (node.original_content == 0xFF)
+        continue; // Skip null nodes
+
       switch (grid->type)
       {
         case sphere_grid_type_e::SPHERE_GRID_ORIGINAL:
@@ -382,7 +385,7 @@ void randomizer_t::downgradeSphereGridNodes()
 void randomizer_t::doSphereGridRandomization()
 {
   if (!options_pack.shuffle_sphere_grid && !options_pack.randomize_sphere_grid_true && !options_pack.randomize_sphere_grid &&
-       !options_pack.empty_sphere_grid && !options_pack.fill_sphere_grid && !options_pack.upgrade_sphere_nodes && 
+       !options_pack.empty_sphere_grid && !options_pack.fill_sphere_grid && !options_pack.upgrade_sphere_nodes &&
        !options_pack.downgrade_sphere_nodes && !options_pack.remove_sphere_grid_locks)
     return;
 

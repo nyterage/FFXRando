@@ -322,6 +322,7 @@ void randomizer_t::randomizeEnemyGearDrops( enemy_data_t* enemy )
     loot.gear_drop_chance = normal<uint8_t>( loot.gear_drop_chance, loot.gear_drop_chance / 2, 0, 101 );
   else
     loot.gear_drop_chance = uniform<uint8_t>( 0, 255 );
+
   if (options_pack.randomize_weapon_attack_power && loot.gear_attack_power > 0)
   {
     if (options_pack.keep_things_sane)
@@ -329,6 +330,7 @@ void randomizer_t::randomizeEnemyGearDrops( enemy_data_t* enemy )
     else
       loot.gear_attack_power = uniform<uint8_t>( 1, 100 );
   }
+
   if (options_pack.randomize_weapon_crit && loot.gear_crit_bonus > 0)
   {
     if (options_pack.keep_things_sane)
@@ -336,26 +338,20 @@ void randomizer_t::randomizeEnemyGearDrops( enemy_data_t* enemy )
     else
       loot.gear_crit_bonus = uniform<uint8_t>( 1, 100 );
   }
+
   if (options_pack.randomize_weapon_damage_formula && loot.gear_damage_calc > 0)
-  {
     loot.gear_damage_calc = getRandomFormula();
-  }
+
+  if (loot.gear_damage_calc == WEAPON_FORMULA_NONE)
+    loot.gear_damage_calc = WEAPON_FORMULA_STR_VS_DEF;
 
   for (int chr = 0; chr < 7; chr++)
-  {
     for (int i = 0; i < 8; i++)
-    {
       loot.weapon_abilities_by_char.at( chr ) = getRandomAbility();
-    }
-  }
 
   for (int chr = 0; chr < 7; chr++)
-  {
     for (int i = 0; i < 8; i++)
-    {
       loot.gear_abilities_by_char.at( chr ) = getRandomAbility();
-    }
-  }
 
   loot.writeToBytes();
   enemy->loot_data = &loot;
