@@ -228,7 +228,7 @@ public:
   uint16_t getRandomAbility();
   void populateAbilityData();
   weapon_formula_e getRandomFormula();
-  void writeGearData( gear_data_t& gear );
+  void randomizeGearAbilities( gear_data_t& gear );
   void randomizeShopArmsAbilities();
   void randomizeBukiAbilities();
   void randomizeWeaponsAbilities();
