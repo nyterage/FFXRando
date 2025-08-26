@@ -148,6 +148,18 @@ public:
     return number;
   }
 
+  // pick a random element from a vector
+  template <typename T>
+  T randomElement( const std::vector<T>& vec ) {
+
+    if (vec.size() == 0)
+      throw std::runtime_error( "Vector is empty" );
+
+    std::uniform_int_distribution<size_t> dist( 0, vec.size() - 1 );
+    size_t index = dist( rng );
+    return vec.at( index );
+  }
+
   void writeJson( json& j )
   {
     if (!options_pack.fahrenheit)

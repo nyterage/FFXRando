@@ -28,31 +28,28 @@ void randomizer_t::poplateGearLists()
 {
   for (auto& gear : data_pack.buki_data)
   {
-    gear_data_t* armor = gear;
     if (gear->is_brotherhood && !options_pack.randomize_brotherhood)
       continue;
-    if (armor->is_celestial && !options_pack.randomize_celestials)
+    if (gear->is_celestial && !options_pack.randomize_celestials)
       continue;
-    if (armor->is_armor)
-      all_armor.push_back( armor );
+    if (gear->is_armor)
+      all_armor.push_back( gear );
     else
-      all_weapons.push_back( armor );
+      all_weapons.push_back( gear );
   }
   for (auto& gear : data_pack.weapon_data)
   {
-    gear_data_t* armor = gear;
-    if (armor->is_armor)
-      all_armor.push_back( armor );
+    if (gear->is_armor)
+      all_armor.push_back( gear );
     else
-      all_weapons.push_back( armor );
+      all_weapons.push_back( gear );
   }
   for (auto& gear : data_pack.shop_arms_data)
   {
-    gear_data_t* armor = gear;
-    if (armor->is_armor)
-      all_armor.push_back( armor );
+    if (gear->is_armor)
+      all_armor.push_back( gear );
     else
-      all_weapons.push_back( armor );
+      all_weapons.push_back( gear );
   }
 }
 
@@ -65,15 +62,11 @@ uint16_t randomizer_t::getRandomAbility()
 void randomizer_t::populateAbilityData()
 {
   for (auto& gear : all_armor)
-  {
-    gear_data_t* armor = gear;
-    armor->mapAbilities( abilities );
-  }
+    gear->mapAbilities( abilities );
+
   for (auto& gear : all_weapons)
-  {
-    gear_data_t* weapon = gear;
-    weapon->mapAbilities( abilities );
-  }
+    gear->mapAbilities( abilities );
+
   for (auto& enemy : data_pack.enemy_data)
   {
     enemy_loot_data_t& loot = *enemy.second->loot_data;
@@ -101,34 +94,34 @@ void randomizer_t::populateAbilityData()
 weapon_formula_e randomizer_t::getRandomFormula()
 {
   static const std::vector<weapon_formula_e> weapon_formulas = {
-  WEAPON_FORMULA_STR_VS_DEF,
-  WEAPON_FORMULA_STR_IGNORE_DEF,
-  WEAPON_FORMULA_MAG_VS_MDEF,
-  WEAPON_FORMULA_MAG_IGNORE_MDEF,
-  WEAPON_FORMULA_CURRENT_STATISTIC,
-  WEAPON_FORMULA_MULTIPLE_OF_50,
-  WEAPON_FORMULA_HEALING,
-  WEAPON_FORMULA_TARGET_MAX_HP,
-  WEAPON_FORMULA_MULTIPLE_OF_50_VARIABLE,
-  WEAPON_FORMULA_TARGET_MAX_MP,
-  WEAPON_FORMULA_TARGET_MAX_CTB,
-  WEAPON_FORMULA_TARGET_CURRENT_MP,
-  WEAPON_FORMULA_TARGET_CURRENT_CTB,
-  WEAPON_FORMULA_STR_NO_CHEER,
-  WEAPON_FORMULA_SPECIAL,
-  WEAPON_FORMULA_PLAYER_MAX_HP_TENTHS,
-  WEAPON_FORMULA_CELESTIAL_HIGH_HP,
-  WEAPON_FORMULA_CELESTIAL_HIGH_MP,
-  WEAPON_FORMULA_CELESTIAL_LOW_HP,
-  WEAPON_FORMULA_MAG_NO_CHEER,
-  WEAPON_FORMULA_KILLS,
-  WEAPON_FORMULA_MULTIPLE_OF_9999
+    WEAPON_FORMULA_STR_VS_DEF,
+    WEAPON_FORMULA_STR_IGNORE_DEF,
+    WEAPON_FORMULA_MAG_VS_MDEF,
+    WEAPON_FORMULA_MAG_IGNORE_MDEF,
+    WEAPON_FORMULA_CURRENT_STATISTIC,
+    WEAPON_FORMULA_MULTIPLE_OF_50,
+    WEAPON_FORMULA_HEALING,
+    WEAPON_FORMULA_TARGET_MAX_HP,
+    WEAPON_FORMULA_MULTIPLE_OF_50_VARIABLE,
+    WEAPON_FORMULA_TARGET_MAX_MP,
+    WEAPON_FORMULA_TARGET_MAX_CTB,
+    WEAPON_FORMULA_TARGET_CURRENT_MP,
+    WEAPON_FORMULA_TARGET_CURRENT_CTB,
+    WEAPON_FORMULA_STR_NO_CHEER,
+    WEAPON_FORMULA_SPECIAL,
+    WEAPON_FORMULA_PLAYER_MAX_HP_TENTHS,
+    WEAPON_FORMULA_CELESTIAL_HIGH_HP,
+    WEAPON_FORMULA_CELESTIAL_HIGH_MP,
+    WEAPON_FORMULA_CELESTIAL_LOW_HP,
+    WEAPON_FORMULA_MAG_NO_CHEER,
+    WEAPON_FORMULA_KILLS,
+    WEAPON_FORMULA_MULTIPLE_OF_9999
   };
-  weapon_formula_e formula = weapon_formulas.at( uniform<size_t>( 0, weapon_formulas.size() - 1 ) );
+  weapon_formula_e formula = randomElement( weapon_formulas );
   return formula;
 }
 
-void randomizer_t::writeGearData( gear_data_t& gear )
+void randomizer_t::randomizeGearAbilities( gear_data_t& gear )
 {
   if (( gear.is_celestial && !options_pack.randomize_celestials ) || ( gear.is_brotherhood && !options_pack.randomize_brotherhood ))
     return;
@@ -162,7 +155,7 @@ void randomizer_t::randomizeShopArmsAbilities()
   for (auto& gear : data_pack.shop_arms_data)
   {
     gear_data_t& gear_data = *gear;
-    writeGearData( gear_data );
+    randomizeGearAbilities( gear_data );
   }
 }
 
@@ -171,7 +164,7 @@ void randomizer_t::randomizeBukiAbilities()
   for (auto& gear : data_pack.buki_data)
   {
     gear_data_t& gear_data = *gear;
-    writeGearData( gear_data );
+    randomizeGearAbilities( gear_data );
   }
 }
 
@@ -180,7 +173,7 @@ void randomizer_t::randomizeWeaponsAbilities()
   for (auto& gear : data_pack.weapon_data)
   {
     gear_data_t& gear_data = *gear;
-    writeGearData( gear_data );
+    randomizeGearAbilities( gear_data );
   }
 }
 

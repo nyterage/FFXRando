@@ -127,7 +127,8 @@ void randomizer_t::randomizeEnemyBribe( enemy_data_t* enemy )
 
 void randomizer_t::randomizeEnemyStatsNormal( enemy_data_t* enemy )
 {
-  if (enemy->monster_id == "211" || enemy->monster_id == "237")
+  int m_id = std::stoi( enemy->monster_id );
+  if (m_id == MON_TREASURE_CHEST_01 || m_id == MON_TREASURE_CHEST_TUTORIAL)
     return;
   enemy_stat_data_t& stats = *enemy->stats_data;
   if (stats.hp <= 1)
@@ -175,7 +176,8 @@ void randomizer_t::addEnemyDefenses( enemy_data_t* enemy )
 
 void randomizer_t::randomizeEnemyStatsDefensiveNormalization( enemy_data_t* enemy )
 {
-  if (enemy->monster_id == "211" || enemy->monster_id == "237")
+  int m_id = std::stoi( enemy->monster_id );
+  if (m_id == MON_TREASURE_CHEST_01 || m_id == MON_TREASURE_CHEST_TUTORIAL)
     return;
   enemy_stat_data_t& stats = *enemy->stats_data;
   if (stats.hp <= 1)
@@ -236,7 +238,8 @@ void randomizer_t::randomizeEnemyStatsDefensiveNormalization( enemy_data_t* enem
 
 void randomizer_t::shuffleEnemyStats( enemy_data_t* enemy )
 {
-  if (enemy->monster_id == "211" || enemy->monster_id == "237")
+  int m_id = std::stoi( enemy->monster_id );
+  if (m_id == MON_TREASURE_CHEST_01 || m_id == MON_TREASURE_CHEST_TUTORIAL)
     return;
   enemy_stat_data_t& stats = *enemy->stats_data;
   if (stats.hp <= 1)
