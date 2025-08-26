@@ -113,7 +113,7 @@ void randomizer_t::shuffleSphereGridNodes()
     for (size_t i = 0; i < grid->nodes.size(); i++)
     {
       sphere_grid_node_data_t& node = *grid->nodes[ i ];
-      if (node.original_content == 0xFF)
+      if (node.original_content == NODE_NULL)
         continue; // Skip null nodes
 
       switch (grid->type)
@@ -260,52 +260,52 @@ void randomizer_t::upgradeSphereGridNodes()
       sphere_grid_node_data_t& node = *grid_node;
       switch (node.content)
       {
-        case 0x02:
-        case 0x03:
-        case 0x04:
-          node.content = 0x05;
+        case NODE_STRENGTH_1:
+        case NODE_STRENGTH_2:
+        case NODE_STRENGTH_3:
+          node.content = NODE_STRENGTH_4;
           break;
-        case 0x06:
-        case 0x07:
-        case 0x08:
-          node.content = 0x09;
+        case NODE_DEFENSE_1:
+        case NODE_DEFENSE_2:
+        case NODE_DEFENSE_3:
+          node.content = NODE_DEFENSE_4;
           break;
-        case 0x0A:
-        case 0x0B:
-        case 0x0C:
-          node.content = 0x0D;
+        case NODE_MAGIC_1:
+        case NODE_MAGIC_2:
+        case NODE_MAGIC_3:
+          node.content = NODE_MAGIC_4;
           break;
-        case 0x0E:
-        case 0x0F:
-        case 0x10:
-          node.content = 0x11;
+        case NODE_MAGIC_DEFENSE_1:
+        case NODE_MAGIC_DEFENSE_2:
+        case NODE_MAGIC_DEFENSE_3:
+          node.content = NODE_MAGIC_DEFENSE_4;
           break;
-        case 0x12:
-        case 0x13:
-        case 0x14:
-          node.content = 0x15;
+        case NODE_AGILITY_1:
+        case NODE_AGILITY_2:
+        case NODE_AGILITY_3:
+          node.content = NODE_AGILITY_4;
           break;
-        case 0x16:
-        case 0x17:
-        case 0x18:
-          node.content = 0x19;
+        case NODE_LUCK_1:
+        case NODE_LUCK_2:
+        case NODE_LUCK_3:
+          node.content = NODE_LUCK_4;
           break;
-        case 0x1A:
-        case 0x1B:
-        case 0x1C:
-          node.content = 0x1D;
+        case NODE_EVASION_1:
+        case NODE_EVASION_2:
+        case NODE_EVASION_3:
+          node.content = NODE_EVASION_4;
           break;
-        case 0x1E:
-        case 0x1F:
-        case 0x20:
-          node.content = 0x21;
+        case NODE_ACCURACY_1:
+        case NODE_ACCURACY_2:
+        case NODE_ACCURACY_3:
+          node.content = NODE_ACCURACY_4;
           break;
-        case 0x22:
-          node.content = 0x23;
+        case NODE_HP_200:
+          node.content = NODE_HP_300;
           break;
-        case 0x25:
-        case 0x26:
-          node.content = 0x24;
+        case NODE_MP_10:
+        case NODE_MP_20:
+          node.content = NODE_MP_40;
           break;
         default:
           break;
@@ -326,52 +326,52 @@ void randomizer_t::downgradeSphereGridNodes()
       sphere_grid_node_data_t& node = *grid_node;
       switch (node.content)
       {
-        case 0x03:
-        case 0x04:
-        case 0x05:
-          node.content = 0x02;
+        case NODE_STRENGTH_2:
+        case NODE_STRENGTH_3:
+        case NODE_STRENGTH_4:
+          node.content = NODE_STRENGTH_1;
           break;
-        case 0x07:
-        case 0x08:
-        case 0x09:
-          node.content = 0x06;
+        case NODE_DEFENSE_2:
+        case NODE_DEFENSE_3:
+        case NODE_DEFENSE_4:
+          node.content = NODE_DEFENSE_1;
           break;
-        case 0x0B:
-        case 0x0C:
-        case 0x0D:
-          node.content = 0x0A;
+        case NODE_MAGIC_2:
+        case NODE_MAGIC_3:
+        case NODE_MAGIC_4:
+          node.content = NODE_MAGIC_1;
           break;
-        case 0x0F:
-        case 0x10:
-        case 0x11:
-          node.content = 0x0E;
+        case NODE_MAGIC_DEFENSE_2:
+        case NODE_MAGIC_DEFENSE_3:
+        case NODE_MAGIC_DEFENSE_4:
+          node.content = NODE_MAGIC_DEFENSE_1;
           break;
-        case 0x13:
-        case 0x14:
-        case 0x15:
-          node.content = 0x12;
+        case NODE_AGILITY_2:
+        case NODE_AGILITY_3:
+        case NODE_AGILITY_4:
+          node.content = NODE_AGILITY_1;
           break;
-        case 0x17:
-        case 0x18:
-        case 0x19:
-          node.content = 0x16;
+        case NODE_LUCK_2:
+        case NODE_LUCK_3:
+        case NODE_LUCK_4:
+          node.content = NODE_LUCK_1;
           break;
-        case 0x1B:
-        case 0x1C:
-        case 0x1D:
-          node.content = 0x1A;
+        case NODE_EVASION_2:
+        case NODE_EVASION_3:
+        case NODE_EVASION_4:
+          node.content = NODE_EVASION_1;
           break;
-        case 0x1F:
-        case 0x20:
-        case 0x21:
-          node.content = 0x1E;
+        case NODE_ACCURACY_2:
+        case NODE_ACCURACY_3:
+        case NODE_ACCURACY_4:
+          node.content = NODE_ACCURACY_1;
           break;
-        case 0x23:
-          node.content = 0x22;
+        case NODE_HP_300:
+          node.content = NODE_HP_200;
           break;
-        case 0x24:
-        case 0x25:
-          node.content = 0x26;
+        case NODE_MP_10:
+        case NODE_MP_20:
+          node.content = NODE_MP_40;
           break;
         default:
           break;
