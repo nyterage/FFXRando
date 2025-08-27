@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <thread>
 #include <vector>
+#include <mutex>
+#include <iostream>
+#include <iomanip>
 
 using json = nlohmann::json;
 
@@ -13,6 +16,7 @@ struct randomizer_t
 {
 private:
   std::mt19937 rng;
+  mutable std::mutex rng_mutex; // protect rng across threads
 
   // Static data
   const data_pack_t& data_pack;
@@ -44,8 +48,47 @@ private:
   std::unordered_map<uint16_t, uint16_t> paired_monster_ids;
 
   // Lists
-  const std::vector<uint16_t> enemy_id_whitelist{ 91, 92, 93, 94, 96, 97, 97, 48, 49, 195, 196, 225, 226, 227, 228, 222, 43, 241, 245, 246, 247, 42, 51, 53, 58, 68, 69, 70, 71, 72, 73, 74, 75, 76, 211 };
-  const std::vector<uint16_t> boss_id_whitelist{ 153, 103, 229 };
+  const std::vector<uint16_t> enemy_id_whitelist{
+    MON_BIPEDAL_MECH_01,
+    MON_BIPEDAL_MECH_02,
+    MON_BIPEDAL_MECH_02_BURNING,
+    MON_BIPEDAL_MECH_03,
+    MON_QUADREDAL_MECH_01,
+    MON_QUADREDAL_MECH_02,
+    MON_GOLEM_01,
+    MON_GOLEM_02,
+    MON_G_EBON_01,
+    MON_G_EBON_02,
+    MON_ARIMAN_05,
+    MON_BOMB_04,
+    MON_CHIMERA_03,
+    MON_FOUR_HORN_04,
+    MON_GUADO_02,
+    MON_SAHAGIN_02_KAI,
+    MON_PUDDING_07,
+    MON_LIZARD_08,
+    MON_KOURA_07,
+    MON_ARIMAN_06,
+    MON_SAHAGIN_02,
+    MON_FLESIUS_01,
+    MON_RISING_01,
+    MON_OCTOPUS_01,
+    MON_PIRANHA_11,
+    MON_PIRANHA_12,
+    MON_PIRANHA_13,
+    MON_PIRANHA_21,
+    MON_PIRANHA_22,
+    MON_PIRANHA_23,
+    MON_PIRANHA_31,
+    MON_PIRANHA_32,
+    MON_PIRANHA_33,
+    MON_TREASURE_CHEST_01
+  };
+  const std::vector<uint16_t> boss_id_whitelist{
+    MON_OCHU_E01,
+    MON_SINSPAWN_02,
+    MON_GOLEM_03
+  };
   std::vector<uint16_t> randomized_monsters{};
 
 public:
@@ -82,8 +125,6 @@ public:
     shuffled_expert_sphere_grid_node_ids(),
     shuffled_random_monster_encounter_ids(),
     paired_monster_ids(),
-    enemy_id_whitelist(),
-    boss_id_whitelist(),
     randomized_monsters(),
     prefix( options_pack.fahrenheit ? FAHRENHEIT_PREFIX : "" ),
     btl_kernel_input( INPUT_FOLDER + BATTLE_KERNEL_FOLDER ),
@@ -121,9 +162,10 @@ public:
   T uniform( T min, T max ) {
     static_assert( std::is_integral<T>::value, "Only integral types are supported" );
 
-    using DistType = typename std::conditional<sizeof( T ) <= 2, uint32_t, T>::type;
+    using DistType = typename std::conditional<(sizeof( T ) <= 2), uint32_t, T>::type;
 
-    std::uniform_int_distribution<DistType> dist( min, max );
+    std::uniform_int_distribution<DistType> dist( static_cast<DistType>(min), static_cast<DistType>(max) );
+    std::lock_guard<std::mutex> lock(rng_mutex);
     return static_cast< T >( dist( rng ) );
   }
 
@@ -137,6 +179,7 @@ public:
       return mean;
 
     std::normal_distribution<double> dist( static_cast< double >( mean ), static_cast< double >( stddev ) );
+    std::lock_guard<std::mutex> lock(rng_mutex);
     T number;
     do
     {
@@ -155,8 +198,7 @@ public:
     if (vec.size() == 0)
       throw std::runtime_error( "Vector is empty" );
 
-    std::uniform_int_distribution<size_t> dist( 0, vec.size() - 1 );
-    size_t index = dist( rng );
+    size_t index = uniform<size_t>( 0, vec.size() - 1 );
     return vec.at( index );
   }
 
@@ -179,6 +221,12 @@ public:
 
     if (has_header)
       bytes = std::vector<char>( bytes.begin(), bytes.begin() + 20 );
+
+    // Reserve final size to avoid reallocations
+    size_t final_size = bytes.size();
+    for (auto* element : vector)
+      final_size += element->bytes.size();
+    reconstructed_bytes.reserve( final_size );
 
     reconstructed_bytes.insert( reconstructed_bytes.end(), bytes.begin(), bytes.end() );
 

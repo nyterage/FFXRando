@@ -1450,3 +1450,38 @@ void sphere_grid_data_t::test() const
     node->test();
   }
 }
+
+// =======================
+// Added destructors
+// =======================
+
+enemy_data_t::~enemy_data_t()
+{
+  delete loot_data;
+  delete stats_data;
+}
+
+encounter_file_t::~encounter_file_t()
+{
+  delete formation;
+}
+
+field_group_data_t::~field_group_data_t()
+{
+  for (auto* f : formations) delete f;
+}
+
+field_encounter_data_t::~field_encounter_data_t()
+{
+  for (auto* g : groups) delete g;
+}
+
+btl_data_t::~btl_data_t()
+{
+  for (auto* f : field_battle_data) delete f;
+}
+
+sphere_grid_data_t::~sphere_grid_data_t()
+{
+  for (auto* n : nodes) delete n;
+}

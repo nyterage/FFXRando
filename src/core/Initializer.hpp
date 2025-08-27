@@ -4,6 +4,7 @@
 #include <random>
 #include <thread>
 #include <vector>
+#include <mutex>
 #include "BytesHelper.hpp"
 #include "Data.hpp"
 #include "GUI.hpp"
@@ -32,6 +33,9 @@ struct initializer_t
   std::vector<customize_data_t*> aeon_stat_customize_data;
 
   data_pack_t* data_pack;
+
+  // Mutex to protect concurrent writes to enemy maps
+  std::mutex enemy_data_mutex;
 
   initializer_t() : gui( nullptr ),
     enemy_data(), unmodified_enemy_data(),
@@ -75,11 +79,9 @@ struct initializer_t
     gui_thread.join();
   }
 
-  ~initializer_t()
-  {
-  };
+  ~initializer_t();
 
-  std::vector<chunk_t> chunkData( std::vector<char>& bytes, int size ) const;
+  std::vector<chunk_t> chunkData( std::vector<char>& bytes, size_t size ) const;
   std::vector<char> getDataFromFile( const std::string& filepath, bool skip_header = false ) const;
 
   template <typename T>
@@ -87,6 +89,17 @@ struct initializer_t
   {
     std::vector<char> bytes = initializer_t::getDataFromFile( filepath, true );
     std::vector<chunk_t> chunks = initializer_t::chunkData( bytes, chunk_size );
+
+    // Pre-reserve expected number of elements to minimize reallocations
+    if (chunk_size > 0)
+    {
+      size_t expected = bytes.size() / chunk_size;
+      if (limit_chunks && expected > static_cast<size_t>(chunk_limit))
+        expected = static_cast<size_t>(chunk_limit);
+      if (expected)
+        vector.reserve( vector.size() + expected );
+    }
+
     for (auto& chunk : chunks)
     {
       if (limit_chunks && chunk.index >= chunk_limit)
@@ -99,7 +112,7 @@ struct initializer_t
     }
   }
 
-  void initializeEnemyData( const std::string filename, std::string monster_id, const std::string monster_file );
+  void initializeEnemyData( std::string monster_id, const std::string monster_file );
   void initializeFieldData();
   void initializeShopData( bool gear );
   void initializeBukiData();

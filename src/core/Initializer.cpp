@@ -1,13 +1,17 @@
 #include "Initializer.hpp"
+#include <atomic>
+#include <algorithm>
 
-std::vector<chunk_t> initializer_t::chunkData( std::vector<char>& bytes, int size ) const
+std::vector<chunk_t> initializer_t::chunkData( std::vector<char>& bytes, size_t size ) const
 {
   std::vector<chunk_t> chunks;
+  if (size == 0)
+    return chunks;
+  chunks.reserve( bytes.size() / size + 1 );
   int index = 0;
   for (size_t i = 0; i < bytes.size(); i += size)
   {
-    chunk_t chunk = chunk_t( bytes, i, i + size, index );
-    chunks.push_back( chunk );
+    chunks.emplace_back( bytes, i, i + size, index );
     index++;
   }
   return chunks;
@@ -23,15 +27,18 @@ std::vector<char> initializer_t::getDataFromFile( const std::string& filepath, b
   return bytes;
 }
 
-void initializer_t::initializeEnemyData( const std::string filename, std::string monster_id, const std::string monster_file )
+void initializer_t::initializeEnemyData( std::string monster_id, const std::string monster_file )
 {
   std::vector<char> bytes = bytes_mapper_t::fileToBytes( INPUT_FOLDER + MONSTER_FOLDER + monster_file );
   // Erase the leading m
   monster_id.erase( 0, 1 );
   enemy_data_t* enemy = new enemy_data_t( monster_id, bytes );
-  enemy_data.insert( { std::stoi( monster_id ), enemy } );
   enemy_data_t* unmodified = new enemy_data_t( monster_id, bytes );
-  unmodified_enemy_data.insert( { std::stoi( monster_id ), unmodified } );
+  {
+    std::lock_guard<std::mutex> lock(enemy_data_mutex);
+    enemy_data.emplace( std::stoi( monster_id ), enemy );
+    unmodified_enemy_data.emplace( std::stoi( monster_id ), unmodified );
+  }
 }
 
 void initializer_t::initializeFieldData()
@@ -161,8 +168,9 @@ void initializer_t::initializeAllData()
   enemy_data.reserve( ENEMY_COUNT );
   unmodified_enemy_data.reserve( ENEMY_COUNT );
 
-  std::vector<std::thread> enemy_threads;
-  enemy_threads.reserve( ENEMY_COUNT );
+  // Build list of enemy tasks
+  std::vector<std::pair<std::string, std::string>> enemy_tasks;
+  enemy_tasks.reserve( ENEMY_COUNT );
 
   std::string monster_id;
   monster_id.reserve( 5 );
@@ -177,7 +185,29 @@ void initializer_t::initializeAllData()
     // Erase the leading underscore
     monster_id.erase( 0, 1 );
     monster_file = filename + "/" + monster_id + ".bin";
-    enemy_threads.push_back( std::thread( &initializer_t::initializeEnemyData, this, filename, monster_id, monster_file ) );
+    enemy_tasks.emplace_back( monster_id, monster_file );
+  }
+
+  // Thread pool for enemy loading
+  std::vector<std::thread> enemy_workers;
+  std::atomic<size_t> next_task{0};
+  unsigned int worker_count = std::thread::hardware_concurrency();
+  if (worker_count == 0) 
+    worker_count = 4; // sensible default
+  worker_count = std::min<unsigned int>( worker_count, static_cast<unsigned int>( enemy_tasks.size() == 0 ? 1 : enemy_tasks.size() ) );
+
+  enemy_workers.reserve( worker_count );
+  for (unsigned int i = 0; i < worker_count; ++i)
+  {
+    enemy_workers.emplace_back([this, &enemy_tasks, &next_task]() {
+      for (;;)
+      {
+        size_t idx = next_task.fetch_add(1, std::memory_order_relaxed);
+        if (idx >= enemy_tasks.size()) break;
+        auto& task = enemy_tasks[idx];
+        this->initializeEnemyData( task.first, task.second );
+      }
+    });
   }
 
   std::thread btl_data_thread( &initializer_t::initializeBtlData, this );
@@ -212,9 +242,9 @@ void initializer_t::initializeAllData()
   aeon_stat_customize_thread.join();
   btl_data_thread.join();
 
-  for (auto& enemy_thread : enemy_threads)
-    if (enemy_thread.joinable())
-      enemy_thread.join();
+  for (auto& t : enemy_workers)
+    if (t.joinable())
+      t.join();
 }
 
 void initializer_t::runEnemyTests()
@@ -296,3 +326,39 @@ void initializer_t::runTests()
   sphere_grid_thread.join();
 }
 
+// Destructor implementation: free owned pointers
+initializer_t::~initializer_t()
+{
+  // Do not delete gui: wxEntryCleanup handles wxApp lifetime in initializeGUI.
+
+  auto clearMap = [](auto& m) {
+    for (auto& kv : m) delete kv.second;
+    m.clear();
+  };
+  auto clearVec = [](auto& v) {
+    for (auto* p : v) delete p;
+    v.clear();
+  };
+
+  clearMap(enemy_data);
+  clearMap(unmodified_enemy_data);
+
+  clearVec(field_data);
+  clearVec(item_shop_data);
+  clearVec(gear_shop_data);
+  clearVec(buki_data);
+  clearVec(weapon_data);
+  clearVec(shop_arms_data);
+  clearVec(item_rate_data);
+  clearVec(arms_rate_data);
+  clearVec(player_stats_data);
+  clearVec(aeon_scaling_data);
+  clearVec(aeon_stat_data);
+  clearVec(sphere_grid_data);
+  clearVec(encounter_file_data);
+  clearVec(gear_customize_data);
+  clearVec(aeon_stat_customize_data);
+
+  delete data_pack;
+  data_pack = nullptr;
+}
