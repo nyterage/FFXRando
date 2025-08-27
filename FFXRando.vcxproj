@@ -194,8 +194,6 @@
     <ClCompile Include="src\core\RandomEncounterRandomizer.cpp" />
     <ClCompile Include="src\core\ShopRandomizer.cpp" />
     <ClCompile Include="src\core\SphereGridRandomizer.cpp" />
-    <ClCompile Include="tests\InitializerMSTests.cpp" />
-    <ClCompile Include="tests\TestMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="C:\wxWidgets\wxWidgets\lib\vc_x64_dll\wxbase330u_vc_x64_custom.dll" />
