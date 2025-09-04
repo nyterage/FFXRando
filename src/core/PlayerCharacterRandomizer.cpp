@@ -78,7 +78,11 @@ void randomizer_t::randomizePlayerStats()
     if (stats.base_hp < 50)
       stats.base_hp = 50;
     stats.base_mp = normal<uint32_t>( stats.base_mp, stats.base_mp / 2, 1, 999 );
-    bool tidus_or_auron = i == 0 || i == 2;
+    if (i == CHARACTER_WAKKA && stats.base_mp < 5)
+      stats.base_mp = 5;
+    if (i == CHARACTER_LULU && stats.base_mp < 8)
+      stats.base_mp = 8;
+    bool tidus_or_auron = i == CHARACTER_TIDUS || i == CHARACTER_AURON;
     stats.base_str = normal<uint8_t>( stats.base_str, stats.base_str / 2, tidus_or_auron ? 14 : 0, stats.base_str * 3 );
     stats.base_def = normal<uint8_t>( stats.base_def, stats.base_def / 2, 0, stats.base_def * 3 );
     stats.base_mag = normal<uint8_t>( stats.base_mag, stats.base_mag / 2, 0, stats.base_mag * 3 );
@@ -108,9 +112,13 @@ void randomizer_t::shuffleCharacterStats()
   {
     character_stats_t& stats = *data_pack.player_stats_data[ i ];
     character_stats_t& new_stats = *shuffled_player_stats_data[ i ];
+    if (i == CHARACTER_WAKKA && new_stats.base_mp < 5)
+      new_stats.base_mp = 5;
+    if (i == CHARACTER_LULU && new_stats.base_mp < 8)
+      new_stats.base_mp = 8;
     stats.base_hp = new_stats.base_hp;
     stats.base_mp = new_stats.base_mp;
-    if (( i == 0 || i == 2 ) && new_stats.base_str < 14)
+    if (( i == CHARACTER_TIDUS || i == CHARACTER_AURON ) && new_stats.base_str < 14)
       new_stats.base_str = 14;
     stats.base_str = new_stats.base_str;
     stats.base_def = new_stats.base_def;
@@ -301,64 +309,64 @@ void randomizer_t::doPlayerStatRandomization()
     {
       character_stats_t& stats = *data_pack.player_stats_data.at( i );
       if (i == ply_save_e::CHARACTER_AURON)
-        continue; // Auron's overdrive mode is always 2
+        continue; // Auron's overdrive mode is always stoic for the tutorial
       uint8_t overdrive_mode = uniform<uint8_t>( 0, 16 );
       stats.overdrive_current = overdrive_mode;
       stats.overdrive_mode = overdrive_mode;
-      if (overdrive_mode != 2)
+      if (overdrive_mode != OVERDRIVE_STOIC)
         stats.overdrive.bits.stoic = 0;
 
       switch (overdrive_mode)
       {
-        case 0:
+        case OVERDRIVE_WARRIOR:
           stats.overdrive.bits.warrior = 1;
           break;
-        case 1:
+        case OVERDRIVE_COMRADE:
           stats.overdrive.bits.comrade = 1;
           break;
-        case 2:
+        case OVERDRIVE_STOIC:
           stats.overdrive.bits.stoic = 1;
           break;
-        case 3:
+        case OVERDRIVE_HEALER:
           stats.overdrive.bits.healer = 1;
           break;
-        case 4:
+        case OVERDRIVE_TACTICIAN:
           stats.overdrive.bits.tactician = 1;
           break;
-        case 5:
+        case OVERDRIVE_VICTIM:
           stats.overdrive.bits.victim = 1;
           break;
-        case 6:
+        case OVERDRIVE_DANCER:
           stats.overdrive.bits.dancer = 1;
           break;
-        case 7:
+        case OVERDRIVE_AVENGER:
           stats.overdrive.bits.avenger = 1;
           break;
-        case 8:
+        case OVERDRIVE_SLAYER:
           stats.overdrive.bits.slayer = 1;
           break;
-        case 9:
+        case OVERDRIVE_HERO:
           stats.overdrive.bits.hero = 1;
           break;
-        case 10:
+        case OVERDRIVE_ROOK:
           stats.overdrive.bits.rook = 1;
           break;
-        case 11:
+        case OVERDRIVE_VICTOR:
           stats.overdrive.bits.victor = 1;
           break;
-        case 12:
+        case OVERDRIVE_COWARD:
           stats.overdrive.bits.coward = 1;
           break;
-        case 13:
+        case OVERDRIVE_ALLY:
           stats.overdrive.bits.ally = 1;
           break;
-        case 14:
+        case OVERDRIVE_SUFFERER:
           stats.overdrive.bits.sufferer = 1;
           break;
-        case 15:
+        case OVERDRIVE_DAREDEVIL:
           stats.overdrive.bits.daredevil = 1;
           break;
-        case 16:
+        case OVERDRIVE_LONER:
           stats.overdrive.bits.loner = 1;
           break;
       }

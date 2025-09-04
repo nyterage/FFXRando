@@ -1131,15 +1131,6 @@ struct encounter_file_t final : public bytes_mapper_t
     name( name ), chunks( bytesToChunks( bytes, read4Bytes( bytes, 0x00 ), 4 ) ), formation( nullptr )
   {
     formation = new formation_data_t( chunks[ 2 ] );
-    // std::cout << name << std::endl;
-    //if (name == "cdsp00_00" || name == "cdsp00_01" || name == "cdsp00_02" || name == "cdsp02_00" || name == "cdsp07_00" || name == "cdsp07_01" )
-    //{
-    //  for (auto& id : formation->monster_ids)
-    //  {
-    //    printf( "%d\n", id );
-
-    //  }
-    //}
   }
 
   ~encounter_file_t();
